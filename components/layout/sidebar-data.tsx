@@ -722,7 +722,7 @@ export const sidebarData: SidebarData = {
             },
             {
               title: "User Profile",
-              url: "/profile",
+              url: "/settings/profile",
               // icon: UserCog,
             },
             {
