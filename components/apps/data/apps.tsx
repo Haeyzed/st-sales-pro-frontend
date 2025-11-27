@@ -1,0 +1,111 @@
+import {
+  MessageSquare,
+  FileText,
+  Palette,
+  Layout,
+  Hash,
+  Video,
+  CreditCard,
+  Mail,
+  BookOpen,
+  Phone,
+  Box,
+  Github,
+  GitBranch,
+  MessageCircle,
+  PhoneCall,
+} from "lucide-react"
+
+export const apps = [
+  {
+    name: "Telegram",
+    logo: <MessageSquare className="size-6" />,
+    connected: false,
+    desc: "Connect with Telegram for real-time communication.",
+  },
+  {
+    name: "Notion",
+    logo: <FileText className="size-6" />,
+    connected: true,
+    desc: "Effortlessly sync Notion pages for seamless collaboration.",
+  },
+  {
+    name: "Figma",
+    logo: <Palette className="size-6" />,
+    connected: true,
+    desc: "View and collaborate on Figma designs in one place.",
+  },
+  {
+    name: "Trello",
+    logo: <Layout className="size-6" />,
+    connected: false,
+    desc: "Sync Trello cards for streamlined project management.",
+  },
+  {
+    name: "Slack",
+    logo: <Hash className="size-6" />,
+    connected: false,
+    desc: "Integrate Slack for efficient team communication",
+  },
+  {
+    name: "Zoom",
+    logo: <Video className="size-6" />,
+    connected: true,
+    desc: "Host Zoom meetings directly from the dashboard.",
+  },
+  {
+    name: "Stripe",
+    logo: <CreditCard className="size-6" />,
+    connected: false,
+    desc: "Easily manage Stripe transactions and payments.",
+  },
+  {
+    name: "Gmail",
+    logo: <Mail className="size-6" />,
+    connected: true,
+    desc: "Access and manage Gmail messages effortlessly.",
+  },
+  {
+    name: "Medium",
+    logo: <BookOpen className="size-6" />,
+    connected: false,
+    desc: "Explore and share Medium stories on your dashboard.",
+  },
+  {
+    name: "Skype",
+    logo: <Phone className="size-6" />,
+    connected: false,
+    desc: "Connect with Skype contacts seamlessly.",
+  },
+  {
+    name: "Docker",
+    logo: <Box className="size-6" />,
+    connected: false,
+    desc: "Effortlessly manage Docker containers on your dashboard.",
+  },
+  {
+    name: "GitHub",
+    logo: <Github className="size-6" />,
+    connected: false,
+    desc: "Streamline code management with GitHub integration.",
+  },
+  {
+    name: "GitLab",
+    logo: <GitBranch className="size-6" />,
+    connected: false,
+    desc: "Efficiently manage code projects with GitLab integration.",
+  },
+  {
+    name: "Discord",
+    logo: <MessageCircle className="size-6" />,
+    connected: false,
+    desc: "Connect with Discord for seamless team communication.",
+  },
+  {
+    name: "WhatsApp",
+    logo: <PhoneCall className="size-6" />,
+    connected: false,
+    desc: "Easily integrate WhatsApp for direct messaging.",
+  },
+]
+
