@@ -1,6 +1,12 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react"
 import { getCookie, setCookie } from "@/lib/cookies"
 
 type ColorProviderProps = {
@@ -56,21 +62,23 @@ export function ColorProvider({ children }: ColorProviderProps) {
     if (typeof document === "undefined") return
 
     const root = document.documentElement
-    
+
     // Apply primary color - CSS variables cascade, so this works for both light and dark
     root.style.setProperty("--primary", color)
-    
+
     // Calculate primary-foreground based on color lightness
     // For dark colors, use light foreground; for light colors, use dark foreground
-    const lightness = color.includes("oklch") ? parseFloat(color.split(" ")[1]) : 0.5
+    const lightness = color.includes("oklch")
+      ? parseFloat(color.split(" ")[1])
+      : 0.5
     const isDarkColor = lightness < 0.5
-    
+
     // Use appropriate foreground color based on the accent color's lightness
     // This ensures good contrast in both light and dark themes
     const foregroundColor = isDarkColor
       ? "oklch(0.984 0.003 247.858)" // Light text for dark colors
       : "oklch(0.208 0.042 265.755)" // Dark text for light colors
-    
+
     root.style.setProperty("--primary-foreground", foregroundColor)
   }, [])
 
@@ -112,4 +120,3 @@ export function useColor() {
   }
   return context
 }
-

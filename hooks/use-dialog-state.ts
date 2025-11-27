@@ -16,4 +16,3 @@ export default function useDialogState<T extends string | boolean>(
 
   return [open, setOpen] as const
 }
-

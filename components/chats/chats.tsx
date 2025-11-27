@@ -275,7 +275,10 @@ export function Chats() {
                       variant="ghost"
                       className="hidden h-8 rounded-md lg:inline-flex"
                     >
-                      <Paperclip size={20} className="stroke-muted-foreground" />
+                      <Paperclip
+                        size={20}
+                        className="stroke-muted-foreground"
+                      />
                     </Button>
                   </div>
                   <label className="flex-1">
@@ -331,4 +334,3 @@ export function Chats() {
     </>
   )
 }
-

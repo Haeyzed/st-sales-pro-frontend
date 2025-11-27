@@ -108,4 +108,3 @@ export const apps = [
     desc: "Easily integrate WhatsApp for direct messaging.",
   },
 ]
-

@@ -21,4 +21,3 @@ export const users = Array.from({ length: 50 }, (_, i) => {
     updatedAt: new Date(2024, 0, i + 1),
   }
 })
-

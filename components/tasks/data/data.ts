@@ -75,4 +75,3 @@ export const priorities = [
     icon: AlertCircle,
   },
 ]
-

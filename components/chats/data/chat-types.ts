@@ -12,4 +12,3 @@ export type Convo = {
   message: string
   timestamp: Date | string
 }
-

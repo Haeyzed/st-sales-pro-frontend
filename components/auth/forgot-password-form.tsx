@@ -39,19 +39,16 @@ export function ForgotPasswordForm({
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
 
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-      {
-        loading: "Sending email...",
-        success: () => {
-          setIsLoading(false)
-          form.reset()
-          router.push("/otp")
-          return `Email sent to ${data.email}`
-        },
-        error: "Error sending email",
-      }
-    )
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+      loading: "Sending email...",
+      success: () => {
+        setIsLoading(false)
+        form.reset()
+        router.push("/otp")
+        return `Email sent to ${data.email}`
+      },
+      error: "Error sending email",
+    })
   }
 
   return (
@@ -82,4 +79,3 @@ export function ForgotPasswordForm({
     </Form>
   )
 }
-

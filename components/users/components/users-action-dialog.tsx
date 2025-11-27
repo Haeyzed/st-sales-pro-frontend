@@ -139,7 +139,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 First Name
               </FormLabel>
               <FormControl>
@@ -167,7 +169,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 Last Name
               </FormLabel>
               <FormControl>
@@ -195,7 +199,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 Username
               </FormLabel>
               <FormControl>
@@ -222,7 +228,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 Email
               </FormLabel>
               <FormControl>
@@ -249,7 +257,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 Phone Number
               </FormLabel>
               <FormControl>
@@ -276,7 +286,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 Role
               </FormLabel>
               <SelectDropdown
@@ -306,7 +318,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 Password
               </FormLabel>
               <FormControl>
@@ -333,7 +347,9 @@ function UserActionForm({
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel
+                className={isDesktop ? "col-span-2 text-end" : undefined}
+              >
                 Confirm Password
               </FormLabel>
               <FormControl>

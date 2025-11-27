@@ -67,7 +67,9 @@ export function NotificationsForm() {
                     <FormControl>
                       <RadioGroupItem value="all" />
                     </FormControl>
-                    <FormLabel className="font-normal">All new messages</FormLabel>
+                    <FormLabel className="font-normal">
+                      All new messages
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center">
                     <FormControl>
@@ -120,7 +122,9 @@ export function NotificationsForm() {
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Marketing emails</FormLabel>
+                    <FormLabel className="text-base">
+                      Marketing emails
+                    </FormLabel>
                     <FormDescription>
                       Receive emails about new products, features, and more.
                     </FormDescription>
@@ -212,4 +216,3 @@ export function NotificationsForm() {
     </Form>
   )
 }
-

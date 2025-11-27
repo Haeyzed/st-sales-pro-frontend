@@ -33,4 +33,3 @@ export default async function AddProductionPage() {
     </AuthenticatedLayout>
   )
 }
-

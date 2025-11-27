@@ -74,4 +74,3 @@ export function DataTableColumnHeader<TData, TValue>({
     </div>
   )
 }
-

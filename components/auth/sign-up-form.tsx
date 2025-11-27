@@ -53,19 +53,16 @@ export function SignUpForm({
     setIsLoading(true)
 
     // Mock sign up - in production, this would call an API
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-      {
-        loading: "Creating account...",
-        success: () => {
-          setIsLoading(false)
-          toast.success("Account created successfully!")
-          router.push("/sign-in")
-          return "Account created!"
-        },
-        error: "Error creating account",
-      }
-    )
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+      loading: "Creating account...",
+      success: () => {
+        setIsLoading(false)
+        toast.success("Account created successfully!")
+        router.push("/sign-in")
+        return "Account created!"
+      },
+      error: "Error creating account",
+    })
   }
 
   return (
@@ -121,4 +118,3 @@ export function SignUpForm({
     </Form>
   )
 }
-

@@ -186,34 +186,36 @@ function ColorConfig() {
         onReset={resetAccentColor}
       />
       <div className="grid grid-cols-6 gap-3 sm:grid-cols-8">
-        {ACCENT_COLORS.map((color: { name: string; value: string; hex: string }) => (
-          <button
-            key={color.value}
-            type="button"
-            onClick={() => setAccentColor(color.value)}
-            className={cn(
-              "group relative size-10 rounded-full transition-all",
-              "ring-2 ring-offset-2 ring-offset-background",
-              accentColor === color.value
-                ? "ring-primary ring-offset-2"
-                : "ring-transparent hover:ring-border",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            )}
-            style={{ backgroundColor: color.hex }}
-            aria-label={`Select ${color.name} accent color`}
-            {...(accentColor === color.value && { "aria-pressed": true })}
-          >
-            {accentColor === color.value && (
-              <CircleCheck
-                className={cn(
-                  "absolute inset-0 m-auto size-5",
-                  "fill-primary-foreground stroke-primary-foreground"
-                )}
-                aria-hidden="true"
-              />
-            )}
-          </button>
-        ))}
+        {ACCENT_COLORS.map(
+          (color: { name: string; value: string; hex: string }) => (
+            <button
+              key={color.value}
+              type="button"
+              onClick={() => setAccentColor(color.value)}
+              className={cn(
+                "group relative size-10 rounded-full transition-all",
+                "ring-2 ring-offset-2 ring-offset-background",
+                accentColor === color.value
+                  ? "ring-primary ring-offset-2"
+                  : "ring-transparent hover:ring-border",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              )}
+              style={{ backgroundColor: color.hex }}
+              aria-label={`Select ${color.name} accent color`}
+              {...(accentColor === color.value && { "aria-pressed": true })}
+            >
+              {accentColor === color.value && (
+                <CircleCheck
+                  className={cn(
+                    "absolute inset-0 m-auto size-5",
+                    "fill-primary-foreground stroke-primary-foreground"
+                  )}
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          )
+        )}
       </div>
       <div id="color-description" className="sr-only">
         Choose an accent color to customize the primary color theme

@@ -129,4 +129,3 @@ export function DataTablePagination<TData>({
     </div>
   )
 }
-

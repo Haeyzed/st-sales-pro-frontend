@@ -80,4 +80,3 @@ export function IconSidebarFloating(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-

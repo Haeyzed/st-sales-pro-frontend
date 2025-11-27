@@ -18,4 +18,3 @@ export function SiteLayout({ children }: SiteLayoutProps) {
     </SearchProvider>
   )
 }
-

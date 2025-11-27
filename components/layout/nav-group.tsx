@@ -22,11 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Badge } from "../ui/badge"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { Separator } from "../ui/separator"
 import {
   type NavCollapsible,
@@ -47,13 +43,7 @@ export function NavGroup({ title, items }: NavGroupProps) {
           const key = `${item.title}-${item.url || "collapsible"}`
 
           if (!item.items)
-            return (
-              <SidebarMenuLink
-                key={key}
-                item={item}
-                pathname={pathname}
-              />
-            )
+            return <SidebarMenuLink key={key} item={item} pathname={pathname} />
 
           if (state === "collapsed" && !isMobile)
             return (
@@ -172,7 +162,12 @@ function SidebarMenuCollapsedDropdown({
             <ChevronRight className="ms-auto transition-transform duration-200" />
           </SidebarMenuButton>
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" sideOffset={8} className="w-56 p-2">
+        <PopoverContent
+          side="right"
+          align="start"
+          sideOffset={8}
+          className="w-56 p-2"
+        >
           <div className="mb-2 px-2 py-1.5">
             <div className="font-semibold text-sm">{item.title}</div>
             {item.badge && (
@@ -221,4 +216,3 @@ function checkIsActive(pathname: string, item: NavItem, mainNav = false) {
       pathname.split("/")[1] === item?.url?.split("/")[1])
   )
 }
-

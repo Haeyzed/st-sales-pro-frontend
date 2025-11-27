@@ -76,4 +76,3 @@ export function IconThemeLight(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-

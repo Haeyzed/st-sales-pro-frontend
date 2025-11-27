@@ -172,4 +172,3 @@ export function UsersTable({ data }: UsersTableProps) {
     </div>
   )
 }
-

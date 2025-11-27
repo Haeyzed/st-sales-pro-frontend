@@ -59,4 +59,3 @@ export function Settings({ children }: SettingsProps) {
     </>
   )
 }
-

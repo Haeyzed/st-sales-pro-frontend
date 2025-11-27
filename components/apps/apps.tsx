@@ -2,11 +2,7 @@
 
 import { type ChangeEvent, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import {
-  SlidersHorizontal,
-  ArrowUpAZ,
-  ArrowDownAZ,
-} from "lucide-react"
+import { SlidersHorizontal, ArrowUpAZ, ArrowDownAZ } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -88,9 +84,7 @@ export function Apps() {
   return (
     <>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          App Integrations
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight">App Integrations</h1>
         <p className="text-muted-foreground">
           Here&apos;s a list of your apps for the integration!
         </p>
@@ -140,10 +134,7 @@ export function Apps() {
       <Separator className="shadow-sm" />
       <ul className="faded-bottom no-scrollbar grid gap-4 overflow-auto pt-4 pb-16 md:grid-cols-2 lg:grid-cols-3">
         {filteredApps.map((app) => (
-          <li
-            key={app.name}
-            className="rounded-lg border p-4 hover:shadow-md"
-          >
+          <li key={app.name} className="rounded-lg border p-4 hover:shadow-md">
             <div className="mb-8 flex items-center justify-between">
               <div className="bg-muted flex size-10 items-center justify-center rounded-lg p-2">
                 {app.logo}
@@ -166,4 +157,3 @@ export function Apps() {
     </>
   )
 }
-

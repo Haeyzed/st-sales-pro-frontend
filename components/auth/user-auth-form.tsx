@@ -43,7 +43,8 @@ export function UserAuthForm({
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = redirectTo || searchParams.get("callbackUrl") || "/dashboard"
+  const callbackUrl =
+    redirectTo || searchParams.get("callbackUrl") || "/dashboard"
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -125,4 +126,3 @@ export function UserAuthForm({
     </Form>
   )
 }
-

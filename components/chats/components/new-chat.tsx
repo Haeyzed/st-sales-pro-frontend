@@ -76,7 +76,10 @@ function NewChatContent({
         ))}
       </div>
       <Command className="rounded-lg border">
-        <CommandInput placeholder="Search people..." className="text-foreground" />
+        <CommandInput
+          placeholder="Search people..."
+          className="text-foreground"
+        />
         <CommandList>
           <CommandEmpty>No people found.</CommandEmpty>
           <CommandGroup>
@@ -142,7 +145,9 @@ export function NewChat({ users, onOpenChange, open }: NewChatProps) {
   }
 
   const handleChat = () => {
-    toast.success(`Starting chat with ${selectedUsers.map((u) => u.fullName).join(", ")}`)
+    toast.success(
+      `Starting chat with ${selectedUsers.map((u) => u.fullName).join(", ")}`
+    )
     handleOpenChange(false)
   }
 
@@ -201,4 +206,3 @@ export function NewChat({ users, onOpenChange, open }: NewChatProps) {
     </Drawer>
   )
 }
-

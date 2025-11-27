@@ -78,9 +78,7 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1,248</div>
-            <p className="text-muted-foreground text-xs">
-              +12.4% vs last week
-            </p>
+            <p className="text-muted-foreground text-xs">+12.4% vs last week</p>
           </CardContent>
         </Card>
         <Card>
@@ -191,4 +189,3 @@ export function Analytics() {
     </div>
   )
 }
-

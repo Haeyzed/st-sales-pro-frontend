@@ -86,4 +86,3 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
     </SidebarMenu>
   )
 }
-

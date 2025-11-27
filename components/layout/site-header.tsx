@@ -7,7 +7,12 @@ type SiteHeaderProps = React.HTMLAttributes<HTMLElement> & {
   fixed?: boolean
 }
 
-export function SiteHeader({ className, fixed, children, ...props }: SiteHeaderProps) {
+export function SiteHeader({
+  className,
+  fixed,
+  children,
+  ...props
+}: SiteHeaderProps) {
   const [offset, setOffset] = useState(0)
 
   useEffect(() => {
@@ -45,4 +50,3 @@ export function SiteHeader({ className, fixed, children, ...props }: SiteHeaderP
     </header>
   )
 }
-

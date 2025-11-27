@@ -62,9 +62,7 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
             href={href}
             aria-disabled={disabled}
             className={`hover:text-primary text-sm font-medium transition-colors ${
-              isActive || pathname === href
-                ? ""
-                : "text-muted-foreground"
+              isActive || pathname === href ? "" : "text-muted-foreground"
             } ${disabled ? "pointer-events-none opacity-50" : ""}`}
           >
             {title}
@@ -74,4 +72,3 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
     </>
   )
 }
-

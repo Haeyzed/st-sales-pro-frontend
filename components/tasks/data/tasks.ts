@@ -11,4 +11,3 @@ export const tasks: Task[] = Array.from({ length: 100 }, (_, i) => {
     priority: priorities[i % priorities.length].value,
   }
 })
-

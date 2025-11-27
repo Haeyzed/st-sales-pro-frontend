@@ -75,7 +75,11 @@ const shortcuts = [
     items: [
       { label: "Add User", href: "/people/users/create", icon: UserPlus },
       { label: "Add Customer", href: "/people/customers/create", icon: Users },
-      { label: "Add Supplier", href: "/people/suppliers/create", icon: Building2 },
+      {
+        label: "Add Supplier",
+        href: "/people/suppliers/create",
+        icon: Building2,
+      },
     ],
   },
 ]
@@ -124,4 +128,3 @@ export function ShortcutsPopover() {
     </Popover>
   )
 }
-

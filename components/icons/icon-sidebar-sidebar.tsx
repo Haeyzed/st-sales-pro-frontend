@@ -51,4 +51,3 @@ export function IconSidebarSidebar(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-

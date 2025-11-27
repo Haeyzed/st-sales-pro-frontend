@@ -46,18 +46,15 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
 
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-      {
-        loading: "Verifying...",
-        success: () => {
-          setIsLoading(false)
-          router.push("/dashboard")
-          return "Verified successfully!"
-        },
-        error: "Invalid code",
-      }
-    )
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+      loading: "Verifying...",
+      success: () => {
+        setIsLoading(false)
+        router.push("/dashboard")
+        return "Verified successfully!"
+      },
+      error: "Invalid code",
+    })
   }
 
   return (
@@ -106,4 +103,3 @@ export function OtpForm({ className, ...props }: OtpFormProps) {
     </Form>
   )
 }
-

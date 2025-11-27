@@ -49,4 +49,3 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
     </header>
   )
 }
-

@@ -147,4 +147,3 @@ export function NavUser({ user: defaultUser }: NavUserProps) {
     </>
   )
 }
-

@@ -129,4 +129,3 @@ export function IconLayoutCompact(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
-

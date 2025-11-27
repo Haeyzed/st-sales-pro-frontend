@@ -15,7 +15,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SignOutDialog } from "@/components/sign-out-dialog"
 import { useSession } from "next-auth/react"
-import { User, Settings, Receipt, Calendar, Database, LogOut } from "lucide-react"
+import {
+  User,
+  Settings,
+  Receipt,
+  Calendar,
+  Database,
+  LogOut,
+} from "lucide-react"
 
 export function ProfileDropdown() {
   const [open, setOpen] = useDialogState()
@@ -79,13 +86,19 @@ export function ProfileDropdown() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/holidays/my-holiday" className="flex items-center gap-2">
+            <Link
+              href="/holidays/my-holiday"
+              className="flex items-center gap-2"
+            >
               <Calendar className="size-4" />
               <span>My Holiday</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/settings/empty-database" className="flex items-center gap-2">
+            <Link
+              href="/settings/empty-database"
+              className="flex items-center gap-2"
+            >
               <Database className="size-4" />
               <span>Empty Database</span>
             </Link>
@@ -106,4 +119,3 @@ export function ProfileDropdown() {
     </>
   )
 }
-

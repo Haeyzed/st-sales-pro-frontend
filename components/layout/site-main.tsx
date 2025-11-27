@@ -23,4 +23,3 @@ export function SiteMain({ fixed, className, fluid, ...props }: SiteMainProps) {
     />
   )
 }
-

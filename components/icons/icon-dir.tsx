@@ -108,4 +108,3 @@ export function IconDir({ dir, className, ...props }: IconDirProps) {
     </svg>
   )
 }
-

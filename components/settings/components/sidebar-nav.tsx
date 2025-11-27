@@ -37,4 +37,3 @@ export function SidebarNav({ items }: SidebarNavProps) {
     </nav>
   )
 }
-

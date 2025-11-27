@@ -805,4 +805,3 @@ export const sidebarData: SidebarData = {
     },
   ],
 }
-
