@@ -1,12 +1,10 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import { AuthenticatedLayout } from "@/components/layout/authenticated-layout"
-import { Header } from "@/components/layout/header"
-import { Main } from "@/components/layout/main"
+import { SiteLayout } from "@/components/layout/site-layout"
+import { SiteHeader } from "@/components/layout/site-header"
+import { SiteMain } from "@/components/layout/site-main"
 import { ProfileDropdown } from "@/components/profile-dropdown"
-import { Search } from "@/components/search"
 import { ThemeSwitch } from "@/components/theme-switch"
-import { ConfigDrawer } from "@/components/config-drawer"
 import { ComingSoon } from "@/components/coming-soon"
 
 export default async function PosPage() {
@@ -17,19 +15,17 @@ export default async function PosPage() {
   }
 
   return (
-    <AuthenticatedLayout>
-      <Header fixed>
-        <Search />
-        <div className="ms-auto flex items-center space-x-4">
-          <ThemeSwitch />
-          <ConfigDrawer />
-          <ProfileDropdown />
+    <SiteLayout>
+      <SiteHeader fixed>
+        <div className="flex items-center space-x-4">
+          {/* <ThemeSwitch />
+          <ProfileDropdown /> */}
         </div>
-      </Header>
+      </SiteHeader>
 
-      <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
+      <SiteMain fixed>
         <ComingSoon title="POS" />
-      </Main>
-    </AuthenticatedLayout>
+      </SiteMain>
+    </SiteLayout>
   )
 }
