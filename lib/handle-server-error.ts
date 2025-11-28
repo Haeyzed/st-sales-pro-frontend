@@ -24,3 +24,5 @@ export function handleServerError(error: unknown) {
 
   toast.error(errMsg)
 }
+
+

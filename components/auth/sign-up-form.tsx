@@ -52,17 +52,27 @@ export function SignUpForm({
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
 
-    // Mock sign up - in production, this would call an API
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
-      loading: "Creating account...",
-      success: () => {
-        setIsLoading(false)
-        toast.success("Account created successfully!")
-        router.push("/sign-in")
-        return "Account created!"
-      },
-      error: "Error creating account",
-    })
+    try {
+      const { registerClient } = await import("@/lib/api/auth-client")
+      const result = await registerClient({
+        name: data.email.split("@")[0], // Use email prefix as name
+        email: data.email,
+        password: data.password,
+        password_confirmation: data.confirmPassword,
+      })
+
+      toast.success(result.message || "Account created successfully!")
+      router.push("/sign-in")
+    } catch (error: any) {
+      const errorMessage =
+        error?.message ||
+        error?.errors?.email?.[0] ||
+        error?.errors?.password?.[0] ||
+        "Error creating account"
+      toast.error(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

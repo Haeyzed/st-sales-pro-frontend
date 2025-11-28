@@ -3,7 +3,8 @@
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { showSubmittedData } from "@/lib/show-submitted-data"
+import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,6 +34,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { importCategories } from "../data/categories"
 
 const formSchema = z.object({
   file: z
@@ -46,12 +48,12 @@ const formSchema = z.object({
     ),
 })
 
-type TaskImportDialogProps = {
+type CategoryImportDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-function TaskImportForm({
+function CategoryImportForm({
   form,
   fileRef,
   onSubmit,
@@ -62,7 +64,7 @@ function TaskImportForm({
 }) {
   return (
     <Form {...form}>
-      <form id="task-import-form" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="category-import-form" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="file"
@@ -81,11 +83,12 @@ function TaskImportForm({
   )
 }
 
-export function TasksImportDialog({
+export function CategoriesImportDialog({
   open,
   onOpenChange,
-}: TaskImportDialogProps) {
+}: CategoryImportDialogProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)")
+  const queryClient = useQueryClient()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { file: undefined },
@@ -93,18 +96,27 @@ export function TasksImportDialog({
 
   const fileRef = form.register("file")
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     const file = form.getValues("file")
 
     if (file && file[0]) {
-      const fileDetails = {
-        name: file[0].name,
-        size: file[0].size,
-        type: file[0].type,
+      try {
+        const result = await importCategories(file[0])
+        toast.success(
+          `Successfully imported ${result.imported} categories${
+            result.errors.length > 0
+              ? ` with ${result.errors.length} errors`
+              : ""
+          }`
+        )
+        queryClient.invalidateQueries({ queryKey: ["categories"] })
+        onOpenChange(false)
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to import categories"
+        )
       }
-      showSubmittedData(fileDetails, "You have imported the following file:")
     }
-    onOpenChange(false)
   }
 
   const handleOpenChange = (val: boolean) => {
@@ -117,17 +129,17 @@ export function TasksImportDialog({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="gap-2 sm:max-w-sm">
           <DialogHeader className="text-start">
-            <DialogTitle>Import Tasks</DialogTitle>
+            <DialogTitle>Import Categories</DialogTitle>
             <DialogDescription>
-              Import tasks quickly from a CSV file.
+              Import categories quickly from a CSV file.
             </DialogDescription>
           </DialogHeader>
-          <TaskImportForm form={form} fileRef={fileRef} onSubmit={onSubmit} />
+          <CategoryImportForm form={form} fileRef={fileRef} onSubmit={onSubmit} />
           <DialogFooter className="gap-2">
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>
-            <Button type="submit" form="task-import-form">
+            <Button type="submit" form="category-import-form">
               Import
             </Button>
           </DialogFooter>
@@ -140,19 +152,19 @@ export function TasksImportDialog({
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent>
         <DrawerHeader className="text-left">
-          <DrawerTitle>Import Tasks</DrawerTitle>
+          <DrawerTitle>Import Categories</DrawerTitle>
           <DrawerDescription>
-            Import tasks quickly from a CSV file.
+            Import categories quickly from a CSV file.
           </DrawerDescription>
         </DrawerHeader>
         <div className="px-4">
-          <TaskImportForm form={form} fileRef={fileRef} onSubmit={onSubmit} />
+          <CategoryImportForm form={form} fileRef={fileRef} onSubmit={onSubmit} />
         </div>
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
           </DrawerClose>
-          <Button type="submit" form="task-import-form">
+          <Button type="submit" form="category-import-form">
             Import
           </Button>
         </DrawerFooter>
@@ -160,3 +172,6 @@ export function TasksImportDialog({
     </Drawer>
   )
 }
+
+
+

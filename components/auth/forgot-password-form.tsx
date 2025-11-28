@@ -39,16 +39,20 @@ export function ForgotPasswordForm({
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
 
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
-      loading: "Sending email...",
-      success: () => {
-        setIsLoading(false)
-        form.reset()
-        router.push("/otp")
-        return `Email sent to ${data.email}`
-      },
-      error: "Error sending email",
-    })
+    try {
+      const { sendResetLinkClient } = await import("@/lib/api/auth-client")
+      await sendResetLinkClient(data.email)
+      
+      toast.success(`Email sent to ${data.email}`)
+      form.reset()
+      router.push("/otp")
+    } catch (error: any) {
+      toast.error(
+        error?.message || error?.errors?.email?.[0] || "Error sending email"
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
