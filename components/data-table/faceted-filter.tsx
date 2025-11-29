@@ -29,16 +29,24 @@ type DataTableFacetedFilterProps<TData, TValue> = {
     label: string
     value: string
     icon?: React.ComponentType<{ className?: string }>
+    count?: number
   }[]
+  value?: string[]
+  onChange?: (values: string[]) => void
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
   column,
   title,
   options,
+  value,
+  onChange,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues()
-  const selectedValues = new Set(column?.getFilterValue() as string[])
+  // Use controlled value if provided, otherwise use column filter value
+  const selectedValues = new Set(
+    value ?? (column?.getFilterValue() as string[]) ?? []
+  )
 
   return (
     <Popover>
@@ -93,15 +101,23 @@ export function DataTableFacetedFilter<TData, TValue>({
                   <CommandItem
                     key={option.value}
                     onSelect={() => {
+                      const newSelectedValues = new Set(selectedValues)
                       if (isSelected) {
-                        selectedValues.delete(option.value)
+                        newSelectedValues.delete(option.value)
                       } else {
-                        selectedValues.add(option.value)
+                        newSelectedValues.add(option.value)
                       }
-                      const filterValues = Array.from(selectedValues)
-                      column?.setFilterValue(
-                        filterValues.length ? filterValues : undefined
-                      )
+                      const filterValues = Array.from(newSelectedValues)
+                      
+                      if (onChange) {
+                        // Controlled mode
+                        onChange(filterValues.length ? filterValues : [])
+                      } else if (column) {
+                        // Column mode
+                        column.setFilterValue(
+                          filterValues.length ? filterValues : undefined
+                        )
+                      }
                     }}
                   >
                     <div
@@ -118,9 +134,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                       <option.icon className="text-muted-foreground size-4" />
                     )}
                     <span>{option.label}</span>
-                    {facets?.get(option.value) && (
+                    {(option.count !== undefined ? option.count : facets?.get(option.value)) && (
                       <span className="ms-auto flex h-4 w-4 items-center justify-center font-mono text-xs">
-                        {facets.get(option.value)}
+                        {option.count !== undefined ? option.count : facets?.get(option.value)}
                       </span>
                     )}
                   </CommandItem>
@@ -132,7 +148,13 @@ export function DataTableFacetedFilter<TData, TValue>({
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
-                    onSelect={() => column?.setFilterValue(undefined)}
+                    onSelect={() => {
+                      if (onChange) {
+                        onChange([])
+                      } else if (column) {
+                        column.setFilterValue(undefined)
+                      }
+                    }}
                     className="justify-center text-center"
                   >
                     Clear filters

@@ -4,6 +4,7 @@ import { type ColumnDef } from "@tanstack/react-table"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DataTableColumnHeader } from "@/components/data-table"
 import { LongText } from "@/components/long-text"
 import { categoryStatuses } from "../data/data"
@@ -37,6 +38,35 @@ export const categoriesColumns: ColumnDef<Category>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+  },
+  {
+    accessorKey: "image",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Image" />
+    ),
+    cell: ({ row }) => {
+      const image = row.original.image
+      const name = row.original.name
+      const initials = name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+
+      return (
+        <Avatar className="h-10 w-10 rounded-md">
+          {image ? (
+            <AvatarImage src={image} alt={name} className="object-cover" />
+          ) : null}
+          <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      )
+    },
+    meta: { className: "w-20" },
+    enableSorting: false,
   },
   {
     accessorKey: "name",
@@ -111,11 +141,6 @@ export const categoriesColumns: ColumnDef<Category>[] = [
         </div>
       )
     },
-    filterFn: (row, id, value) => {
-      const isActive = row.getValue(id) as boolean
-      const status = isActive ? "active" : "inactive"
-      return value.includes(status)
-    },
     enableHiding: false,
     enableSorting: false,
   },
@@ -131,7 +156,9 @@ export const categoriesColumns: ColumnDef<Category>[] = [
           Yes
         </Badge>
       ) : (
-        <span className="text-muted-foreground">No</span>
+        <Badge variant="outline" className="bg-neutral-300/40 border-neutral-300">
+          No
+        </Badge>
       )
     },
     enableSorting: false,
@@ -143,7 +170,42 @@ export const categoriesColumns: ColumnDef<Category>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue("created_at"))
-      return <div>{date.toLocaleDateString()}</div>
+      const now = new Date()
+      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+      const diffInMinutes = Math.floor(diffInSeconds / 60)
+      const diffInHours = Math.floor(diffInMinutes / 60)
+      const diffInDays = Math.floor(diffInHours / 24)
+
+      let friendlyDate: string
+
+      if (diffInSeconds < 60) {
+        friendlyDate = "Just now"
+      } else if (diffInMinutes < 60) {
+        friendlyDate = `${diffInMinutes} ${diffInMinutes === 1 ? "minute" : "minutes"} ago`
+      } else if (diffInHours < 24) {
+        friendlyDate = `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`
+      } else if (diffInDays < 7) {
+        friendlyDate = `${diffInDays} ${diffInDays === 1 ? "day" : "days"} ago`
+      } else if (diffInDays < 30) {
+        const weeks = Math.floor(diffInDays / 7)
+        friendlyDate = `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`
+      } else if (diffInDays < 365) {
+        const months = Math.floor(diffInDays / 30)
+        friendlyDate = `${months} ${months === 1 ? "month" : "months"} ago`
+      } else {
+        // For dates older than a year, show formatted date
+        friendlyDate = date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      }
+
+      return (
+        <div className="text-sm" title={date.toLocaleString()}>
+          {friendlyDate}
+        </div>
+      )
     },
   },
   {

@@ -98,6 +98,14 @@ export async function getCategoryDropdown(): Promise<CategoryDropdownItem[]> {
 }
 
 /**
+ * Get parent categories only (categories without a parent)
+ */
+export async function getParentCategories(): Promise<CategoryDropdownItem[]> {
+  const response = await apiGetClient<CategoryDropdownItem[]>("categories/parents")
+  return response.data
+}
+
+/**
  * Get a single category by ID
  */
 export async function getCategory(id: number): Promise<Category> {
@@ -128,7 +136,7 @@ export async function createCategory(
     short_description?: string | null
     is_sync_disable?: boolean | null
   }
-): Promise<Category> {
+): Promise<{ data: Category; message: string }> {
   let body: FormData | Record<string, unknown>
 
   if (data instanceof FormData) {
@@ -154,7 +162,7 @@ export async function createCategory(
     }
 
     if (data.featured !== undefined && data.featured !== null) {
-      body.append("featured", String(data.featured))
+      body.append("featured", data.featured ? "1" : "0")
     }
 
     if (data.page_title) {
@@ -166,12 +174,15 @@ export async function createCategory(
     }
 
     if (data.is_sync_disable !== undefined && data.is_sync_disable !== null) {
-      body.append("is_sync_disable", String(data.is_sync_disable))
+      body.append("is_sync_disable", data.is_sync_disable ? "1" : "0")
     }
   }
 
   const response = await apiPostClient<Category>("categories", body)
-  return categorySchema.parse(response.data)
+  return {
+    data: categorySchema.parse(response.data),
+    message: response.message,
+  }
 }
 
 /**
@@ -190,7 +201,7 @@ export async function updateCategory(
     short_description?: string | null
     is_sync_disable?: boolean | null
   }
-): Promise<Category> {
+): Promise<{ data: Category; message: string }> {
   let body: FormData | Record<string, unknown>
 
   if (data instanceof FormData) {
@@ -217,7 +228,7 @@ export async function updateCategory(
     }
 
     if (data.featured !== undefined && data.featured !== null) {
-      body.append("featured", String(data.featured))
+      body.append("featured", data.featured ? "1" : "0")
     }
 
     if (data.page_title) {
@@ -229,12 +240,15 @@ export async function updateCategory(
     }
 
     if (data.is_sync_disable !== undefined && data.is_sync_disable !== null) {
-      body.append("is_sync_disable", String(data.is_sync_disable))
+      body.append("is_sync_disable", data.is_sync_disable ? "1" : "0")
     }
   }
 
   const response = await apiPutClient<Category>(`categories/${id}`, body)
-  return categorySchema.parse(response.data)
+  return {
+    data: categorySchema.parse(response.data),
+    message: response.message,
+  }
 }
 
 /**

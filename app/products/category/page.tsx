@@ -8,6 +8,7 @@ import { Search } from "@/components/search"
 import { ThemeSwitch } from "@/components/theme-switch"
 import { ConfigDrawer } from "@/components/config-drawer"
 import { Categories } from "@/components/categories/categories"
+import { protectRoute } from "@/lib/route-protection"
 
 export default async function ProductCategoryPage() {
   const session = await auth()
@@ -15,6 +16,9 @@ export default async function ProductCategoryPage() {
   if (!session) {
     redirect("/sign-in")
   }
+
+  // Protect route based on permissions
+  protectRoute(session, "/products/category")
 
   return (
     <AuthenticatedLayout>

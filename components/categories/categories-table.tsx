@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 import {
   type SortingState,
@@ -28,9 +28,10 @@ import { DataTablePagination, DataTableToolbar } from "@/components/data-table"
 import { categoriesColumns as columns } from "./components/categories-columns"
 import { getCategories, type CategoryFilters } from "./data/categories"
 import { DataTableBulkActions } from "./components/data-table-bulk-actions"
-import { categoryStatuses } from "./data/data"
+import { categoryStatuses, categoryFeaturedOptions } from "./data/data"
 import { handleServerError } from "@/lib/handle-server-error"
 import { Button } from "@/components/ui/button"
+import { CategoryParentCombobox } from "./components/category-parent-combobox"
 
 export function CategoriesTable() {
   const searchParams = useSearchParams()
@@ -40,8 +41,11 @@ export function CategoriesTable() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
 
-  // Get search query from URL
+  // Get search query and filters from URL
   const search = searchParams.get("search") || ""
+  const parentId = searchParams.get("parent_id")
+    ? parseInt(searchParams.get("parent_id")!, 10)
+    : null
   const page = parseInt(searchParams.get("page") || "1", 10)
   const pageSize = parseInt(searchParams.get("pageSize") || "10", 10)
 
@@ -52,12 +56,13 @@ export function CategoriesTable() {
 
     return {
       search: search || undefined,
+      parent_id: parentId !== null ? parentId : undefined,
       per_page: pageSize,
       sort_by: sortBy,
       sort_dir: sortDir,
       page,
     }
-  }, [search, page, pageSize, sorting])
+  }, [search, parentId, page, pageSize, sorting])
 
   // Fetch categories from API
   const { data, isLoading, error } = useQuery({
@@ -73,19 +78,36 @@ export function CategoriesTable() {
     }
   }, [error])
 
-  const categories = data?.data || []
+  const rawCategories = data?.data || []
   const meta = data?.meta
 
-  // Get column filters from table state
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  // Client-side status filter state
+  const [statusFilter, setStatusFilter] = useState<string[]>([])
+  // Client-side featured filter state
+  const [featuredFilter, setFeaturedFilter] = useState<string[]>([])
 
-  // Initialize column filters with search from URL
-  const initialColumnFilters = useMemo<ColumnFiltersState>(() => {
-    if (search) {
-      return [{ id: "name", value: search }]
+  // Filter categories client-side by status and featured
+  const categories = useMemo(() => {
+    let filtered = rawCategories
+
+    // Filter by status
+    if (statusFilter.length > 0) {
+      filtered = filtered.filter((category) => {
+        const status = category.is_active ? "active" : "inactive"
+        return statusFilter.includes(status)
+      })
     }
-    return []
-  }, [search])
+
+    // Filter by featured
+    if (featuredFilter.length > 0) {
+      filtered = filtered.filter((category) => {
+        const featured = category.featured ? "featured" : "not_featured"
+        return featuredFilter.includes(featured)
+      })
+    }
+
+    return filtered
+  }, [rawCategories, statusFilter, featuredFilter])
 
   // Handle pagination changes via URL
   const handlePaginationChange = useMemo(
@@ -125,6 +147,62 @@ export function CategoriesTable() {
     [searchParams, router, pathname]
   )
 
+  // Debounced search handler to prevent too many API calls
+  const [searchInputValue, setSearchInputValue] = useState(search)
+
+  // Update local state when URL search changes (e.g., from reset button)
+  useEffect(() => {
+    setSearchInputValue(search)
+  }, [search])
+
+  // Debounce the actual search API call
+  useEffect(() => {
+    // Skip if values are already in sync
+    if (searchInputValue === search) {
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (searchInputValue) {
+        params.set("search", searchInputValue)
+      } else {
+        params.delete("search")
+      }
+      params.delete("page") // Reset to first page on search
+      router.push(`${pathname}?${params.toString()}`)
+    }, 500) // 500ms debounce delay
+
+    return () => clearTimeout(timeoutId)
+  }, [searchInputValue, search, searchParams, router, pathname])
+
+  // Handle search input changes (server-side with debouncing)
+  const handleSearchInputChange = useCallback((value: string) => {
+    setSearchInputValue(value)
+  }, [])
+
+  // Handle parent filter changes (server-side)
+  const handleParentFilterChange = (value: number | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value !== null) {
+      params.set("parent_id", value.toString())
+    } else {
+      params.delete("parent_id")
+    }
+    params.delete("page") // Reset to first page on filter change
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  // Handle status filter changes (client-side)
+  const handleStatusFilterChange = (values: string[]) => {
+    setStatusFilter(values)
+  }
+
+  // Handle featured filter changes (client-side)
+  const handleFeaturedFilterChange = (values: string[]) => {
+    setFeaturedFilter(values)
+  }
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: categories,
@@ -136,29 +214,20 @@ export function CategoriesTable() {
         pageSize,
       },
       rowSelection,
-      columnFilters: columnFilters.length > 0 ? columnFilters : initialColumnFilters,
+      columnFilters: [], // Not used - we handle filtering manually
       columnVisibility,
     },
     pageCount: meta?.last_page ?? 1,
     enableRowSelection: true,
     manualPagination: true,
     manualSorting: true,
-    manualFiltering: true,
+    manualFiltering: true, // All filtering is handled manually
     onPaginationChange: (updater) => {
       const next =
         typeof updater === "function"
           ? updater({ pageIndex: page - 1, pageSize })
           : updater
       handlePaginationChange(next.pageIndex, next.pageSize)
-    },
-    onColumnFiltersChange: (updater) => {
-      const next =
-        typeof updater === "function" ? updater(columnFilters) : updater
-      setColumnFilters(next)
-      // Update URL with search from name column filter
-      const nameFilter = next.find((f) => f.id === "name")
-      const searchValue = (nameFilter?.value as string) || ""
-      handleSearchChange(searchValue)
     },
     onRowSelectionChange: setRowSelection,
     onSortingChange: (updater) => {
@@ -217,6 +286,16 @@ export function CategoriesTable() {
         table={table}
         searchPlaceholder="Filter categories..."
         searchKey="name"
+        searchValue={searchInputValue}
+        onSearchChange={handleSearchInputChange}
+        customFilters={
+          <CategoryParentCombobox
+            value={parentId}
+            onValueChange={handleParentFilterChange}
+            placeholder="Filter by parent..."
+            className="h-8 w-[180px]"
+          />
+        }
         filters={[
           {
             columnId: "is_active",
@@ -224,7 +303,27 @@ export function CategoriesTable() {
             options: categoryStatuses.map((status) => ({
               label: status.label,
               value: status.value,
+              count: rawCategories.filter((cat) => {
+                const catStatus = cat.is_active ? "active" : "inactive"
+                return catStatus === status.value
+              }).length,
             })),
+            value: statusFilter,
+            onChange: handleStatusFilterChange,
+          },
+          {
+            columnId: "featured",
+            title: "Featured",
+            options: categoryFeaturedOptions.map((option) => ({
+              label: option.label,
+              value: option.value,
+              count: rawCategories.filter((cat) => {
+                const catFeatured = cat.featured ? "featured" : "not_featured"
+                return catFeatured === option.value
+              }).length,
+            })),
+            value: featuredFilter,
+            onChange: handleFeaturedFilterChange,
           },
         ]}
       />

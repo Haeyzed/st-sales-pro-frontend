@@ -3,7 +3,7 @@
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { Button } from "@/components/ui/button"
@@ -35,9 +35,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { SelectDropdown } from "@/components/select-dropdown"
+import { CategoryCombobox } from "./category-combobox"
 import { type Category } from "../data/schema"
-import { createCategory, updateCategory, getCategoryDropdown } from "../data/categories"
+import { createCategory, updateCategory } from "../data/categories"
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -64,17 +64,14 @@ function CategoryActionForm({
   onSubmit,
   isDesktop,
   isEdit,
+  currentCategoryId,
 }: {
   form: ReturnType<typeof useForm<CategoryForm>>
   onSubmit: (values: CategoryForm) => void
   isDesktop: boolean
   isEdit: boolean
+  currentCategoryId?: number
 }) {
-  const { data: categories } = useQuery({
-    queryKey: ["category-dropdown"],
-    queryFn: getCategoryDropdown,
-  })
-
   return (
     <Form {...form}>
       <form
@@ -124,21 +121,15 @@ function CategoryActionForm({
               <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
                 Parent Category
               </FormLabel>
-              <SelectDropdown
-                defaultValue={field.value?.toString()}
-                onValueChange={(value) =>
-                  field.onChange(value ? parseInt(value, 10) : null)
-                }
-                placeholder="Select parent category (optional)"
-                className={isDesktop ? "col-span-4" : undefined}
-                items={[
-                  { label: "None", value: "" },
-                  ...(categories || []).map((cat) => ({
-                    label: cat.name,
-                    value: cat.id.toString(),
-                  })),
-                ]}
-              />
+              <FormControl>
+                <CategoryCombobox
+                  value={field.value ?? null}
+                  onValueChange={field.onChange}
+                  placeholder="Select parent category (optional)"
+                  className={isDesktop ? "col-span-4" : undefined}
+                  excludeId={currentCategoryId}
+                />
+              </FormControl>
               <FormMessage
                 className={isDesktop ? "col-span-4 col-start-3" : undefined}
               />
@@ -386,21 +377,37 @@ export function CategoriesActionDialog({
 
   const onSubmit = async (values: CategoryForm) => {
     try {
+      let response
       if (isEdit && currentRow) {
-        await updateCategory(currentRow.id, values)
-        toast.success("Category updated successfully")
+        response = await updateCategory(currentRow.id, values)
       } else {
-        await createCategory(values)
-        toast.success("Category created successfully")
+        response = await createCategory(values)
       }
+
+      // Use success message from API response
+      toast.success(response.message || (isEdit ? "Category updated successfully" : "Category created successfully"))
 
       queryClient.invalidateQueries({ queryKey: ["categories"] })
       form.reset()
       onOpenChange(false)
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "An error occurred"
-      )
+    } catch (error: any) {
+      // Check if error has validation errors structure
+      if (error?.errors && typeof error.errors === "object") {
+        // Set form errors for each field
+        Object.entries(error.errors).forEach(([field, messages]) => {
+          const fieldName = field as keyof CategoryForm
+          const errorMessages = Array.isArray(messages) ? messages : [messages]
+          form.setError(fieldName, {
+            type: "server",
+            message: errorMessages[0] as string,
+          })
+        })
+      }
+
+      // Show error toast with API message
+      const errorMessage =
+        error?.message || (error instanceof Error ? error.message : "An error occurred")
+      toast.error(errorMessage)
     }
   }
 
@@ -428,6 +435,7 @@ export function CategoriesActionDialog({
               onSubmit={onSubmit}
               isDesktop={isDesktop}
               isEdit={isEdit}
+              currentCategoryId={currentRow?.id}
             />
           </div>
           <DialogFooter>

@@ -12,6 +12,7 @@ import {
 import { DataTableBulkActions as BulkActionsToolbar } from "@/components/data-table/bulk-actions"
 import { type Category } from "../data/schema"
 import { CategoriesMultiDeleteDialog } from "./categories-multi-delete-dialog"
+import { PermissionGate } from "@/components/permission-gate"
 
 type DataTableBulkActionsProps<TData> = {
   table: Table<TData>
@@ -26,24 +27,26 @@ export function DataTableBulkActions<TData>({
   return (
     <>
       <BulkActionsToolbar table={table} entityName="category">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="size-8"
-              aria-label="Delete selected categories"
-              title="Delete selected categories"
-            >
-              <Trash2 />
-              <span className="sr-only">Delete selected categories</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Delete selected categories</p>
-          </TooltipContent>
-        </Tooltip>
+        <PermissionGate action="categories:delete">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="size-8"
+                aria-label="Delete selected categories"
+                title="Delete selected categories"
+              >
+                <Trash2 />
+                <span className="sr-only">Delete selected categories</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete selected categories</p>
+            </TooltipContent>
+          </Tooltip>
+        </PermissionGate>
       </BulkActionsToolbar>
 
       <CategoriesMultiDeleteDialog
