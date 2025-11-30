@@ -7,7 +7,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown"
 import { Search } from "@/components/search"
 import { ThemeSwitch } from "@/components/theme-switch"
 import { ConfigDrawer } from "@/components/config-drawer"
-import { ComingSoon } from "@/components/coming-soon"
+import { ProductCreateForm } from "@/components/products/components/product-create-form"
 
 export default async function AddProductPage() {
   const session = await auth()
@@ -28,7 +28,7 @@ export default async function AddProductPage() {
       </Header>
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-        <ComingSoon title="Add Product" />
+        <ProductCreateForm />
       </Main>
     </AuthenticatedLayout>
   )
