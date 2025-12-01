@@ -80,6 +80,10 @@ const formSchema = z.object({
   is_variant: z.boolean().nullable().optional(),
   variant_option: z.array(z.string()).nullable().optional(),
   variant_value: z.array(z.string()).nullable().optional(),
+  variant_name: z.array(z.string()).nullable().optional(),
+  item_code: z.array(z.string()).nullable().optional(),
+  additional_cost: z.array(z.number()).nullable().optional(),
+  additional_price: z.array(z.number()).nullable().optional(),
   is_batch: z.boolean().nullable().optional(),
   is_imei: z.boolean().nullable().optional(),
   is_embeded: z.boolean().nullable().optional(),
@@ -176,6 +180,10 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       is_variant: false,
       variant_option: [],
       variant_value: [],
+      variant_name: [],
+      item_code: [],
+      additional_cost: [],
+      additional_price: [],
       is_batch: false,
       is_imei: false,
       is_embeded: false,
@@ -269,6 +277,14 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
             is_variant: product.is_variant || false,
             variant_option: variantOption,
             variant_value: variantValue,
+            variant_name: product.product_variants?.map(v => {
+              // Find the variant name from the variants relationship
+              const variant = product.variants?.find(vv => vv.variant_id === v.variant_id)
+              return variant?.name || ""
+            }).filter(n => n) || [],
+            item_code: product.product_variants?.map(v => v.item_code || "") || [],
+            additional_cost: product.product_variants?.map(v => v.additional_cost || 0) || [],
+            additional_price: product.product_variants?.map(v => v.additional_price || 0) || [],
             is_batch: product.is_batch || false,
             is_imei: product.is_imei || false,
             is_embeded: product.is_embeded || false,
@@ -309,13 +325,13 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
           })
 
           // Load warehouse prices if is_diffPrice is true
-          if (product.is_diffPrice && product.warehouse_prices) {
+          if (product.is_diffPrice && product.warehouse_prices && product.warehouse_prices.length > 0) {
             // Wait for warehouses to load, then set prices
             const loadWarehousePrices = async () => {
               try {
                 const response = await apiGetClient<Array<{id: number, name: string}>>("warehouses/dropdown")
                 const warehousePricesMap = new Map(
-                  product.warehouse_prices.map((wp: any) => [wp.warehouse_id, wp.price])
+                  product.warehouse_prices!.map((wp: any) => [wp.warehouse_id, wp.price])
                 )
                 const diffPrices = response.data.map((warehouse) => {
                   const price = warehousePricesMap.get(warehouse.id)
@@ -460,6 +476,110 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const isInitialStock = form.watch("initial_stock")?.length ? true : false
   const unitId = form.watch("unit_id")
   const productList = form.watch("product_list") || []
+  const productCode = form.watch("code") || ""
+
+  // Generate variant combinations from options and values
+  const generateVariantCombinations = () => {
+    const options = form.getValues("variant_option") || []
+    const values = form.getValues("variant_value") || []
+    
+    // Filter out empty options
+    const validOptions = options.filter((opt, idx) => opt && opt.trim() && values[idx] && values[idx].trim())
+    const validValues = values.filter((val, idx) => options[idx] && options[idx].trim() && val && val.trim())
+    
+    if (validOptions.length === 0 || validValues.length === 0) {
+      form.setValue("variant_name", [])
+      form.setValue("item_code", [])
+      form.setValue("additional_cost", [])
+      form.setValue("additional_price", [])
+      return
+    }
+
+    // Parse values (comma-separated)
+    const parsedValues = validValues.map(val => 
+      val.split(",").map(v => v.trim()).filter(v => v)
+    )
+
+    // Generate all combinations
+    let combinations: string[] = parsedValues[0] || []
+    
+    for (let i = 1; i < parsedValues.length; i++) {
+      const newCombinations: string[] = []
+      combinations.forEach(combo => {
+        parsedValues[i].forEach(val => {
+          newCombinations.push(`${combo}/${val}`)
+        })
+      })
+      combinations = newCombinations
+    }
+
+    // Get existing variant data to preserve item_code, additional_cost, additional_price
+    const existingVariants = form.getValues("variant_name") || []
+    const existingItemCodes = form.getValues("item_code") || []
+    const existingCosts = form.getValues("additional_cost") || []
+    const existingPrices = form.getValues("additional_price") || []
+    
+    const existingMap = new Map<string, { item_code: string; cost: number; price: number }>()
+    existingVariants.forEach((name, idx) => {
+      if (name) {
+        existingMap.set(name, {
+          item_code: existingItemCodes[idx] || "",
+          cost: existingCosts[idx] || 0,
+          price: existingPrices[idx] || 0,
+        })
+      }
+    })
+
+    // Update form with new combinations
+    const variantNames: string[] = []
+    const itemCodes: string[] = []
+    const costs: number[] = []
+    const prices: number[] = []
+
+    combinations.forEach(combo => {
+      variantNames.push(combo)
+      const existing = existingMap.get(combo)
+      itemCodes.push(existing?.item_code || `${combo}-${productCode}`)
+      costs.push(existing?.cost || 0)
+      prices.push(existing?.price || 0)
+    })
+
+    form.setValue("variant_name", variantNames)
+    form.setValue("item_code", itemCodes)
+    form.setValue("additional_cost", costs)
+    form.setValue("additional_price", prices)
+  }
+
+  // Watch for changes in variant options/values to regenerate combinations
+  const variantOptions = form.watch("variant_option") || []
+  const variantValues = form.watch("variant_value") || []
+  
+  useEffect(() => {
+    if (isVariant) {
+      // Only generate if we have at least one complete option/value pair
+      const hasCompletePair = variantOptions.some((opt, idx) => opt && opt.trim() && variantValues[idx] && variantValues[idx].trim())
+      
+      if (hasCompletePair) {
+        generateVariantCombinations()
+      }
+    }
+  }, [isVariant, variantOptions, variantValues])
+  
+  // Initialize variant option/value arrays when is_variant is checked
+  useEffect(() => {
+    if (isVariant && (!variantOptions || variantOptions.length === 0)) {
+      form.setValue("variant_option", [""])
+      form.setValue("variant_value", [""])
+    } else if (!isVariant) {
+      // Clear variant data when unchecked
+      form.setValue("variant_option", [])
+      form.setValue("variant_value", [])
+      form.setValue("variant_name", [])
+      form.setValue("item_code", [])
+      form.setValue("additional_cost", [])
+      form.setValue("additional_price", [])
+    }
+  }, [isVariant])
 
   // Load warehouses
   useEffect(() => {
@@ -1584,6 +1704,180 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   )}
                 />
               </div>
+
+              {/* Variant Section */}
+              {isVariant && productType === "standard" && (
+                <div className="space-y-4 border-t pt-4">
+                  <FormLabel className="text-base font-semibold">Product Variants</FormLabel>
+                  
+                  {/* Variant Option/Value Inputs */}
+                  <div className="space-y-3">
+                    {form.watch("variant_option")?.map((option, index) => (
+                      <div key={index} className="grid grid-cols-12 gap-2 items-end">
+                        <div className="col-span-4">
+                          <FormField
+                            control={form.control}
+                            name={`variant_option.${index}`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Option *</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="e.g., Size, Color"
+                                    {...field}
+                                    value={field.value || ""}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="col-span-7">
+                          <FormField
+                            control={form.control}
+                            name={`variant_value.${index}`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Value * (comma-separated)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="e.g., S,M,L or Red,Blue,Green"
+                                    {...field}
+                                    value={field.value || ""}
+                                    onChange={(e) => {
+                                      field.onChange(e)
+                                      // Generate combinations when values change (debounced)
+                                      setTimeout(() => {
+                                        generateVariantCombinations()
+                                      }, 300)
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="col-span-1">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const options = form.getValues("variant_option") || []
+                              const values = form.getValues("variant_value") || []
+                              options.splice(index, 1)
+                              values.splice(index, 1)
+                              form.setValue("variant_option", options)
+                              form.setValue("variant_value", values)
+                              generateVariantCombinations()
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const options = form.getValues("variant_option") || []
+                        const values = form.getValues("variant_value") || []
+                        form.setValue("variant_option", [...options, ""])
+                        form.setValue("variant_value", [...values, ""])
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add More Variant Option
+                    </Button>
+                  </div>
+
+                  {/* Variant Combinations Table */}
+                  {form.watch("variant_name") && form.watch("variant_name")!.length > 0 && (
+                    <div className="border rounded-md mt-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Item Code</TableHead>
+                            <TableHead>Additional Cost</TableHead>
+                            <TableHead>Additional Price</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {form.watch("variant_name")!.map((name, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="font-medium">{name}</TableCell>
+                              <TableCell>
+                                <FormField
+                                  control={form.control}
+                                  name={`item_code.${index}`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormControl>
+                                        <Input
+                                          {...field}
+                                          value={field.value || ""}
+                                          placeholder="Item code"
+                                          className="w-32"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <FormField
+                                  control={form.control}
+                                  name={`additional_cost.${index}`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.01"
+                                          {...field}
+                                          value={field.value || 0}
+                                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                          className="w-32"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <FormField
+                                  control={form.control}
+                                  name={`additional_price.${index}`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          step="0.01"
+                                          {...field}
+                                          value={field.value || 0}
+                                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                          className="w-32"
+                                        />
+                                      </FormControl>
+                                    </FormItem>
+                                  )}
+                                />
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Different Price for Different Warehouse Section */}
               {isDiffPrice && (
