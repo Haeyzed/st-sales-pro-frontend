@@ -17,6 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Spinner } from "@/components/ui/spinner"
 
 export interface ComboboxOption {
   value: string
@@ -32,6 +33,7 @@ interface ComboboxProps {
   emptyText?: string
   disabled?: boolean
   className?: string
+  loading?: boolean
 }
 
 export function Combobox({
@@ -43,6 +45,7 @@ export function Combobox({
   emptyText = "No results found.",
   disabled = false,
   className,
+  loading = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
@@ -82,12 +85,16 @@ export function Combobox({
                     setOpen(false)
                   }}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
+                  {loading ? (
+                    <Spinner />
+                  ) : (
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === option.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  )}
                   {option.label}
                 </CommandItem>
               ))}

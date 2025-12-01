@@ -21,7 +21,7 @@ interface BrandComboboxProps {
 export function BrandCombobox({
   value,
   onValueChange,
-  placeholder = "Select brand (optional)",
+  placeholder = "Select brand",
   disabled = false,
   className,
 }: BrandComboboxProps) {
@@ -59,6 +59,7 @@ export function BrandCombobox({
       emptyText="No brands found."
       disabled={disabled || isLoading}
       className={className}
+      loading={isLoading}
     />
   )
 }

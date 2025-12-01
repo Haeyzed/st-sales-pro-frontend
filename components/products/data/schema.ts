@@ -46,15 +46,15 @@ const productSchemaBase = z.object({
   warranty_type: z.string().nullable(),
   guarantee: z.number().nullable(),
   guarantee_type: z.string().nullable(),
-  wastage_percent: z.string(),
-  combo_unit_id: z.string().nullable(),
-  production_cost: z.string(),
-  is_recipe: z.number(),
+  wastage_percent: z.union([z.number(), z.string()]).nullable(),
+  combo_unit_id: z.union([z.number(), z.string()]).nullable(),
+  production_cost: z.union([z.number(), z.string()]).nullable(),
+  is_recipe: z.union([z.boolean(), z.number()]).nullable(),
   related_products: z.string().nullable(),
   tags: z.string().nullable(),
   meta_title: z.string().nullable(),
   meta_description: z.string().nullable(),
-  is_sync_disable: z.boolean(),
+  is_sync_disable: z.boolean().nullable(),
   is_online: z.boolean().nullable(),
   in_stock: z.boolean().nullable(),
   track_inventory: z.boolean().nullable(),
@@ -73,6 +73,9 @@ export const productSchema: z.ZodType<
     brand?: { id: number; title: string } | null
     unit?: { id: number; unit_name: string } | null
     tax?: { id: number; name: string; rate: number } | null
+    warehouse_prices?: Array<{ warehouse_id: number; price: number | null; warehouse_name: string | null }> | null
+    variants?: Array<{ id: number | null; variant_id: number; item_code: string | null; additional_cost: number; additional_price: number; qty: number; position: number | null; name: string | null }> | null
+    product_variants?: Array<{ id: number; variant_id: number; item_code: string | null; additional_cost: number; additional_price: number; qty: number; position: number | null }> | null
   }
 > = productSchemaBase.extend({
   category: z
@@ -102,6 +105,45 @@ export const productSchema: z.ZodType<
       name: z.string(),
       rate: z.number(),
     })
+    .nullable()
+    .optional(),
+  warehouse_prices: z
+    .array(
+      z.object({
+        warehouse_id: z.number(),
+        price: z.number().nullable(),
+        warehouse_name: z.string().nullable(),
+      })
+    )
+    .nullable()
+    .optional(),
+  variants: z
+    .array(
+      z.object({
+        id: z.number().nullable(),
+        variant_id: z.number(),
+        item_code: z.string().nullable(),
+        additional_cost: z.number(),
+        additional_price: z.number(),
+        qty: z.number(),
+        position: z.number().nullable(),
+        name: z.string().nullable(),
+      })
+    )
+    .nullable()
+    .optional(),
+  product_variants: z
+    .array(
+      z.object({
+        id: z.number(),
+        variant_id: z.number(),
+        item_code: z.string().nullable(),
+        additional_cost: z.number(),
+        additional_price: z.number(),
+        qty: z.number(),
+        position: z.number().nullable(),
+      })
+    )
     .nullable()
     .optional(),
 })

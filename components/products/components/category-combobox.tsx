@@ -51,6 +51,7 @@ export function CategoryCombobox({
       emptyText="No categories found."
       disabled={disabled || isLoading}
       className={className}
+      loading={isLoading}
     />
   )
 }

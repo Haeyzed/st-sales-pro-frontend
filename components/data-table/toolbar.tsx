@@ -65,31 +65,49 @@ export function DataTableToolbar<TData>({
   }
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
-        {searchKey ? (
-          <Input
-            placeholder={searchPlaceholder}
-            value={searchValue ?? (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-            onChange={(event) => {
-              const value = event.target.value
-              if (onSearchChange) {
-                onSearchChange(value)
-              } else {
-                table.getColumn(searchKey)?.setFilterValue(value)
-              }
-            }}
-            className="h-8 w-[150px] lg:w-[250px]"
-          />
-        ) : (
-          <Input
-            placeholder={searchPlaceholder}
-            value={table.getState().globalFilter ?? ""}
-            onChange={(event) => table.setGlobalFilter(event.target.value)}
-            className="h-8 w-[150px] lg:w-[250px]"
-          />
-        )}
-        <div className="flex gap-x-2">
+    <div className="flex flex-col gap-4">
+      {/* Top row: Search and View Options */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-1 items-center gap-2">
+          {searchKey ? (
+            <Input
+              placeholder={searchPlaceholder}
+              value={searchValue ?? (table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+              onChange={(event) => {
+                const value = event.target.value
+                if (onSearchChange) {
+                  onSearchChange(value)
+                } else {
+                  table.getColumn(searchKey)?.setFilterValue(value)
+                }
+              }}
+              className="h-8 w-[150px] lg:w-[250px]"
+            />
+          ) : (
+            <Input
+              placeholder={searchPlaceholder}
+              value={table.getState().globalFilter ?? ""}
+              onChange={(event) => table.setGlobalFilter(event.target.value)}
+              className="h-8 w-[150px] lg:w-[250px]"
+            />
+          )}
+          {isFiltered && (
+            <Button
+              variant="ghost"
+              onClick={handleReset}
+              className="h-8 px-2 lg:px-3"
+            >
+              Reset
+              <Cross2Icon className="ms-2 h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <DataTableViewOptions table={table} />
+      </div>
+      
+      {/* Bottom row: Filters */}
+      {(customFilters || filters.length > 0) && (
+        <div className="flex flex-wrap items-center gap-2">
           {customFilters}
           {filters.map((filter) => {
             // If filter has custom onChange, use custom filter component
@@ -118,18 +136,7 @@ export function DataTableToolbar<TData>({
             )
           })}
         </div>
-        {isFiltered && (
-          <Button
-            variant="ghost"
-            onClick={handleReset}
-            className="h-8 px-2 lg:px-3"
-          >
-            Reset
-            <Cross2Icon className="ms-2 h-4 w-4" />
-          </Button>
-        )}
-      </div>
-      <DataTableViewOptions table={table} />
+      )}
     </div>
   )
 }

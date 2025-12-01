@@ -22,7 +22,7 @@ interface TaxComboboxProps {
 export function TaxCombobox({
   value,
   onValueChange,
-  placeholder = "Select tax (optional)",
+  placeholder = "Select tax",
   disabled = false,
   className,
 }: TaxComboboxProps) {
@@ -38,7 +38,7 @@ export function TaxCombobox({
     if (!taxes) return []
     return taxes.map((tax) => ({
       value: tax.id.toString(),
-      label: `${tax.name} (${tax.rate}%)`,
+      label: `${tax.name}`,
     }))
   }, [taxes])
 
@@ -60,6 +60,7 @@ export function TaxCombobox({
       emptyText="No taxes found."
       disabled={disabled || isLoading}
       className={className}
+      loading={isLoading}
     />
   )
 }

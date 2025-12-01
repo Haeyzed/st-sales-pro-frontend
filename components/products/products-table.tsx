@@ -32,6 +32,12 @@ import { handleServerError } from "@/lib/handle-server-error"
 import { Button } from "@/components/ui/button"
 import { CategoryCombobox } from "./components/category-combobox"
 import { BrandCombobox } from "./components/brand-combobox"
+import { UnitCombobox } from "./components/unit-combobox"
+import { TaxCombobox } from "./components/tax-combobox"
+import { ProductTypeCombobox } from "./components/product-type-combobox"
+import { ImeiVariantCombobox } from "./components/imei-variant-combobox"
+import { StockFilterCombobox } from "./components/stock-filter-combobox"
+import { WarehouseCombobox } from "./components/warehouse-combobox"
 
 export function ProductsTable() {
   const searchParams = useSearchParams()
@@ -43,14 +49,28 @@ export function ProductsTable() {
 
   // Get search query and filters from URL
   const search = searchParams.get("search") || ""
-  const productType = searchParams.get("product_type") || "all"
+  const productType = searchParams.get("product_type") || null
   const brandId = searchParams.get("brand_id")
     ? parseInt(searchParams.get("brand_id")!, 10)
     : null
   const categoryId = searchParams.get("category_id")
     ? parseInt(searchParams.get("category_id")!, 10)
     : null
-  const stockFilter = searchParams.get("stock_filter") || "all"
+  const unitId = searchParams.get("unit_id")
+    ? parseInt(searchParams.get("unit_id")!, 10)
+    : null
+  const taxId = searchParams.get("tax_id")
+    ? parseInt(searchParams.get("tax_id")!, 10)
+    : null
+  const warehouseId = searchParams.get("warehouse_id")
+    ? parseInt(searchParams.get("warehouse_id")!, 10)
+    : null
+  const imeiVariant = searchParams.get("is_imei")
+    ? "imei"
+    : searchParams.get("is_variant")
+    ? "variant"
+    : null
+  const stockFilter = searchParams.get("stock_filter") || null
   const page = parseInt(searchParams.get("page") || "1", 10)
   const pageSize = parseInt(searchParams.get("pageSize") || "10", 10)
 
@@ -61,16 +81,21 @@ export function ProductsTable() {
 
     return {
       search: search || undefined,
-      product_type: productType !== "all" ? (productType as any) : undefined,
+      product_type: productType ? (productType as any) : undefined,
       brand_id: brandId !== null ? brandId : undefined,
       category_id: categoryId !== null ? categoryId : undefined,
-      stock_filter: stockFilter !== "all" ? (stockFilter as any) : undefined,
+      unit_id: unitId !== null ? unitId : undefined,
+      tax_id: taxId !== null ? taxId : undefined,
+      warehouse_id: warehouseId !== null ? warehouseId : undefined,
+      is_variant: imeiVariant === "variant" ? true : undefined,
+      is_imei: imeiVariant === "imei" ? true : undefined,
+      stock_filter: stockFilter ? (stockFilter as any) : undefined,
       per_page: pageSize,
       sort_by: sortBy,
       sort_dir: sortDir,
       page,
     }
-  }, [search, productType, brandId, categoryId, stockFilter, page, pageSize, sorting])
+  }, [search, productType, brandId, categoryId, unitId, taxId, warehouseId, imeiVariant, stockFilter, page, pageSize, sorting])
 
   // Fetch products from API
   const { data, isLoading, error } = useQuery({
@@ -179,17 +204,6 @@ export function ProductsTable() {
   }, [])
 
   // Handle filter changes (server-side)
-  const handleProductTypeChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value !== "all") {
-      params.set("product_type", value)
-    } else {
-      params.delete("product_type")
-    }
-    params.delete("page")
-    router.push(`${pathname}?${params.toString()}`)
-  }
-
   const handleBrandFilterChange = (value: number | null) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value !== null) {
@@ -212,12 +226,72 @@ export function ProductsTable() {
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  const handleStockFilterChange = (value: string) => {
+  const handleUnitFilterChange = (value: number | null) => {
     const params = new URLSearchParams(searchParams.toString())
-    if (value !== "all") {
+    if (value !== null) {
+      params.set("unit_id", value.toString())
+    } else {
+      params.delete("unit_id")
+    }
+    params.delete("page")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleTaxFilterChange = (value: number | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value !== null) {
+      params.set("tax_id", value.toString())
+    } else {
+      params.delete("tax_id")
+    }
+    params.delete("page")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleWarehouseFilterChange = (value: number | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value !== null) {
+      params.set("warehouse_id", value.toString())
+    } else {
+      params.delete("warehouse_id")
+    }
+    params.delete("page")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleImeiVariantFilterChange = (value: "imei" | "variant" | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === "imei") {
+      params.set("is_imei", "true")
+      params.delete("is_variant")
+    } else if (value === "variant") {
+      params.set("is_variant", "true")
+      params.delete("is_imei")
+    } else {
+      params.delete("is_imei")
+      params.delete("is_variant")
+    }
+    params.delete("page")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleStockFilterChange = (value: "with" | "without" | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value) {
       params.set("stock_filter", value)
     } else {
       params.delete("stock_filter")
+    }
+    params.delete("page")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleProductTypeFilterChange = (value: string | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value !== null) {
+      params.set("product_type", value.toString())
+    } else {
+      params.delete("product_type")
     }
     params.delete("page")
     router.push(`${pathname}?${params.toString()}`)
@@ -311,7 +385,13 @@ export function ProductsTable() {
         searchValue={searchInputValue}
         onSearchChange={handleSearchInputChange}
         customFilters={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <WarehouseCombobox
+              value={warehouseId}
+              onValueChange={handleWarehouseFilterChange}
+              placeholder="Filter by warehouse..."
+              className="h-8 w-[180px]"
+            />
             <CategoryCombobox
               value={categoryId}
               onValueChange={handleCategoryFilterChange}
@@ -322,6 +402,36 @@ export function ProductsTable() {
               value={brandId}
               onValueChange={handleBrandFilterChange}
               placeholder="Filter by brand..."
+              className="h-8 w-[180px]"
+            />
+            <UnitCombobox
+              value={unitId}
+              onValueChange={handleUnitFilterChange}
+              placeholder="Filter by unit..."
+              className="h-8 w-[180px]"
+            />
+            <TaxCombobox
+              value={taxId}
+              onValueChange={handleTaxFilterChange}
+              placeholder="Filter by tax..."
+              className="h-8 w-[180px]"
+            />
+            <ImeiVariantCombobox
+              value={imeiVariant}
+              onValueChange={handleImeiVariantFilterChange}
+              placeholder="Filter by IMEI/Variant..."
+              className="h-8 w-[180px]"
+            />
+            <ProductTypeCombobox
+              value={productType}
+              onValueChange={handleProductTypeFilterChange}
+              placeholder="Filter by type..."
+              className="h-8 w-[180px]"
+            />
+            <StockFilterCombobox
+              value={stockFilter as "with" | "without" | null}
+              onValueChange={handleStockFilterChange}
+              placeholder="Filter by stock..."
               className="h-8 w-[180px]"
             />
           </div>

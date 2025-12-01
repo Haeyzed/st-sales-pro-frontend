@@ -16,14 +16,15 @@ import { productSchema, productListSchema, type Product } from "./schema"
 
 export type ProductFilters = {
   search?: string
-  product_type?: "all" | "standard" | "combo" | "digital" | "service"
+  product_type?: "standard" | "combo" | "digital" | "service"
   brand_id?: number | null
   category_id?: number | null
   unit_id?: number | null
   tax_id?: number | null
+  warehouse_id?: number | null
   is_variant?: boolean | null
   is_imei?: boolean | null
-  stock_filter?: "all" | "in_stock" | "out_of_stock" | "low_stock"
+  stock_filter?: "with" | "without"
   per_page?: number
   sort_by?: string
   sort_dir?: "asc" | "desc"
@@ -62,7 +63,7 @@ export async function getProducts(
     params.search = filters.search
   }
 
-  if (filters.product_type && filters.product_type !== "all") {
+  if (filters.product_type) {
     params.product_type = filters.product_type
   }
 
@@ -82,15 +83,19 @@ export async function getProducts(
     params.tax_id = filters.tax_id
   }
 
+  if (filters.warehouse_id !== undefined && filters.warehouse_id !== null) {
+    params.warehouse_id = filters.warehouse_id
+  }
+
   if (filters.is_variant !== undefined && filters.is_variant !== null) {
-    params.is_variant = filters.is_variant
+    params.is_variant = filters.is_variant ? "1" : "0"
   }
 
   if (filters.is_imei !== undefined && filters.is_imei !== null) {
-    params.is_imei = filters.is_imei
+    params.is_imei = filters.is_imei ? "1" : "0"
   }
 
-  if (filters.stock_filter && filters.stock_filter !== "all") {
+  if (filters.stock_filter) {
     params.stock_filter = filters.stock_filter
   }
 
@@ -398,6 +403,96 @@ export async function importProducts(file: File): Promise<{
     errors: unknown[]
   }>("products/import", formData)
 
+  return response.data
+}
+
+/**
+ * Generate a unique product code
+ */
+export async function generateProductCode(): Promise<string> {
+  const response = await apiGetClient<{ code: string }>("products/generate-code")
+  return response.data.code
+}
+
+type ProductWithoutVariant = {
+  id: number
+  name: string
+  code: string
+}
+
+type ProductWithVariant = {
+  id: number
+  name: string
+  item_code: string
+  qty: number
+}
+
+export type ComboProductSearchResult = {
+  name: string
+  code: string
+  variant_id: number | null
+  additional_price: number
+  price: number
+  qty: number
+  id: number
+  cost: number
+  brand: string
+  unit_id: number
+  units: Array<{
+    id: number
+    name: string
+    operation_value: number
+    operator: string
+    selected: boolean
+  }>
+}
+
+type SaleUnitItem = {
+  name: string
+  operator: string
+  operation_value: number
+}
+
+export type SaleUnit = {
+  [key: number]: SaleUnitItem | string
+}
+
+/**
+ * Get products without variants for combo products
+ */
+export async function getProductsWithoutVariant(): Promise<ProductWithoutVariant[]> {
+  const response = await apiGetClient<ProductWithoutVariant[]>("products/without-variant")
+  return response.data
+}
+
+/**
+ * Get products with variants for combo products
+ */
+export async function getProductsWithVariant(): Promise<ProductWithVariant[]> {
+  const response = await apiGetClient<ProductWithVariant[]>("products/with-variant")
+  return response.data
+}
+
+/**
+ * Search product by code for combo products
+ */
+export async function searchProductForCombo(
+  data: string,
+  warehouseId?: number
+): Promise<ComboProductSearchResult[]> {
+  const params: Record<string, string | number> = { data }
+  if (warehouseId) {
+    params.warehouse_id = warehouseId
+  }
+  const response = await apiGetClient<ComboProductSearchResult[]>("products/search-combo", params)
+  return response.data
+}
+
+/**
+ * Get sale and purchase units for a base unit
+ */
+export async function getSaleUnits(unitId: number): Promise<SaleUnit> {
+  const response = await apiGetClient<SaleUnit>(`products/sale-unit/${unitId}`)
   return response.data
 }
 

@@ -25,11 +25,6 @@ export const productStatuses = [
 
 export const productTypes = [
   {
-    label: "All Types",
-    value: "all",
-    icon: Boxes,
-  },
-  {
     label: "Standard",
     value: "standard",
     icon: Package,
@@ -53,24 +48,19 @@ export const productTypes = [
 
 export const stockFilters = [
   {
-    label: "All Stock",
+    label: "All",
     value: "all",
     icon: Boxes,
   },
   {
-    label: "In Stock",
-    value: "in_stock",
+    label: "With Stock",
+    value: "with",
     icon: PackageCheck,
   },
   {
-    label: "Out of Stock",
-    value: "out_of_stock",
+    label: "Without Stock",
+    value: "without",
     icon: PackageX,
-  },
-  {
-    label: "Low Stock",
-    value: "low_stock",
-    icon: Package,
   },
 ] as const
 

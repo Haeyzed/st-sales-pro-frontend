@@ -5,13 +5,12 @@ import { useQuery } from "@tanstack/react-query"
 import { apiGetClient } from "@/lib/api-client-client"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 
-type UnitDropdownItem = {
+type WarehouseDropdownItem = {
   id: number
   name: string
-  code: string
 }
 
-interface UnitComboboxProps {
+interface WarehouseComboboxProps {
   value?: number | null
   onValueChange?: (value: number | null) => void
   placeholder?: string
@@ -19,28 +18,28 @@ interface UnitComboboxProps {
   className?: string
 }
 
-export function UnitCombobox({
+export function WarehouseCombobox({
   value,
   onValueChange,
-  placeholder = "Select unit",
+  placeholder = "Select warehouse",
   disabled = false,
   className,
-}: UnitComboboxProps) {
-  const { data: units, isLoading } = useQuery({
-    queryKey: ["unit-dropdown"],
+}: WarehouseComboboxProps) {
+  const { data: warehouses, isLoading } = useQuery({
+    queryKey: ["warehouse-dropdown"],
     queryFn: async () => {
-      const response = await apiGetClient<UnitDropdownItem[]>("units/dropdown")
+      const response = await apiGetClient<WarehouseDropdownItem[]>("warehouses/dropdown")
       return response.data
     },
   })
 
   const options: ComboboxOption[] = React.useMemo(() => {
-    if (!units) return []
-    return units.map((unit) => ({
-      value: unit.id.toString(),
-      label: `${unit.name}`,
+    if (!warehouses) return []
+    return warehouses.map((warehouse) => ({
+      value: warehouse.id.toString(),
+      label: warehouse.name,
     }))
-  }, [units])
+  }, [warehouses])
 
   const handleValueChange = (newValue: string | undefined) => {
     if (newValue === undefined) {
@@ -56,8 +55,8 @@ export function UnitCombobox({
       value={value?.toString()}
       onValueChange={handleValueChange}
       placeholder={placeholder}
-      searchPlaceholder="Search units..."
-      emptyText="No units found."
+      searchPlaceholder="Search warehouses..."
+      emptyText="No warehouses found."
       disabled={disabled || isLoading}
       className={className}
       loading={isLoading}

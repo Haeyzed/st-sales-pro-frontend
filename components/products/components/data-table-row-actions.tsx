@@ -3,6 +3,7 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons"
 import { type Row } from "@tanstack/react-table"
 import { Trash2, FolderPen } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,6 +25,7 @@ type DataTableRowActionsProps = {
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useProducts()
   const { data: session } = useSession()
+  const router = useRouter()
 
   const canUpdate = canPerformAction(session, "products:update")
   const canDelete = canPerformAction(session, "products:delete")
@@ -47,8 +49,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         {canUpdate && (
           <DropdownMenuItem
             onClick={() => {
-              setCurrentRow(row.original)
-              setOpen("edit")
+              router.push(`/products/${row.original.id}/edit`)
             }}
           >
             Edit

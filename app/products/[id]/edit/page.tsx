@@ -9,11 +9,24 @@ import { ThemeSwitch } from "@/components/theme-switch"
 import { ConfigDrawer } from "@/components/config-drawer"
 import { ProductForm } from "@/components/products/components/product-form"
 
-export default async function AddProductPage() {
+type EditProductPageProps = {
+  params: Promise<{
+    id: string
+  }>
+}
+
+export default async function EditProductPage({ params }: EditProductPageProps) {
   const session = await auth()
 
   if (!session) {
     redirect("/sign-in")
+  }
+
+  const { id } = await params
+  const productId = parseInt(id, 10)
+
+  if (isNaN(productId)) {
+    redirect("/products")
   }
 
   return (
@@ -28,8 +41,10 @@ export default async function AddProductPage() {
       </Header>
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-        <ProductForm />
+        <ProductForm productId={productId} />
       </Main>
     </AuthenticatedLayout>
   )
 }
+
+
