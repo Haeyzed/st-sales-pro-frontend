@@ -12,7 +12,9 @@ export default auth((req) => {
   // If user is not authenticated and trying to access protected route
   if (!isAuthenticated && !isPublicRoute) {
     const signInUrl = new URL("/sign-in", req.url)
-    signInUrl.searchParams.set("callbackUrl", pathname)
+    // Preserve the original URL (including query params) for redirect after login
+    const callbackUrl = `${pathname}${req.nextUrl.search}`
+    signInUrl.searchParams.set("callbackUrl", callbackUrl)
     return NextResponse.redirect(signInUrl)
   }
 

@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { format } from "date-fns"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -52,9 +53,30 @@ import {
 } from "../data/products"
 import { apiGetClient } from "@/lib/api-client-client"
 import { ProductSearchCombobox } from "./product-search-combobox"
-import { Plus, X, Loader2 } from "lucide-react"
+import { Plus, X, RefreshCw } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
+import { TagInput } from "@/components/ui/tag-input"
+import { DatePicker } from "@/components/ui/date-picker"
+import {
+  FileUpload,
+  FileUploadDropzone,
+  FileUploadItem,
+  FileUploadItemDelete,
+  FileUploadItemMetadata,
+  FileUploadItemPreview,
+  FileUploadList,
+  FileUploadTrigger,
+} from "@/components/ui/file-upload"
+import { CloudUpload } from "lucide-react"
+import { ProductDetailsEditor } from "./product-details-editor"
 import { type Product } from "../data/schema"
+
+// Type for existing images (URLs from backend)
+type ExistingImage = {
+  url: string
+  filename: string
+}
 
 // Extended schema for full-page form
 const formSchema = z.object({
@@ -75,7 +97,7 @@ const formSchema = z.object({
   tax_id: z.number().nullable().optional(),
   tax_method: z.number().nullable().optional(),
   alert_quantity: z.number().nullable().optional(),
-  image: z.instanceof(File).nullable().optional(),
+  image: z.array(z.instanceof(File)).default([]),
   file: z.instanceof(File).nullable().optional(),
   is_variant: z.boolean().nullable().optional(),
   variant_option: z.array(z.string()).nullable().optional(),
@@ -155,6 +177,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const [purchaseUnits, setPurchaseUnits] = useState<Record<number, string>>({})
   const [productUnits, setProductUnits] = useState<Record<number, Array<{id: number, name: string, operation_value: number, operator: string}>>>({})
   const [warehouses, setWarehouses] = useState<Array<{id: number, name: string}>>([])
+  const [existingImages, setExistingImages] = useState<string[]>([])
   const isEdit = !!productId
 
   const form = useForm<ProductForm>({
@@ -219,7 +242,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       combo_unit_id: null,
       product_list: [],
       initial_stock: [],
-      image: null,
+      image: [],
       file: null,
     },
   })
@@ -320,7 +343,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
             combo_unit_id: product.combo_unit_id ? (typeof product.combo_unit_id === 'string' ? parseInt(product.combo_unit_id, 10) : product.combo_unit_id) : null,
             product_list: [],
             initial_stock: [],
-            image: null,
+            image: [],
             file: null,
           })
 
@@ -455,6 +478,12 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
 
             form.setValue("product_list", comboProducts)
             }
+          }
+
+          // Load existing images
+          if (product.image && product.image !== 'zummXD2dvAtI.png') {
+            const imageNames = product.image.split(',').map(img => img.trim()).filter(Boolean)
+            setExistingImages(imageNames)
           }
         } catch (error: any) {
           toast.error(error?.message || "Failed to load product")
@@ -594,6 +623,64 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
     loadWarehouses()
   }, [])
 
+  // Handle product type changes - clear incompatible options (only on user interaction, not initial load)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  
+  useEffect(() => {
+    // Skip on initial load to preserve loaded product data
+    if (isInitialLoad) {
+      setIsInitialLoad(false)
+      return
+    }
+
+    if (productType === "combo") {
+      // Combo products: hide variant, diffPrice, batch, imei, initial stock options
+      form.setValue("is_variant", false)
+      form.setValue("is_diffPrice", false)
+      form.setValue("is_batch", false)
+      form.setValue("is_imei", false)
+      form.setValue("initial_stock", [])
+    } else if (productType === "digital") {
+      // Digital products: hide variant, diffPrice, batch options
+      // Show initial stock option
+      form.setValue("is_variant", false)
+      form.setValue("is_diffPrice", false)
+      form.setValue("is_batch", false)
+    } else if (productType === "service") {
+      // Service products: hide all special options
+      form.setValue("is_variant", false)
+      form.setValue("is_diffPrice", false)
+      form.setValue("is_batch", false)
+      form.setValue("is_imei", false)
+    }
+    // Standard products can have all options
+  }, [productType])
+
+  // Handle is_batch changes - hide variant and initial stock options
+  useEffect(() => {
+    if (isBatch) {
+      form.setValue("is_variant", false)
+      form.setValue("initial_stock", [])
+      form.setValue("featured", false)
+    }
+  }, [isBatch])
+
+  // Handle is_imei changes - hide initial stock
+  useEffect(() => {
+    if (form.watch("is_imei")) {
+      form.setValue("initial_stock", [])
+      form.setValue("featured", false)
+    }
+  }, [form.watch("is_imei")])
+
+  // Handle is_variant changes - hide batch and initial stock
+  useEffect(() => {
+    if (isVariant) {
+      form.setValue("is_batch", false)
+      form.setValue("initial_stock", [])
+    }
+  }, [isVariant])
+
   // Load sale/purchase units when unit_id changes
   useEffect(() => {
     if (unitId && (productType === "standard" || productType === "combo")) {
@@ -660,9 +747,33 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       // Boolean fields - convert to "1" or "0"
       if (values.is_variant !== null && values.is_variant !== undefined) {
         formData.append("is_variant", values.is_variant ? "1" : "0")
-        if (values.is_variant && values.variant_option && values.variant_value) {
-          formData.append("variant_option", JSON.stringify(values.variant_option))
-          formData.append("variant_value", JSON.stringify(values.variant_value))
+        if (values.is_variant) {
+          // Submit variant options and values for frontend display
+          if (values.variant_option && values.variant_value) {
+            formData.append("variant_option", JSON.stringify(values.variant_option))
+            formData.append("variant_value", JSON.stringify(values.variant_value))
+          }
+          // Submit variant details for backend processing
+          if (values.variant_name && values.variant_name.length > 0) {
+            values.variant_name.forEach((name, index) => {
+              formData.append(`variant_name[]`, name)
+              if (values.item_code && values.item_code[index]) {
+                formData.append(`item_code[]`, values.item_code[index])
+              } else {
+                formData.append(`item_code[]`, "")
+              }
+              if (values.additional_cost && values.additional_cost[index] !== undefined) {
+                formData.append(`additional_cost[]`, String(values.additional_cost[index] || 0))
+              } else {
+                formData.append(`additional_cost[]`, "0")
+              }
+              if (values.additional_price && values.additional_price[index] !== undefined) {
+                formData.append(`additional_price[]`, String(values.additional_price[index] || 0))
+              } else {
+                formData.append(`additional_price[]`, "0")
+              }
+            })
+          }
         }
       }
       if (values.is_batch !== null && values.is_batch !== undefined) {
@@ -783,7 +894,20 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       }
       
       // File uploads
-      if (values.image) formData.append("image", values.image)
+      // Handle multiple images
+      if (values.image && values.image.length > 0) {
+        values.image.forEach((file) => {
+          formData.append("image[]", file)
+        })
+      }
+      
+      // Handle previous images (for edit)
+      if (isEdit && existingImages.length > 0) {
+        existingImages.forEach((filename) => {
+          formData.append("prev_img[]", filename)
+        })
+      }
+      
       if (values.file) formData.append("file", values.file)
       
       let response
@@ -821,16 +945,17 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Loading product...</p>
+      <div className="">
+        <div className="flex flex-col items-center justify-center h-64 gap-3">
+          <Spinner className="h-8 w-8" />
+          {/* <p className="text-muted-foreground text-sm">Loading product...</p> */}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="">
       <div className="mb-4">
         <h1 className="text-3xl font-bold">{isEdit ? "Edit Product" : "Add Product"}</h1>
         <p className="text-muted-foreground mt-1 text-sm italic">
@@ -841,10 +966,10 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Card>
-            <CardHeader>
+            {/* <CardHeader>
               <CardTitle>{isEdit ? "Update Product" : "Add Product"}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+            </CardHeader> */}
+            <CardContent className="space-y-6">
               {/* Row 1: Type, Name, Code */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
@@ -886,17 +1011,19 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Product Code *</FormLabel>
                       <FormControl>
-                        <div className="flex gap-2">
+                        <div className="flex rounded-md shadow-xs">
                           <Input
                             placeholder="Auto-generated or enter manually"
                             {...field}
                             value={field.value || ""}
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                           <Button
                             type="button"
                             variant="outline"
                             size="icon"
                             disabled={isGeneratingCode}
+                            className="rounded-l-none shadow-none"
                             onClick={async () => {
                               try {
                                 setIsGeneratingCode(true)
@@ -909,11 +1036,12 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                 setIsGeneratingCode(false)
                               }
                             }}
+                            title="Generate code"
                           >
                             {isGeneratingCode ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <Spinner className="h-4 w-4" />
                             ) : (
-                              <Plus className="h-4 w-4" />
+                              <RefreshCw className="h-4 w-4" />
                             )}
                           </Button>
                         </div>
@@ -924,7 +1052,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 />
               </div>
 
-              {/* Row 2: Barcode Symbology, Digital File (conditional) */}
+              {/* Row 2: Barcode, Brand, Category */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -944,7 +1072,44 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   )}
                 />
 
-                {productType === "digital" && (
+                <FormField
+                  control={form.control}
+                  name="brand_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Brand</FormLabel>
+                      <FormControl>
+                        <BrandCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="category_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category *</FormLabel>
+                      <FormControl>
+                        <CategoryCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Digital File Upload - Only for digital products */}
+              {productType === "digital" && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="file"
@@ -968,8 +1133,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       </FormItem>
                     )}
                   />
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Combo Products Section */}
               {productType === "combo" && (
@@ -1193,44 +1358,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 </div>
               )}
 
-              {/* Row 3: Brand, Category */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="brand_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Brand</FormLabel>
-                      <FormControl>
-                        <BrandCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="category_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category *</FormLabel>
-                      <FormControl>
-                        <CategoryCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Units Row - Only for non-digital/service */}
+              {/* Row 3: Units - Only for non-digital/service */}
               {(productType === "standard" || productType === "combo") && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
@@ -1373,27 +1501,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="wholesale_price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Wholesale Price</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            value={field.value || ""}
-                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               )}
 
@@ -1516,18 +1623,18 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Warranty</FormLabel>
-                      <div className="flex gap-2">
+                      <div className="flex rounded-md shadow-xs">
                         <FormControl>
                           <Input
                             type="number"
                             min="1"
                             placeholder="eg: 1"
-                            className="flex-1"
                             {...field}
                             value={field.value || ""}
                             onChange={(e) =>
                               field.onChange(e.target.value ? parseFloat(e.target.value) : null)
                             }
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                         </FormControl>
                         <FormField
@@ -1539,7 +1646,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                 value={typeField.value || "months"}
                                 onValueChange={typeField.onChange}
                                 placeholder="Type..."
-                                className="w-32"
+                                className="w-32 rounded-l-none shadow-none"
                               />
                             </FormControl>
                           )}
@@ -1551,7 +1658,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 />
               </div>
 
-              {/* Row 7: Guarantee */}
+              {/* Row 7: Guarantee, Image Upload */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -1559,18 +1666,18 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Guarantee</FormLabel>
-                      <div className="flex gap-2">
+                      <div className="flex rounded-md shadow-xs">
                         <FormControl>
                           <Input
                             type="number"
                             min="1"
                             placeholder="eg: 1"
-                            className="flex-1"
                             {...field}
                             value={field.value || ""}
                             onChange={(e) =>
                               field.onChange(e.target.value ? parseFloat(e.target.value) : null)
                             }
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                         </FormControl>
                         <FormField
@@ -1582,7 +1689,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                 value={typeField.value || "months"}
                                 onValueChange={typeField.onChange}
                                 placeholder="Type..."
-                                className="w-32"
+                                className="w-32 rounded-l-none shadow-none"
                               />
                             </FormControl>
                           )}
@@ -1592,10 +1699,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     </FormItem>
                   )}
                 />
-              </div>
 
-              {/* Checkboxes: Featured, Embedded Barcode, Initial Stock */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t pt-4">
                 <FormField
                   control={form.control}
                   name="featured"
@@ -1637,72 +1741,74 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     </FormItem>
                   )}
                 />
+              </div>
 
-                {productType === "standard" && !isVariant && !isBatch && (
+              {/* Product Details */}
+              <FormField
+                control={form.control}
+                name="product_details"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Details</FormLabel>
+                    <FormControl>
+                      <ProductDetailsEditor
+                        value={field.value || undefined}
+                        onChange={field.onChange}
+                        placeholder="Enter product details..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Checkboxes Row 1: Featured, Embedded Barcode */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t pt-4">
+                
+
+
+
+
+
+                {productType === "standard" && (
                   <FormField
                     control={form.control}
-                    name="initial_stock"
+                    name="is_variant"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={isInitialStock}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                // Initialize with empty array - will be populated by user
-                                field.onChange([])
-                              } else {
-                                field.onChange([])
-                              }
-                            }}
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <FormLabel>Initial Stock</FormLabel>
-                          <FormDescription>
-                            This feature will not work for product with variants and batches
-                          </FormDescription>
+                          <FormLabel>This product has variant</FormLabel>
                         </div>
                       </FormItem>
                     )}
                   />
                 )}
 
-                <FormField
-                  control={form.control}
-                  name="is_variant"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value || false}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>This product has variant</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="is_diffPrice"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value || false}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>This product has different price for different warehouse</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                {productType === "standard" && (
+                  <FormField
+                    control={form.control}
+                    name="is_diffPrice"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>This product has different price for different warehouse</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               {/* Variant Section */}
@@ -1741,17 +1847,18 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                               <FormItem>
                                 <FormLabel>Value * (comma-separated)</FormLabel>
                                 <FormControl>
-                                  <Input
-                                    placeholder="e.g., S,M,L or Red,Blue,Green"
-                                    {...field}
-                                    value={field.value || ""}
-                                    onChange={(e) => {
-                                      field.onChange(e)
+                                  <TagInput
+                                    value={field.value ? field.value.split(',').map(v => v.trim()).filter(Boolean) : []}
+                                    onChange={(tags) => {
+                                      field.onChange(tags.join(','))
                                       // Generate combinations when values change (debounced)
                                       setTimeout(() => {
                                         generateVariantCombinations()
                                       }, 300)
                                     }}
+                                    placeholder="Type value and press Enter or comma..."
+                                    separator=","
+                                    allowDuplicates={false}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -1943,44 +2050,48 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 </div>
               )}
 
-              {/* Checkboxes: Featured, Embedded Barcode, Initial Stock */}
+              {/* Checkboxes: Batch, IMEI, Promotion - Only for Standard Products */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t pt-4">
 
-                <FormField
-                  control={form.control}
-                  name="is_batch"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value || false}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>This product has batch and expired date</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                {productType === "standard" && (
+                  <FormField
+                    control={form.control}
+                    name="is_batch"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>This product has batch and expired date</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
 
-                <FormField
-                  control={form.control}
-                  name="is_imei"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value || false}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>This product has IMEI or Serial numbers</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                {productType === "standard" && (
+                  <FormField
+                    control={form.control}
+                    name="is_imei"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>This product has IMEI or Serial numbers</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
@@ -2034,10 +2145,17 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                         <FormItem>
                           <FormLabel>Promotion Starts</FormLabel>
                           <FormControl>
-                            <Input
-                              type="date"
-                              {...field}
-                              value={field.value || ""}
+                            <DatePicker
+                              value={field.value ? new Date(field.value) : null}
+                              onChange={(date) => {
+                                if (date) {
+                                  field.onChange(format(date, "yyyy-MM-dd"))
+                                } else {
+                                  field.onChange(null)
+                                }
+                              }}
+                              placeholder="Select start date"
+                              minDate={new Date()}
                             />
                           </FormControl>
                           <FormMessage />
@@ -2048,19 +2166,31 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormField
                       control={form.control}
                       name="last_date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Promotion Ends</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="date"
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const startDate = form.watch("starting_date")
+                        const minDate = startDate ? new Date(startDate) : new Date()
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>Promotion Ends</FormLabel>
+                            <FormControl>
+                              <DatePicker
+                                value={field.value ? new Date(field.value) : null}
+                                onChange={(date) => {
+                                  if (date) {
+                                    field.onChange(format(date, "yyyy-MM-dd"))
+                                  } else {
+                                    field.onChange(null)
+                                  }
+                                }}
+                                placeholder="Select end date"
+                                minDate={minDate}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )
+                      }}
                     />
                   </div>
                 </div>
@@ -2151,28 +2281,90 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
 
               {/* Product Image */}
               <div className="space-y-4 border-t pt-4">
-                <FormField
+              <FormField
                   control={form.control}
                   name="image"
-                  render={({ field: { value, onChange, ...field } }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Product Image</FormLabel>
-                      <FormDescription className="text-xs italic">
-                        You can upload multiple image. Only jpeg, jpg, png, gif file can be uploaded. First image will be base image.
+                      <FormDescription className="text-xs">
+                        Only jpeg, jpg, png, gif files. First image will be base image.
                       </FormDescription>
                       <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
+                        <FileUpload
+                          value={field.value || []}
+                          onValueChange={field.onChange}
+                          accept="image/jpeg,image/jpg,image/png,image/gif"
+                          maxFiles={10}
+                          maxSize={10 * 1024 * 1024} // 10MB
                           multiple
-                          onChange={(e) => {
-                            const files = e.target.files
-                            if (files && files.length > 0) {
-                              onChange(files[0])
-                            }
+                          onFileReject={(_, message) => {
+                            toast.error(message)
                           }}
-                          {...field}
-                        />
+                        >
+                          <FileUploadDropzone>
+                            <CloudUpload className="h-4 w-4" />
+                            <span className="text-sm">Drop files here or</span>
+                            <FileUploadTrigger asChild>
+                              <Button variant="link" size="sm" className="p-0 h-auto">
+                                choose files
+                              </Button>
+                            </FileUploadTrigger>
+                          </FileUploadDropzone>
+
+                          {/* Show existing images */}
+                          {existingImages.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium">Existing Images:</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {existingImages.map((imageName, index) => (
+                                  <div key={imageName} className="relative flex items-center gap-2 rounded-md border p-2">
+                                    <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
+                                      <img
+                                        src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${imageName}`}
+                                        alt={`Product ${index + 1}`}
+                                        className="size-full object-cover"
+                                      />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{imageName}</p>
+                                      {index === 0 && (
+                                        <Badge variant="secondary" className="text-xs">Base Image</Badge>
+                                      )}
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7"
+                                      onClick={() => {
+                                        setExistingImages(prev => prev.filter(img => img !== imageName))
+                                      }}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Show new uploads */}
+                          <FileUploadList>
+                            {field.value?.map((file, index) => (
+                              <FileUploadItem key={index} value={file}>
+                                <FileUploadItemPreview />
+                                <FileUploadItemMetadata />
+                                <FileUploadItemDelete asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Delete</span>
+                                  </Button>
+                                </FileUploadItemDelete>
+                              </FileUploadItem>
+                            ))}
+                          </FileUploadList>
+                        </FileUpload>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -2316,7 +2508,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Spinner className="mr-2 h-4 w-4" />
                       {isEdit ? "Updating..." : "Creating..."}
                     </>
                   ) : (

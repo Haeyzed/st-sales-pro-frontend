@@ -46,7 +46,7 @@ export const productsColumns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Image" />
     ),
     cell: ({ row }) => {
-      const image = row.original.image
+      const imageString = row.original.image
       const name = row.original.name
       const initials = name
         .split(" ")
@@ -55,10 +55,21 @@ export const productsColumns: ColumnDef<Product>[] = [
         .toUpperCase()
         .slice(0, 2)
 
+      // Extract first image from comma-separated list
+      let imageUrl = null
+      if (imageString && imageString !== 'zummXD2dvAtI.png') {
+        const firstImage = imageString.split(',')[0]?.trim()
+        if (firstImage) {
+          // Construct URL to small image variant
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
+          imageUrl = `${apiUrl}/storage/products/small/${firstImage}`
+        }
+      }
+
       return (
         <Avatar className="h-10 w-10 rounded-md">
-          {image ? (
-            <AvatarImage src={image} alt={name} className="object-cover" />
+          {imageUrl ? (
+            <AvatarImage src={imageUrl} alt={name} className="object-cover" />
           ) : null}
           <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
             {initials}

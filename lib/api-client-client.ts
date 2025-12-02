@@ -49,6 +49,15 @@ async function handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const data = await response.json()
 
     if (!response.ok) {
+        // Handle 401 Unauthorized - session expired
+        if (response.status === 401) {
+            // Redirect to login with current page as callback
+            if (typeof window !== 'undefined') {
+                const currentPath = window.location.pathname + window.location.search
+                window.location.href = `/sign-in?callbackUrl=${encodeURIComponent(currentPath)}`
+            }
+        }
+
         const error: ApiError = {
             success: false,
             message: data.message || "An error occurred",
