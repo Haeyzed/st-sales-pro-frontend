@@ -3,6 +3,12 @@
 import { Upload, PackagePlus, Wifi, FileDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useProducts } from "../products-provider"
 import { PermissionGate } from "@/components/permission-gate"
 import { apiPostClient } from "@/lib/api-client-client"
@@ -82,53 +88,76 @@ export function ProductsPrimaryButtons() {
   ]
   
   return (
-    <>
+    <TooltipProvider>
       <div className="flex gap-2">
         <PermissionGate action="products:update">
-          <Button
-            variant="secondary"
-            className="space-x-1"
-            onClick={handleShowAllOnline}
-            disabled={isUpdating}
-          >
-            {isUpdating ? (
-              <>
-                <Spinner />
-                <span>Updating...</span>
-              </>
-            ) : (
-              <>
-                <span>Show All Online</span>
-                <Wifi size={18} />
-              </>
-            )}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                className="space-x-1"
+                onClick={handleShowAllOnline}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <>
+                    <Spinner />
+                    <span className="hidden sm:inline">Updating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Wifi size={18} />
+                    <span className="hidden sm:inline">Show All Online</span>
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Show All Products Online</TooltipContent>
+          </Tooltip>
         </PermissionGate>
         <PermissionGate action="products:view">
-          <Button
-            variant="outline"
-            className="space-x-1"
-            onClick={() => setShowExportDialog(true)}
-          >
-            <span>Export</span> <FileDown size={18} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                className="space-x-1"
+                onClick={() => setShowExportDialog(true)}
+              >
+                <FileDown size={18} />
+                <span className="hidden sm:inline">Export</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Export Products</TooltipContent>
+          </Tooltip>
         </PermissionGate>
         <PermissionGate action="products:create">
-          <Button
-            variant="outline"
-            className="space-x-1"
-            onClick={() => setOpen("import")}
-          >
-            <span>Import</span> <Upload size={18} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                className="space-x-1"
+                onClick={() => setOpen("import")}
+              >
+                <Upload size={18} />
+                <span className="hidden sm:inline">Import</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Import Products</TooltipContent>
+          </Tooltip>
         </PermissionGate>
         <PermissionGate action="products:create">
-          <Button 
-            className="space-x-1" 
-            onClick={() => router.push("/products/create")}
-          >
-            <span>Add Product</span> <PackagePlus size={18} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                className="space-x-1" 
+                onClick={() => router.push("/products/create")}
+              >
+                <PackagePlus size={18} />
+                <span className="hidden sm:inline">Add Product</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Add New Product</TooltipContent>
+          </Tooltip>
         </PermissionGate>
       </div>
 
@@ -139,7 +168,7 @@ export function ProductsPrimaryButtons() {
         onExport={handleExport}
         isExporting={isExporting}
       />
-    </>
+    </TooltipProvider>
   )
 }
 

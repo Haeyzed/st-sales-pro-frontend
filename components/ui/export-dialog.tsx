@@ -34,6 +34,12 @@ import { EmailTagCombobox } from "@/components/ui/email-tag-combobox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Spinner } from "@/components/ui/spinner"
 import { DateTimePicker } from "@/components/ui/date-time-picker"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export type ExportColumn = {
   id: string
@@ -265,6 +271,7 @@ export function ExportDialog({
           </div>
         </>
       )}
+      
     </div>
   )
 
@@ -305,8 +312,8 @@ export function ExportDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader className="text-start">
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
@@ -324,14 +331,16 @@ export function ExportDialog({
           <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
-        <div className="px-4 pb-4">{formContent}</div>
+        <div className="max-h-[60vh] overflow-y-auto px-4">
+          {formContent}
+        </div>
         <DrawerFooter className="pt-2">
-          {footer}
           <DrawerClose asChild>
             <Button variant="outline" disabled={isExporting}>
               Cancel
             </Button>
           </DrawerClose>
+          {footer}
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

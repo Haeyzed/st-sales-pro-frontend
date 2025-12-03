@@ -2112,7 +2112,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
               {/* Checkboxes: Batch, IMEI, Promotion - Only for Standard Products */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t pt-4">
 
-                {productType === "standard" && (
+                {productType === "standard" && !form.watch("is_variant") && (
                   <FormField
                     control={form.control}
                     name="is_batch"
