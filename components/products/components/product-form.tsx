@@ -70,6 +70,14 @@ import {
 import { CloudUpload, ArrowLeft } from "lucide-react"
 import { ProductDetailsEditor } from "./product-details-editor"
 import { type Product } from "../data/schema"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 // Type for existing images (URLs from backend)
 type ExistingImage = {
@@ -146,6 +154,7 @@ const formSchema = z.object({
     product_id: z.number(),
     product_name: z.string().optional(),
     product_code: z.string().optional(),
+    product_image: z.string().optional(),
     variant_id: z.number().nullable().optional(),
     qty: z.number(),
     wastage_percent: z.number().optional(),
@@ -983,7 +992,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Type *</FormLabel>
+                      <FormLabel>Product Type <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <ProductTypeCombobox
                           value={field.value}
@@ -1001,7 +1010,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Name *</FormLabel>
+                      <FormLabel>Product Name <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input placeholder="Enter product name" {...field} />
                       </FormControl>
@@ -1015,7 +1024,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Code *</FormLabel>
+                      <FormLabel>Product Code <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <div className="flex rounded-md shadow-xs">
                           <Input
@@ -1065,7 +1074,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="barcode_symbology"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Barcode Symbology *</FormLabel>
+                      <FormLabel>Barcode Symbology <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <BarcodeSymbologyCombobox
                           value={field.value || "C128"}
@@ -1100,7 +1109,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="category_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category *</FormLabel>
+                      <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <CategoryCombobox
                           value={field.value}
@@ -1121,7 +1130,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="file"
                     render={({ field: { value, onChange, ...field } }) => (
                       <FormItem>
-                        <FormLabel>Attach File *</FormLabel>
+                        <FormLabel>Attach File <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Input
                             type="file"
@@ -1174,6 +1183,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             product_id: product.id,
                             product_name: product.name,
                             product_code: product.code,
+                            product_image: product.image,
                             variant_id: product.variant_id,
                             qty: 1,
                             wastage_percent: 0,
@@ -1216,15 +1226,37 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                               const unitPrice = item.unit_price || 0
                               const subtotal = qty * unitPrice
 
+                              const firstImage = item.product_image?.split(',')[0]?.trim()
+                              const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
+                              const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                              const initials = (item.product_name || 'P')
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2)
+
                               return (
                                 <TableRow key={index}>
-                                  <TableCell className="p-2 text-sm">
-                                    {item.product_name || `Product ID: ${item.product_id}`}
-                                    {item.product_code && (
-                                      <span className="text-muted-foreground ml-1">
-                                        [{item.product_code}]
-                                      </span>
-                                    )}
+                                  <TableCell className="p-2">
+                                    <div className="flex items-center gap-2">
+                                      <Avatar className="h-8 w-8 rounded-md">
+                                        {imageUrl ? (
+                                          <AvatarImage src={imageUrl} alt={item.product_name || 'Product'} className="object-cover" />
+                                        ) : null}
+                                        <AvatarFallback className="bg-muted text-muted-foreground rounded-md text-xs">
+                                          {initials}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex flex-col">
+                                        <span className="text-sm font-medium">{item.product_name || `Product ID: ${item.product_id}`}</span>
+                                        {item.product_code && (
+                                          <span className="text-xs text-muted-foreground">
+                                            {item.product_code}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
                                   </TableCell>
                                   <TableCell className="p-2">
                                     <FormField
@@ -1248,14 +1280,14 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                     />
                                   </TableCell>
                                   <TableCell className="p-2">
-                                    <div className="flex items-center gap-1">
+                                    <div className="relative flex items-center">
                                       <FormField
                                         control={form.control}
                                         name={`product_list.${index}.qty`}
                                         render={({ field }) => (
                                           <Input
                                             type="number"
-                                            className="w-24 h-8"
+                                            className="h-8 pr-24 rounded-r-none border-r-0"
                                             value={field.value || 1}
                                             onChange={(e) => {
                                               const newQty = parseFloat(e.target.value) || 1
@@ -1271,19 +1303,21 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                           control={form.control}
                                           name={`product_list.${index}.combo_unit_id`}
                                           render={({ field }) => (
-                                            <select
-                                              className="h-8 px-2 text-sm border rounded-md"
-                                              value={field.value || item.combo_unit_id || units[0]?.id}
-                                              onChange={(e) => {
-                                                field.onChange(parseInt(e.target.value))
-                                              }}
+                                            <Select
+                                              value={String(field.value || item.combo_unit_id || units[0]?.id)}
+                                              onValueChange={(value) => field.onChange(parseInt(value))}
                                             >
-                                              {units.map((unit) => (
-                                                <option key={unit.id} value={unit.id}>
-                                                  {unit.name}
-                                                </option>
-                                              ))}
-                                            </select>
+                                              <SelectTrigger className="h-8 w-20 rounded-l-none border-l-0">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                {units.map((unit) => (
+                                                  <SelectItem key={unit.id} value={String(unit.id)}>
+                                                    {unit.name}
+                                                  </SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
                                           )}
                                         />
                                       )}
@@ -1372,7 +1406,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="unit_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product Unit *</FormLabel>
+                        <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <UnitCombobox
                             value={field.value}
@@ -1450,7 +1484,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="cost"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product Cost *</FormLabel>
+                        <FormLabel>Product Cost <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -1492,7 +1526,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product Price *</FormLabel>
+                        <FormLabel>Product Price <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -1808,7 +1842,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             name={`variant_option.${index}`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Option *</FormLabel>
+                                <FormLabel>Option <span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input
                                     placeholder="e.g., Size, Color"
@@ -1827,7 +1861,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             name={`variant_value.${index}`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Value * (comma-separated)</FormLabel>
+                                <FormLabel>Value <span className="text-red-500">*</span> (comma-separated)</FormLabel>
                                 <FormControl>
                                   <TagInput
                                     value={field.value ? field.value.split(',').map(v => v.trim()).filter(Boolean) : []}
@@ -2438,7 +2472,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="meta_title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Meta Title *</FormLabel>
+                        <FormLabel>Meta Title <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Meta title for SEO"
@@ -2456,7 +2490,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="meta_description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Meta Description *</FormLabel>
+                        <FormLabel>Meta Description <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Input
                             placeholder="Meta description for SEO"

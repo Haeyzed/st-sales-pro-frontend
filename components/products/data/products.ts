@@ -438,6 +438,7 @@ export type ComboProductSearchResult = {
   cost: number
   brand: string
   unit_id: number
+  image?: string
   units: Array<{
     id: number
     name: string

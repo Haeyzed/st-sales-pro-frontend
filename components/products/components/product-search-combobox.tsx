@@ -20,6 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Spinner } from "@/components/ui/spinner"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface ProductSearchComboboxProps {
   onProductSelect?: (product: ComboProductSearchResult) => void
@@ -92,21 +93,41 @@ export function ProductSearchCombobox({
               <CommandEmpty>No products found.</CommandEmpty>
             ) : (
               <CommandGroup>
-                {products.map((product) => (
-                  <CommandItem
-                    key={`${product.id}-${product.variant_id || 0}`}
-                    value={`${product.name}-${product.code}`}
-                    onSelect={() => handleSelect(product)}
-                  >
-                    <Check className="mr-2 h-4 w-4 opacity-0" />
-                    <div className="flex flex-col">
-                      <span className="font-medium">{product.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {product.code} - {product.price.toFixed(2)}
-                      </span>
-                    </div>
-                  </CommandItem>
-                ))}
+                {products.map((product) => {
+                  const firstImage = product.image?.split(',')[0]?.trim()
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
+                  const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                  const initials = product.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)
+
+                  return (
+                    <CommandItem
+                      key={`${product.id}-${product.variant_id || 0}`}
+                      value={`${product.name}-${product.code}`}
+                      onSelect={() => handleSelect(product)}
+                    >
+                      <Check className="mr-2 h-4 w-4 opacity-0" />
+                      <Avatar className="h-8 w-8 rounded-md mr-2">
+                        {imageUrl ? (
+                          <AvatarImage src={imageUrl} alt={product.name} className="object-cover" />
+                        ) : null}
+                        <AvatarFallback className="bg-muted text-muted-foreground rounded-md text-xs">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{product.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {product.code} - {product.price.toFixed(2)}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  )
+                })}
               </CommandGroup>
             )}
           </CommandList>
