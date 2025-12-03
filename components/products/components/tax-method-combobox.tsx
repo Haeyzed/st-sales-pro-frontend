@@ -4,16 +4,16 @@ import * as React from "react"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 
 interface TaxMethodComboboxProps {
-  value?: number | null
-  onValueChange?: (value: number | null) => void
+  value?: string | null
+  onValueChange?: (value: string | null) => void
   placeholder?: string
   disabled?: boolean
   className?: string
 }
 
 const taxMethodOptions: ComboboxOption[] = [
-  { value: "1", label: "Exclusive" },
-  { value: "2", label: "Inclusive" },
+  { value: "exclusive", label: "Exclusive" },
+  { value: "inclusive", label: "Inclusive" },
 ]
 
 export function TaxMethodCombobox({
@@ -27,14 +27,14 @@ export function TaxMethodCombobox({
     if (newValue === undefined) {
       onValueChange?.(null)
     } else {
-      onValueChange?.(parseInt(newValue))
+      onValueChange?.(newValue)
     }
   }
 
   return (
     <Combobox
       options={taxMethodOptions}
-      value={value?.toString()}
+      value={value}
       onValueChange={handleValueChange}
       placeholder={placeholder}
       searchPlaceholder="Search method..."

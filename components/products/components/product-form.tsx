@@ -95,7 +95,7 @@ const formSchema = z.object({
   daily_sale_objective: z.number().nullable().optional(),
   brand_id: z.number().nullable().optional(),
   tax_id: z.number().nullable().optional(),
-  tax_method: z.number().nullable().optional(),
+  tax_method: z.enum(["exclusive", "inclusive"]).nullable().optional(),
   alert_quantity: z.number().nullable().optional(),
   image: z.array(z.instanceof(File)).default([]),
   file: z.instanceof(File).nullable().optional(),
@@ -295,7 +295,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
             daily_sale_objective: product.daily_sale_objective,
             brand_id: product.brand_id,
             tax_id: product.tax_id,
-            tax_method: product.tax_method,
+            tax_method: product.tax_method as "exclusive" | "inclusive" | null,
             alert_quantity: product.alert_quantity,
             is_variant: product.is_variant || false,
             variant_option: variantOption,
@@ -1607,7 +1607,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       </FormDescription>
                       <FormControl>
                         <TaxMethodCombobox
-                          value={field.value || 1}
+                          value={field.value || "exclusive"}
                           onValueChange={field.onChange}
                           placeholder="Select tax method..."
                         />
