@@ -69,7 +69,8 @@ export function MultipleProductSearchCombobox({
     }
     
     setSearchTerm("")
-    setOpen(false)
+    // Keep dropdown open for multiple selections
+    // setOpen(false)
   }
 
   const handleRemove = (productId: number, variantId: number | null) => {
@@ -165,7 +166,7 @@ export function MultipleProductSearchCombobox({
       {selectedProducts.length > 0 && (
         <div>
           <h4 className="text-sm font-medium mb-3">Selected Products</h4>
-          <ItemGroup className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <ItemGroup className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
             {selectedProducts.map((product) => {
               const firstImage = product.image?.split(',')[0]?.trim()
               const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
@@ -175,30 +176,30 @@ export function MultipleProductSearchCombobox({
                   <button
                     type="button"
                     onClick={() => handleRemove(product.id, product.variant_id)}
-                    className="absolute top-1 right-1 z-10 h-5 w-5 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    className="absolute top-1 right-1 z-10 h-6 w-6 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-4 w-4" />
                   </button>
                   <ItemHeader>
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
                         alt={product.name}
-                        width={128}
-                        height={128}
+                        width={96}
+                        height={96}
                         className="aspect-square w-full object-cover"
                       />
                     ) : (
                       <div className="aspect-square w-full bg-muted flex items-center justify-center">
-                        <span className="text-2xl font-semibold text-muted-foreground">
+                        <span className="text-lg font-semibold text-muted-foreground">
                           {product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                         </span>
                       </div>
                     )}
                   </ItemHeader>
                   <ItemContent>
-                    <ItemTitle className="line-clamp-2">{product.name}</ItemTitle>
-                    <ItemDescription>{product.code}</ItemDescription>
+                    <ItemTitle className="line-clamp-2 text-xs">{product.name}</ItemTitle>
+                    <ItemDescription className="text-[10px]">{product.code}</ItemDescription>
                   </ItemContent>
                 </Item>
               )

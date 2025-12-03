@@ -2477,17 +2477,21 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
 
               {/* E-commerce & SEO Fields */}
               <div className="space-y-4 border-t pt-4">
-                <FormField
-                  control={form.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Tags</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter tags separated by commas"
-                        {...field}
-                        value={field.value || ""}
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Tags</FormLabel>
+                    <FormControl>
+                      <TagInput
+                        value={field.value ? field.value.split(',').map(v => v.trim()).filter(Boolean) : []}
+                        onChange={(tags) => {
+                          field.onChange(tags.length > 0 ? tags.join(',') : null)
+                        }}
+                        placeholder="Type tag and press Enter or comma..."
+                        separator=","
+                        allowDuplicates={false}
                       />
                     </FormControl>
                     <FormMessage />
@@ -2552,26 +2556,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="tags"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Related Products</FormLabel>
-                    <FormDescription>
-                      Search and select related products
-                    </FormDescription>
-                    <FormControl>
-                      <Input
-                        placeholder="Search products..."
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               </div>
 
               {/* Submit Button */}
