@@ -10,7 +10,7 @@ export function Categories() {
     <CategoriesProvider>
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Category List</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Categories</h2>
           <p className="text-muted-foreground">
             Manage your product categories here.
           </p>

@@ -118,11 +118,11 @@ export const sidebarData: SidebarData = {
           icon: Package,
           items: [
             {
-              title: "Category",
+              title: "Categories",
               url: "/products/category",
             },
             {
-              title: "Product List",
+              title: "Products",
               url: "/products",
             },
             {
@@ -134,7 +134,7 @@ export const sidebarData: SidebarData = {
               url: "/products/print-barcode",
             },
             {
-              title: "Adjustment List",
+              title: "Adjustments",
               url: "/products/adjustment",
             },
             {
@@ -152,7 +152,7 @@ export const sidebarData: SidebarData = {
           icon: ShoppingCart,
           items: [
             {
-              title: "Purchase List",
+              title: "Purchases",
               url: "/purchases",
             },
             {
@@ -170,7 +170,7 @@ export const sidebarData: SidebarData = {
           icon: Receipt,
           items: [
             {
-              title: "Sale List",
+              title: "Sales",
               url: "/sales",
             },
             {
@@ -186,27 +186,27 @@ export const sidebarData: SidebarData = {
               url: "/sales/import-csv",
             },
             {
-              title: "Packing Slip List",
+              title: "Packing Slips",
               url: "/sales/packing-slips",
             },
             {
-              title: "Challan List",
+              title: "Challans",
               url: "/sales/challans",
             },
             {
-              title: "Delivery List",
+              title: "Deliveries",
               url: "/sales/delivery",
             },
             {
-              title: "Gift Card List",
+              title: "Gift Cards",
               url: "/sales/gift-cards",
             },
             {
-              title: "Coupon List",
+              title: "Coupons",
               url: "/sales/coupons",
             },
             {
-              title: "Courier List",
+              title: "Couriers",
               url: "/sales/couriers",
             },
           ],
@@ -216,11 +216,11 @@ export const sidebarData: SidebarData = {
           icon: DollarSign,
           items: [
             {
-              title: "Expense Category",
+              title: "Expense Categories",
               url: "/expenses/categories",
             },
             {
-              title: "Expense List",
+              title: "Expenses",
               url: "/expenses",
             },
             {
@@ -234,7 +234,7 @@ export const sidebarData: SidebarData = {
           icon: FileText,
           items: [
             {
-              title: "Quotation List",
+              title: "Quotations",
               url: "/quotations",
             },
             {
@@ -248,7 +248,7 @@ export const sidebarData: SidebarData = {
           icon: Truck,
           items: [
             {
-              title: "Transfer List",
+              title: "Transfers",
               url: "/transfers",
             },
             {
@@ -285,7 +285,7 @@ export const sidebarData: SidebarData = {
           icon: Calculator,
           items: [
             {
-              title: "Account List",
+              title: "Accounts",
               url: "/accounting/accounts",
             },
             {
@@ -293,7 +293,7 @@ export const sidebarData: SidebarData = {
               url: "/accounting/accounts/create",
             },
             {
-              title: "Money Transfer",
+              title: "Money Transfers",
               url: "/accounting/money-transfers",
             },
             {
@@ -337,7 +337,7 @@ export const sidebarData: SidebarData = {
           icon: Users,
           items: [
             {
-              title: "User List",
+              title: "Users",
               url: "/people/users",
             },
             {
@@ -345,7 +345,7 @@ export const sidebarData: SidebarData = {
               url: "/people/users/create",
             },
             {
-              title: "Customer List",
+              title: "Customers",
               url: "/people/customers",
             },
             {
@@ -353,7 +353,7 @@ export const sidebarData: SidebarData = {
               url: "/people/customers/create",
             },
             {
-              title: "Biller List",
+              title: "Billers",
               url: "/people/billers",
             },
             {
@@ -361,7 +361,7 @@ export const sidebarData: SidebarData = {
               url: "/people/billers/create",
             },
             {
-              title: "Supplier List",
+              title: "Suppliers",
               url: "/people/suppliers",
             },
             {
@@ -481,7 +481,7 @@ export const sidebarData: SidebarData = {
           icon: Factory,
           items: [
             {
-              title: "Production List",
+              title: "Productions",
               url: "/manufacturing/productions",
             },
             {
@@ -489,7 +489,7 @@ export const sidebarData: SidebarData = {
               url: "/manufacturing/productions/create",
             },
             {
-              title: "Recipe",
+              title: "Recipes",
               url: "/manufacturing/recipes",
             },
           ],
@@ -673,7 +673,7 @@ export const sidebarData: SidebarData = {
               url: "/settings/sms-template",
             },
             {
-              title: "Custom Field List",
+              title: "Custom Fields",
               url: "/settings/custom-fields",
             },
             {

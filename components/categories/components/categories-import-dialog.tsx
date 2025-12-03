@@ -1,8 +1,6 @@
 "use client"
 
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -25,62 +23,22 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
+import { Label } from "@/components/ui/label"
+import { Download } from "lucide-react"
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+  FileUpload,
+  FileUploadDropzone,
+  FileUploadList,
+  FileUploadItem,
+  FileUploadItemPreview,
+  FileUploadItemMetadata,
+  FileUploadItemDelete,
+} from "@/components/ui/file-upload"
 import { importCategories } from "../data/categories"
-
-const formSchema = z.object({
-  file: z
-    .any()
-    .refine((files) => files && files.length > 0, {
-      message: "Please upload a file",
-    })
-    .refine(
-      (files) => files?.[0]?.type && ["text/csv"].includes(files[0].type),
-      "Please upload csv format."
-    ),
-})
 
 type CategoryImportDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-function CategoryImportForm({
-  form,
-  fileRef,
-  onSubmit,
-}: {
-  form: ReturnType<typeof useForm<z.infer<typeof formSchema>>>
-  fileRef: ReturnType<typeof form.register<"file">>
-  onSubmit: () => void
-}) {
-  return (
-    <Form {...form}>
-      <form id="category-import-form" onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
-          control={form.control}
-          name="file"
-          render={() => (
-            <FormItem className="my-2">
-              <FormLabel>File</FormLabel>
-              <FormControl>
-                <Input type="file" {...fileRef} className="h-8 py-0" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
-  )
 }
 
 export function CategoriesImportDialog({
@@ -89,58 +47,96 @@ export function CategoriesImportDialog({
 }: CategoryImportDialogProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const queryClient = useQueryClient()
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { file: undefined },
-  })
+  const [files, setFiles] = useState<File[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
-  const fileRef = form.register("file")
-
-  const onSubmit = async () => {
-    const file = form.getValues("file")
-
-    if (file && file[0]) {
-      try {
-        const result = await importCategories(file[0])
-        toast.success(
-          `Successfully imported ${result.imported} categories${
-            result.errors.length > 0
-              ? ` with ${result.errors.length} errors`
-              : ""
-          }`
-        )
-        queryClient.invalidateQueries({ queryKey: ["categories"] })
-        onOpenChange(false)
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Failed to import categories"
-        )
-      }
-    }
+  const handleDownloadTemplate = () => {
+    // For now, just show a message
+    toast.info("Template download will be available soon")
   }
 
-  const handleOpenChange = (val: boolean) => {
-    onOpenChange(val)
-    form.reset()
+  const handleImport = async () => {
+    if (files.length === 0) {
+      toast.error("Please select a file to import")
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const result = await importCategories(files[0])
+      toast.success(
+        `Successfully imported ${result.imported} categories${
+          result.errors.length > 0
+            ? ` with ${result.errors.length} errors`
+            : ""
+        }`
+      )
+      queryClient.invalidateQueries({ queryKey: ["categories"] })
+      setFiles([])
+      onOpenChange(false)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to import categories"
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (isDesktop) {
     return (
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="gap-2 sm:max-w-sm">
-          <DialogHeader className="text-start">
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
             <DialogTitle>Import Categories</DialogTitle>
             <DialogDescription>
-              Import categories quickly from a CSV file.
+              Upload a CSV file to import categories. Make sure the file follows
+              the required format.
             </DialogDescription>
           </DialogHeader>
-          <CategoryImportForm form={form} fileRef={fileRef} onSubmit={onSubmit} />
-          <DialogFooter className="gap-2">
-            <DialogClose asChild>
-              <Button variant="outline">Close</Button>
-            </DialogClose>
-            <Button type="submit" form="category-import-form">
-              Import
+          <div className="space-y-4 py-4">
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadTemplate}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Template
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <Label>Select File</Label>
+              <FileUpload
+                value={files}
+                onValueChange={setFiles}
+                accept=".csv,.xls,.xlsx"
+                maxFiles={1}
+                disabled={isLoading}
+              >
+                <FileUploadDropzone>
+                  <p className="text-sm text-muted-foreground">
+                    Drag and drop a CSV/Excel file here, or click to browse
+                  </p>
+                </FileUploadDropzone>
+                <FileUploadList>
+                  {files.map((file, index) => (
+                    <FileUploadItem key={index} value={file}>
+                      <FileUploadItemPreview />
+                      <FileUploadItemMetadata />
+                      <FileUploadItemDelete />
+                    </FileUploadItem>
+                  ))}
+                </FileUploadList>
+              </FileUpload>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleImport} disabled={files.length === 0 || isLoading}>
+              {isLoading ? "Importing..." : "Import"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -149,24 +145,59 @@ export function CategoriesImportDialog({
   }
 
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange}>
+    <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
-        <DrawerHeader className="text-left">
+        <DrawerHeader>
           <DrawerTitle>Import Categories</DrawerTitle>
           <DrawerDescription>
-            Import categories quickly from a CSV file.
+            Upload a CSV file to import categories. Make sure the file follows the
+            required format.
           </DrawerDescription>
         </DrawerHeader>
-        <div className="px-4">
-          <CategoryImportForm form={form} fileRef={fileRef} onSubmit={onSubmit} />
+        <div className="px-4 space-y-4">
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadTemplate}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download Template
+            </Button>
+          </div>
+          <div className="space-y-2">
+            <Label>Select File</Label>
+            <FileUpload
+              value={files}
+              onValueChange={setFiles}
+              accept=".csv,.xls,.xlsx"
+              maxFiles={1}
+              disabled={isLoading}
+            >
+              <FileUploadDropzone>
+                <p className="text-sm text-muted-foreground">
+                  Drag and drop a CSV/Excel file here, or click to browse
+                </p>
+              </FileUploadDropzone>
+              <FileUploadList>
+                {files.map((file, index) => (
+                  <FileUploadItem key={index} value={file}>
+                    <FileUploadItemPreview />
+                    <FileUploadItemMetadata />
+                    <FileUploadItemDelete />
+                  </FileUploadItem>
+                ))}
+              </FileUploadList>
+            </FileUpload>
+          </div>
         </div>
-        <DrawerFooter className="pt-2">
-          <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
-          </DrawerClose>
-          <Button type="submit" form="category-import-form">
-            Import
+        <DrawerFooter>
+          <Button onClick={handleImport} disabled={files.length === 0 || isLoading}>
+            {isLoading ? "Importing..." : "Import"}
           </Button>
+          <DrawerClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
