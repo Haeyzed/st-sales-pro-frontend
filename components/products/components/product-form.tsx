@@ -1195,45 +1195,50 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
               {productType === "combo" && (
                 <div className="space-y-4 border-t pt-4">
                   <div>
-                    <FormLabel className="text-base font-semibold">Add Product</FormLabel>
+                    <FormLabel className="text-base font-semibold">Add Products</FormLabel>
                     <div className="mt-2">
-                      <ProductSearchCombobox
-                        onProductSelect={(product) => {
-                          // Check for duplicates
-                          const currentList = form.getValues("product_list") || []
-                          const isDuplicate = currentList.some(
-                            (item) => item.product_id === product.id && 
-                            (item.variant_id === product.variant_id || (!item.variant_id && !product.variant_id))
-                          )
-                          
-                          if (isDuplicate) {
-                            toast.error("Duplicate input is not allowed!")
-                            return
-                          }
-
-                          // Store units for this product
-                          if (product.units && product.units.length > 0) {
-                            setProductUnits(prev => ({
-                              ...prev,
-                              [product.id]: product.units
-                            }))
-                          }
-
-                          const newItem = {
+                      <MultipleProductSearchCombobox
+                        selectedProducts={productList.map((item): ComboProductSearchResult => ({
+                          id: item.product_id,
+                          name: item.product_name || '',
+                          code: item.product_code || '',
+                          price: item.unit_price || 0,
+                          cost: item.unit_cost || 0,
+                          qty: item.qty || 1,
+                          brand: '',
+                          unit_id: item.combo_unit_id || 0,
+                          variant_id: item.variant_id || null,
+                          additional_price: 0,
+                          image: item.product_image ?? undefined,
+                          units: (productUnits[item.product_id] || []).map(u => ({ ...u, selected: false }))
+                        }))}
+                        onProductsChange={(products) => {
+                          // Update product list
+                          const newProductList = products.map(product => ({
                             product_id: product.id,
                             product_name: product.name,
                             product_code: product.code,
                             product_image: product.image,
                             variant_id: product.variant_id,
-                            qty: 1,
+                            qty: product.qty || 1,
                             wastage_percent: 0,
                             combo_unit_id: product.unit_id,
                             unit_cost: product.cost,
                             unit_price: product.price,
-                          }
-                          form.setValue("product_list", [...currentList, newItem])
+                          }))
+                          
+                          form.setValue("product_list", newProductList)
+                          
+                          // Update units for all products
+                          const newUnits: Record<number, Array<{id: number, name: string, operation_value: number, operator: string}>> = {}
+                          products.forEach(product => {
+                            if (product.units && product.units.length > 0) {
+                              newUnits[product.id] = product.units
+                            }
+                          })
+                          setProductUnits(newUnits)
                         }}
-                        placeholder="Please type product code and select"
+                        placeholder="Search and select products..."
                       />
                     </div>
                   </div>
@@ -1824,7 +1829,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
               {/* Checkboxes Row 1: Featured, Embedded Barcode */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t pt-4">
               
-                {productType === "standard" && (
+                {productType === "standard" && !form.watch("is_batch") && (
                   <FormField
                     control={form.control}
                     name="is_variant"
