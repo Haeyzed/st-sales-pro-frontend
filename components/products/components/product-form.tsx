@@ -2372,28 +2372,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 />
               </div>
 
-              {/* Product Details */}
-              <div className="space-y-4 border-t pt-4">
-                <FormField
-                  control={form.control}
-                  name="product_details"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Details</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter product details"
-                          rows={5}
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
               <FormField
                 control={form.control}
                 name="specification"
