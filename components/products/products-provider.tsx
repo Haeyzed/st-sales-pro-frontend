@@ -4,7 +4,7 @@ import { createContext, useContext, useState } from "react"
 import useDialogState from "@/hooks/use-dialog-state"
 import { type Product } from "./data/schema"
 
-type ProductsDialogType = "add" | "edit" | "delete" | "import"
+type ProductsDialogType = "add" | "edit" | "delete" | "import" | "view"
 
 type ProductsContextType = {
   open: ProductsDialogType | null

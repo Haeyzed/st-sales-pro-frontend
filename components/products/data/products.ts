@@ -496,3 +496,97 @@ export async function getSaleUnits(unitId: number): Promise<SaleUnit> {
   return response.data
 }
 
+/**
+ * Product History Types
+ */
+export type ProductHistoryFilters = {
+  starting_date: string
+  ending_date: string
+  warehouse_id?: number | null
+  page?: number
+  per_page?: number
+}
+
+export type HistoryItem = {
+  id: number
+  reference_no: string
+  created_at: string
+  customer_name?: string
+  customer_phone?: string
+  supplier_name?: string
+  supplier_phone?: string
+  warehouse_name: string
+  qty: number
+  sale_unit_id?: number
+  purchase_unit_id?: number
+  total: number
+}
+
+export type HistoryResponse = {
+  data: HistoryItem[]
+  meta: {
+    current_page: number
+    per_page: number
+    total: number
+    last_page: number
+    from: number
+    to: number
+  }
+}
+
+/**
+ * Get sale history for a product
+ */
+export async function getProductSaleHistory(
+  productId: number,
+  filters: ProductHistoryFilters
+): Promise<HistoryResponse> {
+  const response = await apiGetClient<HistoryResponse>(
+    `products/${productId}/history/sales`,
+    filters
+  )
+  return response.data
+}
+
+/**
+ * Get purchase history for a product
+ */
+export async function getProductPurchaseHistory(
+  productId: number,
+  filters: ProductHistoryFilters
+): Promise<HistoryResponse> {
+  const response = await apiGetClient<HistoryResponse>(
+    `products/${productId}/history/purchases`,
+    filters
+  )
+  return response.data
+}
+
+/**
+ * Get sale return history for a product
+ */
+export async function getProductSaleReturnHistory(
+  productId: number,
+  filters: ProductHistoryFilters
+): Promise<HistoryResponse> {
+  const response = await apiGetClient<HistoryResponse>(
+    `products/${productId}/history/sale-returns`,
+    filters
+  )
+  return response.data
+}
+
+/**
+ * Get purchase return history for a product
+ */
+export async function getProductPurchaseReturnHistory(
+  productId: number,
+  filters: ProductHistoryFilters
+): Promise<HistoryResponse> {
+  const response = await apiGetClient<HistoryResponse>(
+    `products/${productId}/history/purchase-returns`,
+    filters
+  )
+  return response.data
+}
+

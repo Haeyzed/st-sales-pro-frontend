@@ -2,7 +2,7 @@
 
 import { DotsHorizontalIcon } from "@radix-ui/react-icons"
 import { type Row } from "@tanstack/react-table"
-import { Trash2, FolderPen } from "lucide-react"
+import { Trash2, FolderPen, Eye, History } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -27,12 +27,9 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { data: session } = useSession()
   const router = useRouter()
 
+  const canView = canPerformAction(session, "products:view")
   const canUpdate = canPerformAction(session, "products:update")
   const canDelete = canPerformAction(session, "products:delete")
-
-  if (!canUpdate && !canDelete) {
-    return null
-  }
 
   return (
     <DropdownMenu modal={false}>
@@ -46,6 +43,19 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
+        {canView && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(row.original)
+              setOpen("view")
+            }}
+          >
+            View
+            <DropdownMenuShortcut>
+              <Eye size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
         {canUpdate && (
           <DropdownMenuItem
             onClick={() => {
@@ -58,7 +68,19 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}
-        {canUpdate && canDelete && <DropdownMenuSeparator />}
+        {canView && (
+          <DropdownMenuItem
+            onClick={() => {
+              router.push(`/products/${row.original.id}/history`)
+            }}
+          >
+            History
+            <DropdownMenuShortcut>
+              <History size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+        {(canUpdate || canView) && canDelete && <DropdownMenuSeparator />}
         {canDelete && (
           <DropdownMenuItem
             onClick={() => {

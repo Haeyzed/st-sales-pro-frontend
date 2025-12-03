@@ -3,6 +3,7 @@
 import { ProductsActionDialog } from "./products-action-dialog"
 import { ProductsDeleteDialog } from "./products-delete-dialog"
 import { ProductsImportDialog } from "./products-import-dialog"
+import { ProductsViewDialog } from "./products-view-dialog"
 import { useProducts } from "../products-provider"
 
 export function ProductsDialogs() {
@@ -23,6 +24,18 @@ export function ProductsDialogs() {
 
       {currentRow && (
         <>
+          <ProductsViewDialog
+            key={`product-view-${currentRow.id}`}
+            open={open === "view"}
+            onOpenChange={(state) => {
+              setOpen(state ? "view" : null)
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
+            currentRow={currentRow}
+          />
+
           <ProductsActionDialog
             key={`product-edit-${currentRow.id}`}
             open={open === "edit"}

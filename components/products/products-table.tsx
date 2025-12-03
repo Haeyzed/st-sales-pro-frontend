@@ -30,6 +30,9 @@ import { DataTableBulkActions } from "./components/data-table-bulk-actions"
 import { productStatuses, productTypes, stockFilters } from "./data/data"
 import { handleServerError } from "@/lib/handle-server-error"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { Label } from "@/components/ui/label"
+import { Filter } from "lucide-react"
 import { CategoryCombobox } from "./components/category-combobox"
 import { BrandCombobox } from "./components/brand-combobox"
 import { UnitCombobox } from "./components/unit-combobox"
@@ -46,6 +49,7 @@ export function ProductsTable() {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
+  const [showFilters, setShowFilters] = useState(false)
 
   // Get search query and filters from URL
   const search = searchParams.get("search") || ""
@@ -378,81 +382,119 @@ export function ProductsTable() {
         "flex flex-1 flex-col gap-4"
       )}
     >
-      <DataTableToolbar
-        table={table}
-        searchPlaceholder="Filter products..."
-        searchKey="name"
-        searchValue={searchInputValue}
-        onSearchChange={handleSearchInputChange}
-        customFilters={
-          <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <DataTableToolbar
+            table={table}
+            searchPlaceholder="Filter products..."
+            searchKey="name"
+            searchValue={searchInputValue}
+            onSearchChange={handleSearchInputChange}
+            filters={[
+              // {
+              //   columnId: "is_active",
+              //   title: "Status",
+              //   options: productStatuses.map((status) => ({
+              //     label: status.label,
+              //     value: status.value,
+              //     count: rawProducts.filter((product) => {
+              //       const productStatus = product.is_active ? "active" : "inactive"
+              //       return productStatus === status.value
+              //     }).length,
+              //   })),
+              //   value: statusFilter,
+              //   onChange: handleStatusFilterChange,
+              // },
+            ]}
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="h-8"
+        >
+          <Filter className="mr-2 h-4 w-4" />
+          Filters
+        </Button>
+      </div>
+      
+      {showFilters && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-2 min-w-0">
+            <Label>Warehouse</Label>
             <WarehouseCombobox
               value={warehouseId}
               onValueChange={handleWarehouseFilterChange}
-              placeholder="Filter by warehouse..."
-              className="h-8 w-[180px]"
+              placeholder="All Warehouses"
+              className="w-full"
             />
+          </div>
+          <div className="space-y-2 min-w-0">
+            <Label>Category</Label>
             <CategoryCombobox
               value={categoryId}
               onValueChange={handleCategoryFilterChange}
-              placeholder="Filter by category..."
-              className="h-8 w-[180px]"
+              placeholder="All Categories"
+              className="w-full"
             />
+          </div>
+          <div className="space-y-2 min-w-0">
+            <Label>Brand</Label>
             <BrandCombobox
               value={brandId}
               onValueChange={handleBrandFilterChange}
-              placeholder="Filter by brand..."
-              className="h-8 w-[180px]"
+              placeholder="All Brands"
+              className="w-full"
             />
+          </div>
+          <div className="space-y-2 min-w-0">
+            <Label>Unit</Label>
             <UnitCombobox
               value={unitId}
               onValueChange={handleUnitFilterChange}
-              placeholder="Filter by unit..."
-              className="h-8 w-[180px]"
+              placeholder="All Units"
+              className="w-full"
             />
+          </div>
+          <div className="space-y-2 min-w-0">
+            <Label>Tax</Label>
             <TaxCombobox
               value={taxId}
               onValueChange={handleTaxFilterChange}
-              placeholder="Filter by tax..."
-              className="h-8 w-[180px]"
+              placeholder="All Taxes"
+              className="w-full"
             />
+          </div>
+          <div className="space-y-2 min-w-0">
+            <Label>IMEI/Variant</Label>
             <ImeiVariantCombobox
               value={imeiVariant}
               onValueChange={handleImeiVariantFilterChange}
-              placeholder="Filter by IMEI/Variant..."
-              className="h-8 w-[180px]"
+              placeholder="All IMEI/Variant"
+              className="w-full"
             />
+          </div>
+          <div className="space-y-2 min-w-0">
+            <Label>Product Type</Label>
             <ProductTypeCombobox
               value={productType}
               onValueChange={handleProductTypeFilterChange}
-              placeholder="Filter by type..."
-              className="h-8 w-[180px]"
+              placeholder="All Types"
+              className="w-full"
             />
+          </div>
+          <div className="space-y-2 min-w-0">
+            <Label>Stock Filter</Label>
             <StockFilterCombobox
               value={stockFilter as "with" | "without" | null}
               onValueChange={handleStockFilterChange}
-              placeholder="Filter by stock..."
-              className="h-8 w-[180px]"
+              placeholder="All Stock"
+              className="w-full"
             />
           </div>
-        }
-        filters={[
-          {
-            columnId: "is_active",
-            title: "Status",
-            options: productStatuses.map((status) => ({
-              label: status.label,
-              value: status.value,
-              count: rawProducts.filter((product) => {
-                const productStatus = product.is_active ? "active" : "inactive"
-                return productStatus === status.value
-              }).length,
-            })),
-            value: statusFilter,
-            onChange: handleStatusFilterChange,
-          },
-        ]}
-      />
+        </div>
+      )}
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -488,7 +530,9 @@ export function ProductsTable() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Loading...
+                  <div className="flex justify-center">
+                    <Spinner />
+                  </div>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (

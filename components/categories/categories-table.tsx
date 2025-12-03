@@ -31,6 +31,9 @@ import { DataTableBulkActions } from "./components/data-table-bulk-actions"
 import { categoryStatuses, categoryFeaturedOptions } from "./data/data"
 import { handleServerError } from "@/lib/handle-server-error"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { Label } from "@/components/ui/label"
+import { Filter } from "lucide-react"
 import { CategoryParentCombobox } from "./components/category-parent-combobox"
 
 export function CategoriesTable() {
@@ -40,6 +43,7 @@ export function CategoriesTable() {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
+  const [showFilters, setShowFilters] = useState(false)
 
   // Get search query and filters from URL
   const search = searchParams.get("search") || ""
@@ -282,51 +286,41 @@ export function CategoriesTable() {
         "flex flex-1 flex-col gap-4"
       )}
     >
-      <DataTableToolbar
-        table={table}
-        searchPlaceholder="Filter categories..."
-        searchKey="name"
-        searchValue={searchInputValue}
-        onSearchChange={handleSearchInputChange}
-        customFilters={
-          <CategoryParentCombobox
-            value={parentId}
-            onValueChange={handleParentFilterChange}
-            placeholder="Filter by parent..."
-            className="h-8 w-[180px]"
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <DataTableToolbar
+            table={table}
+            searchPlaceholder="Filter categories..."
+            searchKey="name"
+            searchValue={searchInputValue}
+            onSearchChange={handleSearchInputChange}
+            filters={[]}
           />
-        }
-        filters={[
-          {
-            columnId: "is_active",
-            title: "Status",
-            options: categoryStatuses.map((status) => ({
-              label: status.label,
-              value: status.value,
-              count: rawCategories.filter((cat) => {
-                const catStatus = cat.is_active ? "active" : "inactive"
-                return catStatus === status.value
-              }).length,
-            })),
-            value: statusFilter,
-            onChange: handleStatusFilterChange,
-          },
-          {
-            columnId: "featured",
-            title: "Featured",
-            options: categoryFeaturedOptions.map((option) => ({
-              label: option.label,
-              value: option.value,
-              count: rawCategories.filter((cat) => {
-                const catFeatured = cat.featured ? "featured" : "not_featured"
-                return catFeatured === option.value
-              }).length,
-            })),
-            value: featuredFilter,
-            onChange: handleFeaturedFilterChange,
-          },
-        ]}
-      />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="h-8"
+        >
+          <Filter className="mr-2 h-4 w-4" />
+          Filters
+        </Button>
+      </div>
+      
+      {showFilters && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-2 min-w-0">
+            <Label>Parent Category</Label>
+            <CategoryParentCombobox
+              value={parentId}
+              onValueChange={handleParentFilterChange}
+              placeholder="All Parents"
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -362,7 +356,9 @@ export function CategoriesTable() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Loading...
+                  <div className="flex justify-center">
+                    <Spinner />
+                  </div>
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
