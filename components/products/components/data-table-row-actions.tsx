@@ -2,7 +2,7 @@
 
 import { DotsHorizontalIcon } from "@radix-ui/react-icons"
 import { type Row } from "@tanstack/react-table"
-import { Trash2, FolderPen, Eye, History } from "lucide-react"
+import { Trash2, FolderPen, Eye, History, Barcode } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -77,6 +77,18 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             History
             <DropdownMenuShortcut>
               <History size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+        )}
+        {canView && (
+          <DropdownMenuItem
+            onClick={() => {
+              router.push(`/products/print-barcode?product=${row.original.code} (${row.original.name})`)
+            }}
+          >
+            Print Barcode
+            <DropdownMenuShortcut>
+              <Barcode size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         )}

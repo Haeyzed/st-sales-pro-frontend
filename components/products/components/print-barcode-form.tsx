@@ -1,0 +1,428 @@
+"use client"
+
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { ProductSearchCombobox } from "./product-search-combobox"
+import { BarcodeSettingsCombobox } from "./barcode-settings-combobox"
+import { X, Printer } from "lucide-react"
+import type { ComboProductSearchResult } from "../data/products"
+
+const printSchema = z.object({
+  barcode_setting_id: z.number({
+    required_error: "Please select a barcode setting",
+  }),
+  print_name: z.boolean().default(true),
+  name_size: z.number().default(15),
+  print_price: z.boolean().default(true),
+  price_size: z.number().default(15),
+  print_promo_price: z.boolean().default(false),
+  promo_price_size: z.number().default(15),
+  print_business_name: z.boolean().default(true),
+  business_name_size: z.number().default(15),
+  print_brand_name: z.boolean().default(true),
+  brand_name_size: z.number().default(15),
+})
+
+type PrintFormValues = z.infer<typeof printSchema>
+
+type BarcodeProduct = {
+  product: ComboProductSearchResult
+  quantity: number
+}
+
+interface PrintBarcodeFormProps {
+  preloadedProduct?: string | null
+}
+
+export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
+  const [products, setProducts] = useState<BarcodeProduct[]>([])
+
+  const form = useForm<PrintFormValues>({
+    resolver: zodResolver(printSchema),
+    defaultValues: {
+      print_name: true,
+      name_size: 15,
+      print_price: true,
+      price_size: 15,
+      print_promo_price: false,
+      promo_price_size: 15,
+      print_business_name: true,
+      business_name_size: 15,
+      print_brand_name: true,
+      brand_name_size: 15,
+    },
+  })
+
+  const addProduct = (product: ComboProductSearchResult) => {
+    // Check if already added
+    const exists = products.some(
+      (p) => p.product.id === product.id && p.product.variant_id === product.variant_id
+    )
+
+    if (exists) {
+      toast.error("Product already added to the list")
+      return
+    }
+
+    setProducts([...products, { product, quantity: 1 }])
+  }
+
+  const removeProduct = (productId: number, variantId: number | null) => {
+    setProducts(products.filter((p) => !(p.product.id === productId && p.product.variant_id === variantId)))
+  }
+
+  const updateQuantity = (productId: number, variantId: number | null, quantity: number) => {
+    setProducts(
+      products.map((p) =>
+        p.product.id === productId && p.product.variant_id === variantId
+          ? { ...p, quantity: Math.max(1, quantity) }
+          : p
+      )
+    )
+  }
+
+  const onSubmit = (values: PrintFormValues) => {
+    if (products.length === 0) {
+      toast.error("Please add at least one product")
+      return
+    }
+
+    // Create query params for print page
+    const params = new URLSearchParams()
+    params.set("barcode_setting", String(values.barcode_setting_id))
+    
+    // Print options
+    if (values.print_name) params.set("print[name]", "1")
+    params.set("print[name_size]", String(values.name_size))
+    
+    if (values.print_price) params.set("print[price]", "1")
+    params.set("print[price_size]", String(values.price_size))
+    
+    if (values.print_promo_price) params.set("print[promo_price]", "1")
+    params.set("print[promo_price_size]", String(values.promo_price_size))
+    
+    if (values.print_business_name) params.set("print[business_name]", "1")
+    params.set("print[business_name_size]", String(values.business_name_size))
+    
+    if (values.print_brand_name) params.set("print[brand_name]", "1")
+    params.set("print[brand_name_size]", String(values.brand_name_size))
+
+    // Products data
+    products.forEach((item, index) => {
+      params.set(`products[${index}][product_id]`, String(item.product.id))
+      params.set(`products[${index}][product_name]`, item.product.name)
+      params.set(`products[${index}][sub_sku]`, item.product.code)
+      params.set(`products[${index}][quantity]`, String(item.quantity))
+      params.set(`products[${index}][product_price]`, String(item.product.price))
+    })
+
+    // Open in new window for printing
+    window.open(`/products/print-barcode/preview?${params.toString()}`, 'PrintBarcode', 'width=800,height=600')
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="pt-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Product Search */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Add Product <span className="text-red-500">*</span>
+                </label>
+                <ProductSearchCombobox
+                  onProductSelect={addProduct}
+                  placeholder="Search product by code or name..."
+                />
+              </div>
+
+              {/* Products Table */}
+              {products.length > 0 && (
+                <div className="border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Code</TableHead>
+                        <TableHead className="w-32">Quantity</TableHead>
+                        <TableHead className="w-20"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {products.map((item) => (
+                        <TableRow key={`${item.product.id}-${item.product.variant_id || 0}`}>
+                          <TableCell className="font-medium">{item.product.name}</TableCell>
+                          <TableCell className="text-muted-foreground">{item.product.code}</TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                updateQuantity(
+                                  item.product.id,
+                                  item.product.variant_id,
+                                  parseInt(e.target.value) || 1
+                                )
+                              }
+                              className="w-24"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeProduct(item.product.id, item.product.variant_id)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              <div className="border-t pt-6">
+                <h3 className="text-base font-semibold mb-4">Information on Label <span className="text-red-500">*</span></h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Product Name */}
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="print_name"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="!mt-0 font-semibold">Product Name</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="name_size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Size</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 15)}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Price */}
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="print_price"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="!mt-0 font-semibold">Price</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="price_size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Size</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 15)}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Promotional Price */}
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="print_promo_price"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="!mt-0 font-semibold">Promotional Price</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="promo_price_size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Size</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 15)}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Business Name */}
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="print_business_name"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="!mt-0 font-semibold">Business Name</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="business_name_size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Size</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 15)}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Brand Name */}
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="print_brand_name"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="!mt-0 font-semibold">Brand Name</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="brand_name_size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs">Size</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 15)}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-6">
+                <FormField
+                  control={form.control}
+                  name="barcode_setting_id"
+                  render={({ field }) => (
+                    <FormItem className="max-w-md">
+                      <FormLabel>
+                        Paper Size <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <BarcodeSettingsCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select barcode setting..."
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={products.length === 0}>
+                  <Printer className="mr-2 h-4 w-4" />
+                  Generate Barcode Labels
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+

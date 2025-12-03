@@ -48,10 +48,12 @@ import {
   getProductsWithoutVariant,
   getProductsWithVariant,
   searchProductForCombo,
-  getSaleUnits
+  getSaleUnits,
+  type ComboProductSearchResult
 } from "../data/products"
 import { apiGetClient, apiDeleteClient } from "@/lib/api-client-client"
 import { ProductSearchCombobox } from "./product-search-combobox"
+import { MultipleProductSearchCombobox } from "./multiple-product-search-combobox"
 import { Plus, X, RefreshCw } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
@@ -137,6 +139,7 @@ const formSchema = z.object({
   tags: z.string().nullable().optional(),
   meta_title: z.string().nullable().optional(),
   meta_description: z.string().nullable().optional(),
+  related_products: z.string().nullable().optional(), // Comma-separated product IDs
   is_sync_disable: z.boolean().nullable().optional(),
   is_online: z.boolean().nullable().optional(),
   in_stock: z.boolean().nullable().optional(),
@@ -186,6 +189,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const [productUnits, setProductUnits] = useState<Record<number, Array<{id: number, name: string, operation_value: number, operator: string}>>>({})
   const [warehouses, setWarehouses] = useState<Array<{id: number, name: string}>>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
+  const [relatedProducts, setRelatedProducts] = useState<Array<ComboProductSearchResult>>([])
   const isEdit = !!productId
 
   const form = useForm<ProductForm>({
@@ -492,6 +496,35 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
           if (product.image && product.image !== 'zummXD2dvAtI.png') {
             const imageNames = product.image.split(',').map(img => img.trim()).filter(Boolean)
             setExistingImages(imageNames)
+          }
+
+          // Load related products
+          if (product.related_products) {
+            const relatedIds = product.related_products.split(',').filter(Boolean).map(Number)
+            if (relatedIds.length > 0) {
+              try {
+                const relatedProductsData = await Promise.all(
+                  relatedIds.map(id => getProduct(id))
+                )
+                const relatedProductsList = relatedProductsData.map(p => ({
+                  id: p.id,
+                  name: p.name,
+                  code: p.code,
+                  price: p.price,
+                  cost: p.cost,
+                  qty: p.qty || 0,
+                  brand: p.brand?.title || '',
+                  unit_id: p.unit_id,
+                  variant_id: null,
+                  additional_price: 0,
+                  image: p.image || undefined,
+                  units: []
+                })) as ComboProductSearchResult[]
+                setRelatedProducts(relatedProductsList)
+              } catch (error) {
+                console.error("Failed to load related products:", error)
+              }
+            }
           }
         } catch (error: any) {
           toast.error(error?.message || "Failed to load product")
@@ -1280,22 +1313,24 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                     />
                                   </TableCell>
                                   <TableCell className="p-2">
-                                    <div className="relative flex items-center">
+                                    <div className="flex rounded-md shadow-xs">
                                       <FormField
                                         control={form.control}
                                         name={`product_list.${index}.qty`}
                                         render={({ field }) => (
-                                          <Input
-                                            type="number"
-                                            className="h-8 pr-24 rounded-r-none border-r-0"
-                                            value={field.value || 1}
-                                            onChange={(e) => {
-                                              const newQty = parseFloat(e.target.value) || 1
-                                              field.onChange(newQty)
-                                            }}
-                                            min="1"
-                                            step="0.01"
-                                          />
+                                          <FormControl>
+                                            <Input
+                                              type="number"
+                                              className="h-9 w-24 -me-px rounded-r-none shadow-none focus-visible:z-10"
+                                              value={field.value || 1}
+                                              onChange={(e) => {
+                                                const newQty = parseFloat(e.target.value) || 1
+                                                field.onChange(newQty)
+                                              }}
+                                              min="1"
+                                              step="0.01"
+                                            />
+                                          </FormControl>
                                         )}
                                       />
                                       {units.length > 0 && (
@@ -1303,21 +1338,17 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                           control={form.control}
                                           name={`product_list.${index}.combo_unit_id`}
                                           render={({ field }) => (
-                                            <Select
-                                              value={String(field.value || item.combo_unit_id || units[0]?.id)}
-                                              onValueChange={(value) => field.onChange(parseInt(value))}
-                                            >
-                                              <SelectTrigger className="h-8 w-20 rounded-l-none border-l-0">
-                                                <SelectValue />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                {units.map((unit) => (
-                                                  <SelectItem key={unit.id} value={String(unit.id)}>
-                                                    {unit.name}
-                                                  </SelectItem>
-                                                ))}
-                                              </SelectContent>
-                                            </Select>
+                                            <FormControl>
+                                              <Combobox
+                                                options={units.map(u => ({ value: String(u.id), label: u.name }))}
+                                                value={String(field.value || item.combo_unit_id || units[0]?.id)}
+                                                onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}
+                                                placeholder="Unit"
+                                                emptyText="No units"
+                                                searchPlaceholder="Search units..."
+                                                className="h-9 w-28 rounded-l-none shadow-none"
+                                              />
+                                            </FormControl>
                                           )}
                                         />
                                       )}
@@ -2464,8 +2495,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 )}
               />
 
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium">For SEO</h4>
+              <div className="space-y-4 mt-8">
+                <h4 className="text-base font-semibold">For SEO</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -2503,6 +2534,22 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     )}
                   />
                 </div>
+              </div>
+
+              {/* Related Products Section */}
+              <div className="space-y-4 mt-6">
+                <h4 className="text-base font-semibold">Related Products</h4>
+                <MultipleProductSearchCombobox
+                  selectedProducts={relatedProducts}
+                  onProductsChange={(products) => {
+                    setRelatedProducts(products)
+                    // Convert to comma-separated IDs
+                    const productIds = products.map(p => p.id).join(',')
+                    form.setValue("related_products", productIds || null)
+                  }}
+                  placeholder="Search and select related products..."
+                  warehouseId={null}
+                />
               </div>
 
               <FormField
