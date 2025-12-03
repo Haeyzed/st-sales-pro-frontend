@@ -2322,16 +2322,16 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
 
                                         try {
                                           // Call API to delete the image from server
-                                          await apiDeleteClient(
+                                          const response = await apiDeleteClient(
                                             `products/${productId}/image`,
                                             { image: imageName }
                                           )
 
                                           // Remove from state only after successful deletion
                                           setExistingImages(prev => prev.filter(img => img !== imageName))
-                                          toast.success("Image deleted successfully")
-                                        } catch (error) {
-                                          toast.error("Failed to delete image")
+                                          toast.success(response.message || "Image deleted successfully")
+                                        } catch (error: any) {
+                                          toast.error(error?.message || "Failed to delete image")
                                         }
                                       }}
                                     >
