@@ -97,7 +97,7 @@ const formSchema = z.object({
   tax_id: z.number().nullable().optional(),
   tax_method: z.enum(["exclusive", "inclusive"]).nullable().optional(),
   alert_quantity: z.number().nullable().optional(),
-  image: z.array(z.instanceof(File)).default([]),
+  image: z.array(z.instanceof(File)).optional().default([]),
   file: z.instanceof(File).nullable().optional(),
   is_variant: z.boolean().nullable().optional(),
   variant_option: z.array(z.string()).nullable().optional(),
@@ -181,7 +181,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const isEdit = !!productId
 
   const form = useForm<ProductForm>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       code: null,
