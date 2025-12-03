@@ -23,13 +23,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { DataTablePagination } from "@/components/data-table"
+import { DataTablePagination, DataTableToolbar } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Spinner } from "@/components/ui/spinner"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Filter, Search } from "lucide-react"
+import { Filter } from "lucide-react"
 import { saleHistoryColumns } from "./sale-history-columns"
 import { purchaseHistoryColumns } from "./purchase-history-columns"
 import {
@@ -161,29 +160,30 @@ export function HistoryTable({ productId }: HistoryTableProps) {
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  // Handle search input change
+  // Handle search input change with debounce
   const handleSearchInputChange = (value: string) => {
     setSearchInputValue(value)
   }
 
-  // Handle search submit
-  const handleSearchSubmit = () => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (searchInputValue) {
-      params.set("search", searchInputValue)
-    } else {
-      params.delete("search")
-    }
-    params.delete("page") // Reset to first page on search
-    router.push(`${pathname}?${params.toString()}`)
-  }
+  // Debounce search to avoid too many API calls
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString())
+      if (searchInputValue) {
+        params.set("search", searchInputValue)
+      } else {
+        params.delete("search")
+      }
+      params.delete("page") // Reset to first page on search
+      
+      // Only update if search value actually changed
+      if (searchInputValue !== searchQuery) {
+        router.push(`${pathname}?${params.toString()}`)
+      }
+    }, 500) // 500ms debounce
 
-  // Handle Enter key in search input
-  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearchSubmit()
-    }
-  }
+    return () => clearTimeout(handler)
+  }, [searchInputValue, pathname, router, searchParams, searchQuery])
 
   // Handle pagination changes
   const handlePaginationChange = (pageIndex: number, newPageSize: number) => {
@@ -260,8 +260,26 @@ export function HistoryTable({ productId }: HistoryTableProps) {
 
   return (
     <div className={cn("flex flex-1 flex-col gap-4")}>
-      {/* Filter Toggle Button */}
-      <div className="flex justify-end">
+      {/* Search and Filter Toggle */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <DataTableToolbar
+            table={table}
+            searchPlaceholder={
+              activeTab === "sales"
+                ? "Search by reference, customer..."
+                : activeTab === "purchases"
+                ? "Search by reference, supplier..."
+                : activeTab === "sale-returns"
+                ? "Search by reference, customer..."
+                : "Search by reference, supplier..."
+            }
+            searchKey="reference_no"
+            searchValue={searchInputValue}
+            onSearchChange={handleSearchInputChange}
+            filters={[]}
+          />
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -277,27 +295,6 @@ export function HistoryTable({ productId }: HistoryTableProps) {
       {showFilters && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2 min-w-0">
-            <Label>Search</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Search by reference, customer/supplier..."
-                value={searchInputValue}
-                onChange={(e) => handleSearchInputChange(e.target.value)}
-                onKeyPress={handleSearchKeyPress}
-                className="w-full"
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleSearchSubmit}
-                className="h-9 px-3"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-2 min-w-0">
             <Label>Date Range</Label>
             <DatePickerWithRange
               value={dateRange}
@@ -310,6 +307,7 @@ export function HistoryTable({ productId }: HistoryTableProps) {
               value={warehouseId}
               onValueChange={handleWarehouseFilterChange}
               placeholder="All Warehouses"
+              className="w-full"
             />
           </div>
         </div>
