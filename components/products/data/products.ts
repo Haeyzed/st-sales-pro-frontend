@@ -592,3 +592,118 @@ export async function getProductPurchaseReturnHistory(
   return response.data
 }
 
+/**
+ * Export products
+ */
+export async function exportProducts(data: {
+  columns: string[]
+  export_type: string
+  export_method: string
+  emails?: string[]
+  schedule_at?: string | null
+  filters?: Record<string, any>
+}): Promise<any> {
+  const endpoint = "products/export"
+  
+  if (data.export_method === "download") {
+    // For download, we need to handle file download
+    const token = localStorage.getItem("auth_token")
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+    
+    const response = await fetch(`${apiUrl}/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({
+        ...data,
+        ...data.filters,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Export failed")
+    }
+
+    // Download file
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `products_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
+    return { success: true }
+  } else {
+    // For email, use regular API client
+    return await apiPostClient(endpoint, {
+      ...data,
+      ...data.filters,
+    })
+  }
+}
+
+/**
+ * Export product history
+ */
+export async function exportProductHistory(
+  productId: number,
+  data: {
+    columns: string[]
+    export_type: string
+    export_method: string
+    emails?: string[]
+    schedule_at?: string | null
+    history_type: string
+    filters: ProductHistoryFilters
+  }
+): Promise<any> {
+  const endpoint = `products/${productId}/history/export`
+  
+  if (data.export_method === "download") {
+    const token = localStorage.getItem("auth_token")
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+    
+    const response = await fetch(`${apiUrl}/${endpoint}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({
+        ...data,
+        ...data.filters,
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Export failed")
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `product_history_${data.history_type}_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+
+    return { success: true }
+  } else {
+    return await apiPostClient(endpoint, {
+      ...data,
+      ...data.filters,
+    })
+  }
+}
+

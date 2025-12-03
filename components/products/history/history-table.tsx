@@ -43,6 +43,7 @@ import { format } from "date-fns"
 import { DatePickerWithRange } from "@/components/ui/date-picker-range"
 import { type DateRange } from "react-day-picker"
 import { WarehouseCombobox } from "@/components/products/components/warehouse-combobox"
+import { HistoryBulkActions } from "./history-bulk-actions"
 
 interface HistoryTableProps {
   productId: number
@@ -52,6 +53,7 @@ export function HistoryTable({ productId }: HistoryTableProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
   const [showFilters, setShowFilters] = useState(false)
@@ -211,6 +213,7 @@ export function HistoryTable({ productId }: HistoryTableProps) {
     columns,
     state: {
       sorting,
+      rowSelection,
       pagination: {
         pageIndex: page - 1,
         pageSize,
@@ -218,7 +221,8 @@ export function HistoryTable({ productId }: HistoryTableProps) {
       columnVisibility,
     },
     pageCount: meta?.last_page ?? 1,
-    enableRowSelection: false,
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
@@ -323,6 +327,14 @@ export function HistoryTable({ productId }: HistoryTableProps) {
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4">
+          {/* Bulk Actions */}
+          <HistoryBulkActions
+            table={table}
+            productId={productId}
+            historyType={activeTab as any}
+            filters={filters}
+          />
+
           <div className="overflow-hidden rounded-md border">
             <Table>
               <TableHeader>

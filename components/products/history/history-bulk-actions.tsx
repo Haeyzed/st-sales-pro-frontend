@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { type Table } from "@tanstack/react-table"
-import { Trash2, FileDown } from "lucide-react"
+import { FileDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,
@@ -10,43 +10,62 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { DataTableBulkActions as BulkActionsToolbar } from "@/components/data-table/bulk-actions"
-import { type Category } from "../data/schema"
-import { CategoriesMultiDeleteDialog } from "./categories-multi-delete-dialog"
 import { PermissionGate } from "@/components/permission-gate"
 import { ExportDialog, type ExportColumn } from "@/components/ui/export-dialog"
-import { exportCategories } from "../data/categories"
+import { exportProductHistory, type ProductHistoryFilters } from "@/components/products/data/products"
 import { toast } from "sonner"
 
-type DataTableBulkActionsProps<TData> = {
-  table: Table<TData>
-}
-
-const exportColumns: ExportColumn[] = [
-  { id: "name", label: "Category Name" },
-  { id: "code", label: "Category Code" },
-  { id: "parent_category", label: "Parent Category" },
-  { id: "description", label: "Description" },
+const saleExportColumns: ExportColumn[] = [
+  { id: "reference_no", label: "Reference" },
+  { id: "created_at", label: "Date" },
+  { id: "customer_name", label: "Customer" },
+  { id: "customer_phone", label: "Phone" },
+  { id: "warehouse_name", label: "Warehouse" },
+  { id: "qty", label: "Quantity" },
+  { id: "total", label: "Total" },
 ]
 
-export function DataTableBulkActions<TData>({
+const purchaseExportColumns: ExportColumn[] = [
+  { id: "reference_no", label: "Reference" },
+  { id: "created_at", label: "Date" },
+  { id: "supplier_name", label: "Supplier" },
+  { id: "supplier_phone", label: "Phone" },
+  { id: "warehouse_name", label: "Warehouse" },
+  { id: "qty", label: "Quantity" },
+  { id: "total", label: "Total" },
+]
+
+type HistoryBulkActionsProps<TData> = {
+  table: Table<TData>
+  productId: number
+  historyType: "sales" | "purchases" | "sale-returns" | "purchase-returns"
+  filters: ProductHistoryFilters
+}
+
+export function HistoryBulkActions<TData>({
   table,
-}: DataTableBulkActionsProps<TData>) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  productId,
+  historyType,
+  filters,
+}: HistoryBulkActionsProps<TData>) {
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
-  const selectedRows = table.getFilteredSelectedRowModel().rows
+
+  const exportColumns =
+    historyType === "sales" || historyType === "sale-returns"
+      ? saleExportColumns
+      : purchaseExportColumns
 
   const handleExport = async (exportData: any) => {
     setIsExporting(true)
     try {
-      const filters = {}
-
-      await exportCategories({
+      await exportProductHistory(productId, {
         columns: exportData.columns,
         export_type: exportData.exportType,
         export_method: exportData.exportMethod,
         emails: exportData.emails,
         schedule_at: exportData.scheduleAt ? exportData.scheduleAt.toISOString() : null,
+        history_type: historyType,
         filters,
       })
 
@@ -70,8 +89,8 @@ export function DataTableBulkActions<TData>({
 
   return (
     <>
-      <BulkActionsToolbar table={table} entityName="category">
-        <PermissionGate action="categories:view">
+      <BulkActionsToolbar table={table} entityName="record">
+        <PermissionGate action="products:view">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -79,36 +98,15 @@ export function DataTableBulkActions<TData>({
                 size="icon"
                 onClick={() => setShowExportDialog(true)}
                 className="size-8"
-                aria-label="Export selected categories"
-                title="Export selected categories"
+                aria-label="Export selected records"
+                title="Export selected records"
               >
                 <FileDown />
-                <span className="sr-only">Export selected categories</span>
+                <span className="sr-only">Export selected records</span>
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Export selected categories</p>
-            </TooltipContent>
-          </Tooltip>
-        </PermissionGate>
-
-        <PermissionGate action="categories:delete">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="size-8"
-                aria-label="Delete selected categories"
-                title="Delete selected categories"
-              >
-                <Trash2 />
-                <span className="sr-only">Delete selected categories</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Delete selected categories</p>
+              <p>Export selected records</p>
             </TooltipContent>
           </Tooltip>
         </PermissionGate>
@@ -117,21 +115,13 @@ export function DataTableBulkActions<TData>({
       <ExportDialog
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
-        title="Export Categories"
-        description="Select columns and export options for the selected categories"
+        title={`Export ${historyType === "sales" ? "Sales" : historyType === "purchases" ? "Purchases" : historyType === "sale-returns" ? "Sale Returns" : "Purchase Returns"} History`}
+        description="Select columns and export options for the selected records"
         columns={exportColumns}
         onExport={handleExport}
         isExporting={isExporting}
       />
-
-      <CategoriesMultiDeleteDialog
-        table={table}
-        open={showDeleteConfirm}
-        onOpenChange={setShowDeleteConfirm}
-      />
     </>
   )
 }
-
-
 
