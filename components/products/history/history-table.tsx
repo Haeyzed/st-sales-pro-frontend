@@ -28,7 +28,8 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Spinner } from "@/components/ui/spinner"
 import { Label } from "@/components/ui/label"
-import { Filter } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Filter, Search } from "lucide-react"
 import { saleHistoryColumns } from "./sale-history-columns"
 import { purchaseHistoryColumns } from "./purchase-history-columns"
 import {
@@ -65,8 +66,12 @@ export function HistoryTable({ productId }: HistoryTableProps) {
   const warehouseId = searchParams.get("warehouse_id")
     ? parseInt(searchParams.get("warehouse_id")!, 10)
     : null
+  const searchQuery = searchParams.get("search") || ""
   const page = parseInt(searchParams.get("page") || "1", 10)
   const pageSize = parseInt(searchParams.get("pageSize") || "10", 10)
+  
+  // Local search input state
+  const [searchInputValue, setSearchInputValue] = useState(searchQuery)
 
   // Date range state
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
@@ -80,10 +85,11 @@ export function HistoryTable({ productId }: HistoryTableProps) {
       starting_date: format(dateRange.from, "yyyy-MM-dd"),
       ending_date: format(dateRange.to, "yyyy-MM-dd"),
       warehouse_id: warehouseId,
+      search: searchQuery || undefined,
       per_page: pageSize,
       page,
     }
-  }, [dateRange, warehouseId, page, pageSize])
+  }, [dateRange, warehouseId, searchQuery, page, pageSize])
 
   // Fetch data based on active tab
   const getHistoryQuery = () => {
@@ -153,6 +159,30 @@ export function HistoryTable({ productId }: HistoryTableProps) {
     }
     params.delete("page") // Reset to first page on filter change
     router.push(`${pathname}?${params.toString()}`)
+  }
+
+  // Handle search input change
+  const handleSearchInputChange = (value: string) => {
+    setSearchInputValue(value)
+  }
+
+  // Handle search submit
+  const handleSearchSubmit = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (searchInputValue) {
+      params.set("search", searchInputValue)
+    } else {
+      params.delete("search")
+    }
+    params.delete("page") // Reset to first page on search
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  // Handle Enter key in search input
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearchSubmit()
+    }
   }
 
   // Handle pagination changes
@@ -246,6 +276,27 @@ export function HistoryTable({ productId }: HistoryTableProps) {
       {/* Filters */}
       {showFilters && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-2 min-w-0">
+            <Label>Search</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search by reference, customer/supplier..."
+                value={searchInputValue}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
+                className="w-full"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleSearchSubmit}
+                className="h-9 px-3"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
           <div className="space-y-2 min-w-0">
             <Label>Date Range</Label>
             <DatePickerWithRange

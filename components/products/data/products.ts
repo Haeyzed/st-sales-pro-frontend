@@ -504,6 +504,7 @@ export type ProductHistoryFilters = {
   starting_date: string
   ending_date: string
   warehouse_id?: number | null
+  search?: string
   page?: number
   per_page?: number
 }
