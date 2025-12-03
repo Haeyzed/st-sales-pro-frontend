@@ -68,8 +68,8 @@ export function MultipleProductSearchCombobox({
       onProductsChange?.([...selectedProducts, product])
     }
     
-    setSearchTerm("")
-    // Keep dropdown open for multiple selections
+    // Don't clear search term or close dropdown for multiple selections
+    // setSearchTerm("")
     // setOpen(false)
   }
 
