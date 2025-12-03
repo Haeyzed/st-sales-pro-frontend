@@ -172,6 +172,22 @@ export const productsColumns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: "stock_worth",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Stock Worth (Price/Cost)" />
+    ),
+    cell: ({ row }) => {
+      const stockWorth = row.getValue("stock_worth") as string
+      const [priceWorth, costWorth] = stockWorth.split(' / ')
+      return (
+        <div className="text-right text-sm">
+          <div className="font-medium">{formatCurrency(parseFloat(priceWorth))}</div>
+          <div className="text-muted-foreground text-xs">{formatCurrency(parseFloat(costWorth))}</div>
+        </div>
+      )
+    },
+  },
+  {
     accessorKey: "qty",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Stock" />
