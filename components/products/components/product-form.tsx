@@ -21,7 +21,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import {
   Table,
@@ -68,7 +67,7 @@ import {
   FileUploadList,
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
-import { CloudUpload } from "lucide-react"
+import { CloudUpload, ArrowLeft } from "lucide-react"
 import { ProductDetailsEditor } from "./product-details-editor"
 import { type Product } from "../data/schema"
 
@@ -957,19 +956,26 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   return (
     <div className="">
       <div className="mb-4">
-        <h1 className="text-3xl font-bold">{isEdit ? "Edit Product" : "Add Product"}</h1>
-        <p className="text-muted-foreground mt-1 text-sm italic">
-          The field labels marked with * are required input fields.
-        </p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/products")}
+            type="button"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{isEdit ? "Edit Product" : "Add Product"}</h1>
+            <p className="text-muted-foreground mt-1 text-sm italic">
+              The field labels marked with * are required input fields.
+            </p>
+          </div>
+        </div>
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Card>
-            {/* <CardHeader>
-              <CardTitle>{isEdit ? "Update Product" : "Add Product"}</CardTitle>
-            </CardHeader> */}
-            <CardContent className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Row 1: Type, Name, Code */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
@@ -2507,8 +2513,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   )}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
         </form>
       </Form>
     </div>
