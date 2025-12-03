@@ -8,6 +8,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Button } from "@/components/ui/button"
 import { Printer } from "lucide-react"
 import Image from "next/image"
+import Barcode from "react-barcode"
 
 type Product = {
   product_id: number
@@ -187,7 +188,7 @@ export function BarcodePreview() {
                       <td
                         key={colIndex}
                         align="center"
-                        valign="center"
+                        valign="middle"
                         style={{
                           width: `${barcodeSetting.width}in`,
                           height: `${barcodeSetting.height}in`,
@@ -277,24 +278,17 @@ export function BarcodePreview() {
                               </span>
                             )}
 
-                            {/* Barcode Image */}
+                            {/* Barcode */}
                             <div style={{ margin: "5px 0" }}>
-                              <img
-                                src={`${process.env.NEXT_PUBLIC_API_URL}/barcodes/generate/${product.code}`}
-                                alt={product.code}
-                                style={{
-                                  maxWidth: "90%",
-                                  height: `${barcodeSetting.height * 0.24}in`,
-                                  display: "block",
-                                  margin: "0 auto",
-                                }}
+                              <Barcode
+                                value={product.code}
+                                width={1}
+                                height={Math.floor(barcodeSetting.height * 0.24 * 96)}
+                                fontSize={10}
+                                displayValue={true}
+                                margin={0}
                               />
                             </div>
-
-                            {/* Product Code */}
-                            <span style={{ fontSize: "10px", display: "block" }}>
-                              {product.code}
-                            </span>
                           </div>
                         </div>
                       </td>

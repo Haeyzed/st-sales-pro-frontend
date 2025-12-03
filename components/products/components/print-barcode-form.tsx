@@ -29,7 +29,6 @@ import { MultipleProductSearchCombobox } from "./multiple-product-search-combobo
 import { BarcodeSettingsCombobox } from "./barcode-settings-combobox"
 import { X, Printer, ArrowLeft } from "lucide-react"
 import type { ComboProductSearchResult } from "../data/products"
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemTitle } from "@/components/ui/item"
 import Image from "next/image"
 
 const printSchema = z.object({
@@ -186,50 +185,45 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
 
                 {/* Display Selected Products */}
                 {selectedProducts.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-3">Selected Products</h4>
-                    <ItemGroup className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                      {products.map((item) => {
-                        const firstImage = item.product.image?.split(',')[0]?.trim()
-                        const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
-                        const initials = item.product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+                  <div className="border rounded-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16">Image</TableHead>
+                          <TableHead>Product Name</TableHead>
+                          <TableHead>Code</TableHead>
+                          <TableHead className="w-32">Quantity</TableHead>
+                          <TableHead className="w-20"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {products.map((item) => {
+                          const firstImage = item.product.image?.split(',')[0]?.trim()
+                          const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                          const initials = item.product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
 
-                        return (
-                          <Item key={`${item.product.id}-${item.product.variant_id || 0}`} variant="outline" className="relative group">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = selectedProducts.filter(
-                                  p => !(p.id === item.product.id && p.variant_id === item.product.variant_id)
-                                )
-                                handleProductsChange(updated)
-                              }}
-                              className="absolute top-1 right-1 z-10 h-6 w-6 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                            <ItemHeader>
-                              {imageUrl ? (
-                                <Image
-                                  src={imageUrl}
-                                  alt={item.product.name}
-                                  width={96}
-                                  height={96}
-                                  className="aspect-square w-full object-cover"
-                                />
-                              ) : (
-                                <div className="aspect-square w-full bg-muted flex items-center justify-center">
-                                  <span className="text-lg font-semibold text-muted-foreground">
-                                    {initials}
-                                  </span>
-                                </div>
-                              )}
-                            </ItemHeader>
-                            <ItemContent className="space-y-2">
-                              <ItemTitle className="line-clamp-2 text-xs">{item.product.name}</ItemTitle>
-                              <ItemDescription className="text-[10px]">{item.product.code}</ItemDescription>
-                              <div className="flex items-center gap-1">
-                                <label className="text-[10px] text-muted-foreground">Qty:</label>
+                          return (
+                            <TableRow key={`${item.product.id}-${item.product.variant_id || 0}`}>
+                              <TableCell>
+                                {imageUrl ? (
+                                  <Image
+                                    src={imageUrl}
+                                    alt={item.product.name}
+                                    width={40}
+                                    height={40}
+                                    className="aspect-square object-cover rounded"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-muted flex items-center justify-center rounded">
+                                    <span className="text-xs font-semibold text-muted-foreground">
+                                      {initials}
+                                    </span>
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell className="font-medium">{item.product.name}</TableCell>
+                              <TableCell className="text-muted-foreground">{item.product.code}</TableCell>
+                              <TableCell>
                                 <Input
                                   type="number"
                                   min="1"
@@ -241,14 +235,29 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
                                       parseInt(e.target.value) || 1
                                     )
                                   }
-                                  className="h-6 w-14 text-xs px-1"
+                                  className="w-24"
                                 />
-                              </div>
-                            </ItemContent>
-                          </Item>
-                        )
-                      })}
-                    </ItemGroup>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    const updated = selectedProducts.filter(
+                                      p => !(p.id === item.product.id && p.variant_id === item.product.variant_id)
+                                    )
+                                    handleProductsChange(updated)
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </div>
