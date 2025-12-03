@@ -51,7 +51,7 @@ import {
   searchProductForCombo,
   getSaleUnits
 } from "../data/products"
-import { apiGetClient } from "@/lib/api-client-client"
+import { apiGetClient, apiDeleteClient } from "@/lib/api-client-client"
 import { ProductSearchCombobox } from "./product-search-combobox"
 import { Plus, X, RefreshCw } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -2313,8 +2313,26 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                       variant="ghost"
                                       size="icon"
                                       className="h-7 w-7"
-                                      onClick={() => {
-                                        setExistingImages(prev => prev.filter(img => img !== imageName))
+                                      onClick={async () => {
+                                        if (!productId) {
+                                          // If not editing, just remove from state
+                                          setExistingImages(prev => prev.filter(img => img !== imageName))
+                                          return
+                                        }
+
+                                        try {
+                                          // Call API to delete the image from server
+                                          await apiDeleteClient(
+                                            `products/${productId}/image`,
+                                            { image: imageName }
+                                          )
+
+                                          // Remove from state only after successful deletion
+                                          setExistingImages(prev => prev.filter(img => img !== imageName))
+                                          toast.success("Image deleted successfully")
+                                        } catch (error) {
+                                          toast.error("Failed to delete image")
+                                        }
                                       }}
                                     >
                                       <X className="h-4 w-4" />

@@ -174,7 +174,8 @@ export async function apiPatchClient<T>(
 }
 
 export async function apiDeleteClient<T>(
-    endpoint: string
+    endpoint: string,
+    body?: Record<string, unknown>
 ): Promise<ApiResponse<T>> {
     const token = await getAuthToken()
 
@@ -184,8 +185,10 @@ export async function apiDeleteClient<T>(
             method: "DELETE",
             headers: {
                 Accept: "application/json",
+                "Content-Type": "application/json",
                 ...(token && { Authorization: `Bearer ${token}` }),
             },
+            body: body ? JSON.stringify(body) : undefined,
             credentials: "include",
         }
     )
