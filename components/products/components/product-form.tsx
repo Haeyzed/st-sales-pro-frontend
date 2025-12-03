@@ -1743,33 +1743,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 />
               </div>
 
-              {/* Product Details */}
-              <FormField
-                control={form.control}
-                name="product_details"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Details</FormLabel>
-                    <FormControl>
-                      <ProductDetailsEditor
-                        value={field.value || undefined}
-                        onChange={field.onChange}
-                        placeholder="Enter product details..."
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* Checkboxes Row 1: Featured, Embedded Barcode */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t pt-4">
-                
-
-
-
-
-
+              
                 {productType === "standard" && (
                   <FormField
                     control={form.control}
@@ -2371,6 +2347,25 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   )}
                 />
               </div>
+
+              {/* Product Details */}
+              <FormField
+                control={form.control}
+                name="product_details"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Details</FormLabel>
+                    <FormControl>
+                      <ProductDetailsEditor
+                        value={field.value || undefined}
+                        onChange={field.onChange}
+                        placeholder="Enter product details..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
