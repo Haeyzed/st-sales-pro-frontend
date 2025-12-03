@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -15,7 +16,6 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Table,
@@ -25,14 +25,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ProductSearchCombobox } from "./product-search-combobox"
+import { MultipleProductSearchCombobox } from "./multiple-product-search-combobox"
 import { BarcodeSettingsCombobox } from "./barcode-settings-combobox"
-import { X, Printer } from "lucide-react"
+import { X, Printer, ArrowLeft } from "lucide-react"
 import type { ComboProductSearchResult } from "../data/products"
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemTitle } from "@/components/ui/item"
+import Image from "next/image"
 
 const printSchema = z.object({
   barcode_setting_id: z.number({
-    required_error: "Please select a barcode setting",
+    message: "Please select a barcode setting",
   }),
   print_name: z.boolean().default(true),
   name_size: z.number().default(15),
@@ -58,10 +60,13 @@ interface PrintBarcodeFormProps {
 }
 
 export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
+  const router = useRouter()
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
+  const [selectedProducts, setSelectedProducts] = useState<ComboProductSearchResult[]>([])
   const [products, setProducts] = useState<BarcodeProduct[]>([])
 
   const form = useForm<PrintFormValues>({
-    resolver: zodResolver(printSchema),
+    resolver: zodResolver(printSchema) as any,
     defaultValues: {
       print_name: true,
       name_size: 15,
@@ -76,18 +81,22 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
     },
   })
 
-  const addProduct = (product: ComboProductSearchResult) => {
-    // Check if already added
-    const exists = products.some(
-      (p) => p.product.id === product.id && p.product.variant_id === product.variant_id
-    )
-
-    if (exists) {
-      toast.error("Product already added to the list")
-      return
-    }
-
-    setProducts([...products, { product, quantity: 1 }])
+  const handleProductsChange = (newProducts: ComboProductSearchResult[]) => {
+    setSelectedProducts(newProducts)
+    
+    // Update products list with quantities
+    const updatedProducts: BarcodeProduct[] = newProducts.map(product => {
+      // Check if product already exists in products list to preserve quantity
+      const existing = products.find(
+        p => p.product.id === product.id && p.product.variant_id === product.variant_id
+      )
+      return {
+        product,
+        quantity: existing?.quantity || 1
+      }
+    })
+    
+    setProducts(updatedProducts)
   }
 
   const removeProduct = (productId: number, variantId: number | null) => {
@@ -145,69 +154,104 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
+      <div className="flex items-center gap-4 mb-4">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push("/products")}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Print Barcode</h1>
+          <p className="text-muted-foreground mt-1 text-sm italic">
+            Select products and generate barcode labels
+          </p>
+        </div>
+      </div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Product Search */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="text-sm font-medium">
-                  Add Product <span className="text-red-500">*</span>
+                  Add Products <span className="text-red-500">*</span>
                 </label>
-                <ProductSearchCombobox
-                  onProductSelect={addProduct}
-                  placeholder="Search product by code or name..."
+                <MultipleProductSearchCombobox
+                  selectedProducts={selectedProducts}
+                  onProductsChange={handleProductsChange}
+                  placeholder="Search and select products..."
+                  warehouseId={null}
                 />
-              </div>
 
-              {/* Products Table */}
-              {products.length > 0 && (
-                <div className="border rounded-md">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Code</TableHead>
-                        <TableHead className="w-32">Quantity</TableHead>
-                        <TableHead className="w-20"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {products.map((item) => (
-                        <TableRow key={`${item.product.id}-${item.product.variant_id || 0}`}>
-                          <TableCell className="font-medium">{item.product.name}</TableCell>
-                          <TableCell className="text-muted-foreground">{item.product.code}</TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={(e) =>
-                                updateQuantity(
-                                  item.product.id,
-                                  item.product.variant_id,
-                                  parseInt(e.target.value) || 1
-                                )
-                              }
-                              className="w-24"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Button
+                {/* Display Selected Products */}
+                {selectedProducts.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Selected Products</h4>
+                    <ItemGroup className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                      {products.map((item) => {
+                        const firstImage = item.product.image?.split(',')[0]?.trim()
+                        const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                        const initials = item.product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+
+                        return (
+                          <Item key={`${item.product.id}-${item.product.variant_id || 0}`} variant="outline" className="relative group">
+                            <button
                               type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeProduct(item.product.id, item.product.variant_id)}
+                              onClick={() => {
+                                const updated = selectedProducts.filter(
+                                  p => !(p.id === item.product.id && p.variant_id === item.product.variant_id)
+                                )
+                                handleProductsChange(updated)
+                              }}
+                              className="absolute top-1 right-1 z-10 h-6 w-6 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                             >
                               <X className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                            </button>
+                            <ItemHeader>
+                              {imageUrl ? (
+                                <Image
+                                  src={imageUrl}
+                                  alt={item.product.name}
+                                  width={96}
+                                  height={96}
+                                  className="aspect-square w-full object-cover"
+                                />
+                              ) : (
+                                <div className="aspect-square w-full bg-muted flex items-center justify-center">
+                                  <span className="text-lg font-semibold text-muted-foreground">
+                                    {initials}
+                                  </span>
+                                </div>
+                              )}
+                            </ItemHeader>
+                            <ItemContent className="space-y-2">
+                              <ItemTitle className="line-clamp-2 text-xs">{item.product.name}</ItemTitle>
+                              <ItemDescription className="text-[10px]">{item.product.code}</ItemDescription>
+                              <div className="flex items-center gap-1">
+                                <label className="text-[10px] text-muted-foreground">Qty:</label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity}
+                                  onChange={(e) =>
+                                    updateQuantity(
+                                      item.product.id,
+                                      item.product.variant_id,
+                                      parseInt(e.target.value) || 1
+                                    )
+                                  }
+                                  className="h-6 w-14 text-xs px-1"
+                                />
+                              </div>
+                            </ItemContent>
+                          </Item>
+                        )
+                      })}
+                    </ItemGroup>
+                  </div>
+                )}
+              </div>
 
               <div className="border-t pt-6">
                 <h3 className="text-base font-semibold mb-4">Information on Label <span className="text-red-500">*</span></h3>
@@ -420,8 +464,6 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
               </div>
             </form>
           </Form>
-        </CardContent>
-      </Card>
     </div>
   )
 }

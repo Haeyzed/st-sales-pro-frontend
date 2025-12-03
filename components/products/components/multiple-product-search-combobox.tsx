@@ -162,51 +162,6 @@ export function MultipleProductSearchCombobox({
           </Command>
         </PopoverContent>
       </Popover>
-
-      {selectedProducts.length > 0 && (
-        <div>
-          <h4 className="text-sm font-medium mb-3">Selected Products</h4>
-          <ItemGroup className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-            {selectedProducts.map((product) => {
-              const firstImage = product.image?.split(',')[0]?.trim()
-              const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
-
-              return (
-                <Item key={`${product.id}-${product.variant_id || 0}`} variant="outline" className="relative group">
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(product.id, product.variant_id)}
-                    className="absolute top-1 right-1 z-10 h-6 w-6 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  <ItemHeader>
-                    {imageUrl ? (
-                      <Image
-                        src={imageUrl}
-                        alt={product.name}
-                        width={96}
-                        height={96}
-                        className="aspect-square w-full object-cover"
-                      />
-                    ) : (
-                      <div className="aspect-square w-full bg-muted flex items-center justify-center">
-                        <span className="text-lg font-semibold text-muted-foreground">
-                          {product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
-                        </span>
-                      </div>
-                    )}
-                  </ItemHeader>
-                  <ItemContent>
-                    <ItemTitle className="line-clamp-2 text-xs">{product.name}</ItemTitle>
-                    <ItemDescription className="text-[10px]">{product.code}</ItemDescription>
-                  </ItemContent>
-                </Item>
-              )
-            })}
-          </ItemGroup>
-        </div>
-      )}
     </div>
   )
 }

@@ -73,6 +73,8 @@ import { CloudUpload, ArrowLeft } from "lucide-react"
 import { ProductDetailsEditor } from "./product-details-editor"
 import { type Product } from "../data/schema"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemTitle } from "@/components/ui/item"
+import Image from "next/image"
 import {
   Select,
   SelectContent,
@@ -181,6 +183,7 @@ type ProductFormProps = {
 export function ProductForm({ productId }: ProductFormProps = {}) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(!!productId)
   const [isGeneratingCode, setIsGeneratingCode] = useState(false)
@@ -885,6 +888,10 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       if (values.tags) formData.append("tags", values.tags)
       if (values.meta_title) formData.append("meta_title", values.meta_title)
       if (values.meta_description) formData.append("meta_description", values.meta_description)
+      if (values.related_products) formData.append("related_products", values.related_products)
+      if (values.slug) formData.append("slug", values.slug)
+      if (values.short_description) formData.append("short_description", values.short_description)
+      if (values.specification) formData.append("specification", values.specification)
       
       // Restaurant fields
       if (values.extras) formData.append("extras", values.extras)
@@ -2554,6 +2561,58 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   placeholder="Search and select related products..."
                   warehouseId={null}
                 />
+
+                {/* Display Selected Related Products */}
+                {relatedProducts.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Selected Products</h4>
+                    <ItemGroup className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                      {relatedProducts.map((product) => {
+                        const firstImage = product.image?.split(',')[0]?.trim()
+                        const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                        const initials = product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+
+                        return (
+                          <Item key={`${product.id}-${product.variant_id || 0}`} variant="outline" className="relative group">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = relatedProducts.filter(p => !(p.id === product.id && p.variant_id === product.variant_id))
+                                setRelatedProducts(updated)
+                                const productIds = updated.map(p => p.id).join(',')
+                                form.setValue("related_products", productIds || null)
+                              }}
+                              className="absolute top-1 right-1 z-10 h-6 w-6 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                            <ItemHeader>
+                              {imageUrl ? (
+                                <Image
+                                  src={imageUrl}
+                                  alt={product.name}
+                                  width={96}
+                                  height={96}
+                                  className="aspect-square w-full object-cover"
+                                />
+                              ) : (
+                                <div className="aspect-square w-full bg-muted flex items-center justify-center">
+                                  <span className="text-lg font-semibold text-muted-foreground">
+                                    {initials}
+                                  </span>
+                                </div>
+                              )}
+                            </ItemHeader>
+                            <ItemContent>
+                              <ItemTitle className="line-clamp-2 text-xs">{product.name}</ItemTitle>
+                              <ItemDescription className="text-[10px]">{product.code}</ItemDescription>
+                            </ItemContent>
+                          </Item>
+                        )
+                      })}
+                    </ItemGroup>
+                  </div>
+                )}
               </div>
 
               </div>

@@ -37,12 +37,6 @@ export default async function PrintBarcodePage({ searchParams }: PrintBarcodePag
       </Header>
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Print Barcode</h2>
-          <p className="text-muted-foreground">
-            Select products and generate barcode labels
-          </p>
-        </div>
         <PrintBarcodeForm preloadedProduct={preloadedProduct} />
       </Main>
     </AuthenticatedLayout>
