@@ -13,6 +13,7 @@ import {
   apiDeleteClient,
 } from "@/lib/api-client-client"
 import { categorySchema, categoryListSchema, type Category } from "./schema"
+import { downloadExcel, downloadPDF } from "@/lib/export-utils"
 
 export type CategoryFilters = {
   search?: string
@@ -294,46 +295,40 @@ export async function exportCategories(data: {
   schedule_at?: string | null
   filters?: Record<string, any>
 }): Promise<any> {
-  const endpoint = "categories/export"
-  
   if (data.export_method === "download") {
-    const token = localStorage.getItem("auth_token")
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+    // Generate file in browser
+    const categories = await getCategories(data.filters || {})
     
-    const response = await fetch(`${apiUrl}/${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify({
-        ...data,
-        ...data.filters,
-      }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Export failed")
+    // Map column IDs to labels
+    const columnMap: Record<string, string> = {
+      name: 'Name',
+      code: 'Code',
+      parent: 'Parent Category',
+      created_at: 'Created At',
     }
-
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `categories_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-
+    
+    const columns = data.columns.map(id => ({ id, label: columnMap[id] || id }))
+    const filename = `categories_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
+    
+    if (data.export_type === "excel") {
+      downloadExcel(categories.data, columns, filename)
+    } else {
+      downloadPDF(categories.data, columns, filename, 'Categories Export')
+    }
+    
     return { success: true }
-  } else {
-    return await apiPostClient(endpoint, {
-      ...data,
-      ...data.filters,
-    })
   }
+  
+  // For email, use backend
+  const requestData = {
+    columns: data.columns,
+    export_type: data.export_type,
+    export_method: data.export_method,
+    emails: data.emails,
+    schedule_at: data.schedule_at,
+    ...data.filters,
+  }
+  
+  return await apiPostClient("categories/export", requestData)
 }
 

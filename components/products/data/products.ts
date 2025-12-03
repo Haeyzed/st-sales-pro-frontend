@@ -13,6 +13,7 @@ import {
   apiDeleteClient,
 } from "@/lib/api-client-client"
 import { productSchema, productListSchema, type Product } from "./schema"
+import { downloadExcel, downloadPDF } from "@/lib/export-utils"
 
 export type ProductFilters = {
   search?: string
@@ -603,50 +604,51 @@ export async function exportProducts(data: {
   schedule_at?: string | null
   filters?: Record<string, any>
 }): Promise<any> {
-  const endpoint = "products/export"
-  
   if (data.export_method === "download") {
-    // For download, we need to handle file download
-    const token = localStorage.getItem("auth_token")
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+    // Generate file in browser
+    const products = await getProducts(data.filters || {})
     
-    const response = await fetch(`${apiUrl}/${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify({
-        ...data,
-        ...data.filters,
-      }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Export failed")
+    // Map column IDs to labels
+    const columnMap: Record<string, string> = {
+      name: 'Name',
+      code: 'Code',
+      barcode: 'Barcode',
+      category: 'Category',
+      brand: 'Brand',
+      unit: 'Unit',
+      cost: 'Cost',
+      price: 'Price',
+      quantity: 'Quantity',
+      alert_quantity: 'Alert Quantity',
+      tax: 'Tax',
+      tax_method: 'Tax Method',
+      status: 'Status',
+      created_at: 'Created At',
     }
-
-    // Download file
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `products_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-
+    
+    const columns = data.columns.map(id => ({ id, label: columnMap[id] || id }))
+    const filename = `products_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
+    
+    if (data.export_type === "excel") {
+      downloadExcel(products.data, columns, filename)
+    } else {
+      downloadPDF(products.data, columns, filename, 'Products Export')
+    }
+    
     return { success: true }
-  } else {
-    // For email, use regular API client
-    return await apiPostClient(endpoint, {
-      ...data,
-      ...data.filters,
-    })
   }
+  
+  // For email, use backend
+  const requestData = {
+    columns: data.columns,
+    export_type: data.export_type,
+    export_method: data.export_method,
+    emails: data.emails,
+    schedule_at: data.schedule_at,
+    ...data.filters,
+  }
+  
+  return await apiPostClient("products/export", requestData)
 }
 
 /**
@@ -664,46 +666,63 @@ export async function exportProductHistory(
     filters: ProductHistoryFilters
   }
 ): Promise<any> {
-  const endpoint = `products/${productId}/history/export`
-  
   if (data.export_method === "download") {
-    const token = localStorage.getItem("auth_token")
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+    // Generate file in browser
+    let historyData: HistoryResponse
     
-    const response = await fetch(`${apiUrl}/${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-      body: JSON.stringify({
-        ...data,
-        ...data.filters,
-      }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || "Export failed")
+    switch (data.history_type) {
+      case 'purchases':
+        historyData = await getProductPurchaseHistory(productId, data.filters)
+        break
+      case 'sale-returns':
+        historyData = await getProductSaleReturnHistory(productId, data.filters)
+        break
+      case 'purchase-returns':
+        historyData = await getProductPurchaseReturnHistory(productId, data.filters)
+        break
+      default:
+        historyData = await getProductSaleHistory(productId, data.filters)
     }
-
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `product_history_${data.history_type}_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-
+    
+    // Map column IDs to labels
+    const columnMap: Record<string, string> = {
+      reference_no: 'Reference No',
+      created_at: 'Date',
+      customer_name: 'Customer',
+      customer_phone: 'Phone',
+      supplier_name: 'Supplier',
+      supplier_phone: 'Phone',
+      warehouse_name: 'Warehouse',
+      qty: 'Quantity',
+      total: 'Total',
+    }
+    
+    const columns = data.columns.map(id => ({ id, label: columnMap[id] || id }))
+    const filename = `product_history_${data.history_type}_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
+    
+    if (data.export_type === "excel") {
+      downloadExcel(historyData.data, columns, filename)
+    } else {
+      downloadPDF(historyData.data, columns, filename, `Product History - ${data.history_type}`)
+    }
+    
     return { success: true }
-  } else {
-    return await apiPostClient(endpoint, {
-      ...data,
-      ...data.filters,
-    })
   }
+  
+  // For email, use backend
+  const requestData = {
+    columns: data.columns,
+    export_type: data.export_type,
+    export_method: data.export_method,
+    emails: data.emails,
+    schedule_at: data.schedule_at,
+    history_type: data.history_type,
+    starting_date: data.filters.starting_date,
+    ending_date: data.filters.ending_date,
+    warehouse_id: data.filters.warehouse_id,
+    search: data.filters.search,
+  }
+  
+  return await apiPostClient(`products/${productId}/history/export`, requestData)
 }
 
