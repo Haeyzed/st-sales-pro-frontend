@@ -773,7 +773,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
     }
   }, [unitId, productType])
 
-  const onSubmit = async (values: ProductForm) => {
+  const onSubmit = async (values: ProductForm, shouldContinue: boolean = false) => {
     try {
       setIsSubmitting(true)
       const formData = new FormData()
@@ -996,7 +996,168 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       )
 
       queryClient.invalidateQueries({ queryKey: ["products"] })
-      router.push("/products")
+      
+      // If shouldContinue is true, stay on the form (reload if editing, reset if creating)
+      if (shouldContinue) {
+        if (isEdit && productId) {
+          // Reload the product data to refresh the form
+          try {
+            const updatedProduct = await getProduct(productId)
+            // Update form with fresh data
+            form.reset({
+              name: updatedProduct.name,
+              code: updatedProduct.code,
+              type: updatedProduct.type,
+              barcode_symbology: updatedProduct.barcode_symbology || "CODE128",
+              category_id: updatedProduct.category_id,
+              brand_id: updatedProduct.brand_id,
+              unit_id: updatedProduct.unit_id,
+              purchase_unit_id: updatedProduct.purchase_unit_id,
+              sale_unit_id: updatedProduct.sale_unit_id,
+              cost: updatedProduct.cost,
+              price: updatedProduct.price,
+              profit_margin: updatedProduct.profit_margin,
+              wholesale_price: updatedProduct.wholesale_price,
+              daily_sale_objective: updatedProduct.daily_sale_objective,
+              tax_id: updatedProduct.tax_id,
+              tax_method: updatedProduct.tax_method,
+              alert_quantity: updatedProduct.alert_quantity,
+              is_variant: updatedProduct.is_variant || false,
+              is_batch: updatedProduct.is_batch || false,
+              is_imei: updatedProduct.is_imei || false,
+              is_embeded: updatedProduct.is_embeded || false,
+              is_diffPrice: updatedProduct.is_diffPrice || false,
+              featured: updatedProduct.featured || false,
+              promotion: updatedProduct.promotion || false,
+              promotion_price: updatedProduct.promotion_price,
+              starting_date: updatedProduct.starting_date,
+              last_date: updatedProduct.last_date,
+              product_details: updatedProduct.product_details,
+              short_description: updatedProduct.short_description,
+              specification: updatedProduct.specification,
+              slug: updatedProduct.slug,
+              warranty: updatedProduct.warranty,
+              warranty_type: updatedProduct.warranty_type,
+              guarantee: updatedProduct.guarantee,
+              guarantee_type: updatedProduct.guarantee_type,
+              tags: updatedProduct.tags,
+              meta_title: updatedProduct.meta_title,
+              meta_description: updatedProduct.meta_description,
+              related_products: updatedProduct.related_products,
+              extras: updatedProduct.extras,
+              kitchen_id: updatedProduct.kitchen_id,
+              menu_type: updatedProduct.menu_type,
+              production_cost: updatedProduct.production_cost,
+              is_recipe: typeof updatedProduct.is_recipe === 'boolean' ? (updatedProduct.is_recipe ? 1 : 0) : (typeof updatedProduct.is_recipe === 'number' ? updatedProduct.is_recipe : null),
+              is_sync_disable: updatedProduct.is_sync_disable,
+              is_online: updatedProduct.is_online,
+              in_stock: updatedProduct.in_stock,
+              track_inventory: updatedProduct.track_inventory,
+              is_addon: updatedProduct.is_addon,
+              // Reload images
+            })
+            // Reload images
+            if (updatedProduct.image) {
+              const images = updatedProduct.image.split(',').filter(Boolean)
+              setExistingImages(images)
+            }
+            // Reload related products if any
+            if (updatedProduct.related_products) {
+              const relatedIds = updatedProduct.related_products.split(',').map(Number).filter(Boolean)
+              if (relatedIds.length > 0) {
+                try {
+                  const relatedProductsData = await Promise.all(
+                    relatedIds.map(id => getProduct(id))
+                  )
+                  const relatedProductsList = relatedProductsData.map(p => {
+                    const firstImage = p.image ? p.image.split(',')[0]?.trim() : null
+                    return {
+                      id: p.id,
+                      name: p.name,
+                      code: p.code,
+                      price: p.price,
+                      cost: p.cost,
+                      qty: p.qty || 0,
+                      brand: p.brand?.title || '',
+                      unit_id: p.unit_id,
+                      variant_id: null,
+                      additional_price: 0,
+                      image: firstImage && firstImage !== 'zummXD2dvAtI.png' ? firstImage : undefined,
+                      units: []
+                    }
+                  }) as ComboProductSearchResult[]
+                  setRelatedProducts(relatedProductsList)
+                } catch (error) {
+                  console.error("Failed to load related products:", error)
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Failed to reload product:", error)
+            toast.error("Product saved but failed to reload. Please refresh the page.")
+          }
+        } else {
+          // Reset form for new product
+          form.reset({
+            name: "",
+            code: null,
+            type: "standard",
+            barcode_symbology: "CODE128",
+            category_id: 0,
+            unit_id: 0,
+            purchase_unit_id: null,
+            sale_unit_id: null,
+            cost: 0,
+            price: 0,
+            profit_margin: null,
+            wholesale_price: null,
+            daily_sale_objective: null,
+            brand_id: null,
+            tax_id: null,
+            tax_method: null,
+            alert_quantity: null,
+            is_variant: false,
+            is_batch: false,
+            is_imei: false,
+            is_embeded: false,
+            is_diffPrice: false,
+            featured: false,
+            promotion: false,
+            promotion_price: null,
+            starting_date: null,
+            last_date: null,
+            product_details: null,
+            short_description: null,
+            specification: null,
+            slug: null,
+            warranty: null,
+            warranty_type: null,
+            guarantee: null,
+            guarantee_type: null,
+            tags: null,
+            meta_title: null,
+            meta_description: null,
+            related_products: null,
+            extras: null,
+            kitchen_id: null,
+            menu_type: null,
+            production_cost: null,
+            is_recipe: null,
+            is_sync_disable: null,
+            is_online: true,
+            in_stock: true,
+            track_inventory: null,
+            is_addon: null,
+          })
+          // Clear file inputs
+          setExistingImages([])
+          setRelatedProducts([])
+          // Reset file input refs if needed
+        }
+      } else {
+        // Redirect to products list
+        router.push("/products")
+      }
     } catch (error: any) {
       if (error?.errors && typeof error.errors === "object") {
         Object.entries(error.errors).forEach(([field, messages]) => {
@@ -1061,7 +1222,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit((values) => onSubmit(values, false))} className="space-y-6">
               {/* Row 1: Type, Name, Code */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
@@ -2839,7 +3000,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
 
               </div>
 
-              {/* Submit Button */}
+              {/* Submit Buttons */}
               <div className="flex justify-end gap-4 pt-6 border-t">
                 <Button
                   type="button"
@@ -2847,6 +3008,28 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   onClick={() => router.push("/products")}
                 >
                   Cancel
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSubmitting}
+                  onClick={async (e) => {
+                    e.preventDefault()
+                    const isValid = await form.trigger()
+                    if (isValid) {
+                      const values = form.getValues()
+                      await onSubmit(values, true) // Continue after save
+                    }
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Spinner className="mr-2 h-4 w-4" />
+                      {isEdit ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    isEdit ? "Update and Continue" : "Create and Continue"
+                  )}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
