@@ -2524,6 +2524,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                     }
                                   }
                                 }}
+                                orientation="mixed"
                               >
                                 <Sortable.Content className="grid grid-cols-2 gap-2">
                                   {existingImages.map((imageName, index) => (
@@ -2531,12 +2532,11 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                       <div className="relative flex items-center gap-2 rounded-md border p-2 bg-background hover:bg-accent/50 transition-colors">
                                         <Sortable.ItemHandle asChild>
                                           <Button
-                                            type="button"
                                             variant="ghost"
                                             size="icon"
-                                            className="h-7 w-7 cursor-grab active:cursor-grabbing"
+                                            className="h-7 w-7 shrink-0"
                                           >
-                                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                            <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                                           </Button>
                                         </Sortable.ItemHandle>
                                         <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
@@ -2556,7 +2556,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                           type="button"
                                           variant="ghost"
                                           size="icon"
-                                          className="h-7 w-7"
+                                          className="h-7 w-7 shrink-0"
                                           onClick={async (e) => {
                                             e.stopPropagation() // Prevent sortable drag when clicking delete
                                             if (!productId) {
@@ -2587,7 +2587,26 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                   ))}
                                 </Sortable.Content>
                                 <Sortable.Overlay>
-                                  <div className="size-full rounded-md bg-primary/10 border-2 border-primary border-dashed" />
+                                  {(activeItem) => (
+                                    <Sortable.Item value={activeItem.value} asChild>
+                                      <div className="relative flex items-center gap-2 rounded-md border p-2 bg-background border-primary shadow-lg">
+                                        <div className="h-7 w-7 shrink-0 flex items-center justify-center">
+                                          <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                                        </div>
+                                        <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
+                                          <img
+                                            src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${activeItem.value}`}
+                                            alt="Dragging"
+                                            className="size-full object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium truncate">{activeItem.value}</p>
+                                        </div>
+                                        <div className="h-7 w-7 shrink-0" />
+                                      </div>
+                                    </Sortable.Item>
+                                  )}
                                 </Sortable.Overlay>
                               </Sortable.Root>
                             </div>
