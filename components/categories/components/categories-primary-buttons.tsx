@@ -11,13 +11,27 @@ import {
 import { useCategories } from "../categories-provider"
 import { PermissionGate } from "@/components/permission-gate"
 import { ExportDialog } from "@/components/ui/export-dialog"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
+import { getUsers } from "@/lib/api/users"
+import type { EmailUser } from "@/components/ui/email-tag-input"
 
 export function CategoriesPrimaryButtons() {
   const { setOpen } = useCategories()
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [users, setUsers] = useState<EmailUser[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+
+  // Fetch users when export dialog opens
+  useEffect(() => {
+    if (showExportDialog && users.length === 0) {
+      setLoadingUsers(true)
+      getUsers()
+        .then(setUsers)
+        .finally(() => setLoadingUsers(false))
+    }
+  }, [showExportDialog, users.length])
 
   const handleExport = async (exportData: any) => {
     setIsExporting(true)
@@ -108,9 +122,13 @@ export function CategoriesPrimaryButtons() {
       <ExportDialog
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
+        title="Export Categories"
+        description="Select columns and configure export options for categories"
         columns={exportableColumns}
+        users={users}
         onExport={handleExport}
         isExporting={isExporting}
+        loadingUsers={loadingUsers}
       />
     </TooltipProvider>
   )

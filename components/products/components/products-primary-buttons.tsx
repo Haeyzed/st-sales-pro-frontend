@@ -13,9 +13,11 @@ import { useProducts } from "../products-provider"
 import { PermissionGate } from "@/components/permission-gate"
 import { apiPostClient } from "@/lib/api-client-client"
 import { toast } from "sonner"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Spinner } from "@/components/ui/spinner"
 import { ExportDialog } from "@/components/ui/export-dialog"
+import { getUsers } from "@/lib/api/users"
+import type { EmailUser } from "@/components/ui/email-tag-input"
 
 export function ProductsPrimaryButtons() {
   const { setOpen } = useProducts()
@@ -23,6 +25,18 @@ export function ProductsPrimaryButtons() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [users, setUsers] = useState<EmailUser[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+
+  // Fetch users when export dialog opens
+  useEffect(() => {
+    if (showExportDialog && users.length === 0) {
+      setLoadingUsers(true)
+      getUsers()
+        .then(setUsers)
+        .finally(() => setLoadingUsers(false))
+    }
+  }, [showExportDialog, users.length])
 
   const handleShowAllOnline = async () => {
     try {
@@ -164,9 +178,13 @@ export function ProductsPrimaryButtons() {
       <ExportDialog
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
+        title="Export Products"
+        description="Select columns and configure export options for products"
         columns={exportableColumns}
+        users={users}
         onExport={handleExport}
         isExporting={isExporting}
+        loadingUsers={loadingUsers}
       />
     </TooltipProvider>
   )

@@ -10,12 +10,15 @@
         "@dnd-kit/utilities": "^3.2.2",
         "@hookform/resolvers": "^5.2.2",
         "@lexical/code": "^0.38.2",
+        "@lexical/file": "^0.38.2",
         "@lexical/link": "^0.38.2",
         "@lexical/list": "^0.38.2",
+        "@lexical/markdown": "^0.38.2",
         "@lexical/react": "^0.38.2",
         "@lexical/rich-text": "^0.38.2",
         "@lexical/selection": "^0.38.2",
         "@lexical/table": "^0.38.2",
+        "@lexical/text": "^0.38.2",
         "@lexical/utils": "^0.38.2",
         "@radix-ui/react-accordion": "^1.2.12",
         "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -255,6 +258,8 @@
     "@lexical/dragon": ["@lexical/dragon@0.38.2", "", { "dependencies": { "@lexical/extension": "0.38.2", "lexical": "0.38.2" } }, "sha512-riOhgo+l4oN50RnLGhcqeUokVlMZRc+NDrxRNs2lyKSUdC4vAhAmAVUHDqYPyb4K4ZSw4ebZ3j8hI2zO4O3BbA=="],
 
     "@lexical/extension": ["@lexical/extension@0.38.2", "", { "dependencies": { "@lexical/utils": "0.38.2", "@preact/signals-core": "^1.11.0", "lexical": "0.38.2" } }, "sha512-qbUNxEVjAC0kxp7hEMTzktj0/51SyJoIJWK6Gm790b4yNBq82fEPkksfuLkRg9VQUteD0RT1Nkjy8pho8nNamw=="],
+
+    "@lexical/file": ["@lexical/file@0.38.2", "", { "dependencies": { "lexical": "0.38.2" } }, "sha512-DZBu/1bw3HXNwT9xciGVi8UNtd2amkGpuUZualhTQf9pOderVbLRTS+SSFYE3uNdPjkNQWFV2hfOjdmF5HRo2Q=="],
 
     "@lexical/hashtag": ["@lexical/hashtag@0.38.2", "", { "dependencies": { "@lexical/text": "0.38.2", "@lexical/utils": "0.38.2", "lexical": "0.38.2" } }, "sha512-jNI4Pv+plth39bjOeeQegMypkjDmoMWBMZtV0lCynBpkkPFlfMnyL9uzW/IxkZnX8LXWSw5mbWk07nqOUNTCrA=="],
 
