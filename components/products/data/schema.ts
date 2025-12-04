@@ -75,6 +75,7 @@ export const productSchema: z.ZodType<
     unit?: { id: number; unit_name: string } | null
     tax?: { id: number; name: string; rate: number } | null
     warehouse_prices?: Array<{ warehouse_id: number; price: number | null; warehouse_name: string | null }> | null
+    warehouse_stock?: Array<{ warehouse_id: number; qty: number; warehouse_name: string | null }> | null
     variants?: Array<{ id: number | null; variant_id: number; item_code: string | null; additional_cost: number; additional_price: number; qty: number; position: number | null; name: string | null }> | null
     product_variants?: Array<{ id: number; variant_id: number; item_code: string | null; additional_cost: number; additional_price: number; qty: number; position: number | null }> | null
   }
@@ -113,6 +114,16 @@ export const productSchema: z.ZodType<
       z.object({
         warehouse_id: z.number(),
         price: z.number().nullable(),
+        warehouse_name: z.string().nullable(),
+      })
+    )
+    .nullable()
+    .optional(),
+  warehouse_stock: z
+    .array(
+      z.object({
+        warehouse_id: z.number(),
+        qty: z.number(),
         warehouse_name: z.string().nullable(),
       })
     )

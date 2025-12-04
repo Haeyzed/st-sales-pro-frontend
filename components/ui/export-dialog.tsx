@@ -106,35 +106,36 @@ function ExportForm({
       <div
         className={
           isDesktop
-            ? "grid grid-cols-6 items-start space-y-0 gap-x-4 gap-y-3"
+            ? "grid grid-cols-6 items-start space-y-0 gap-x-4 gap-y-1"
             : "space-y-2"
         }
       >
         <div
           className={
             isDesktop
-              ? "col-span-2 flex items-center justify-end pt-2"
+              ? "col-span-2 flex items-center justify-between pt-2"
               : "flex items-center justify-between"
           }
         >
-          <Label className={isDesktop ? "text-end" : undefined}>
+          <Label className={isDesktop ? "text-end flex-1" : undefined}>
             Select Columns
           </Label>
-          {!isDesktop && (
+          {isDesktop && (
             <Button
               type="button"
-              variant="ghost"
+              variant="link"
               size="sm"
               onClick={onSelectAll}
               disabled={isExporting}
+              className="h-auto p-0 text-xs"
             >
               {selectedColumns.length === columns.length ? "Deselect All" : "Select All"}
             </Button>
           )}
         </div>
-        <div className={isDesktop ? "col-span-4 space-y-2" : "space-y-2"}>
-          {isDesktop && (
-            <div className="flex justify-end mb-2">
+        <div className={isDesktop ? "col-span-4 space-y-1" : "space-y-2"}>
+          {!isDesktop && (
+            <div className="flex justify-end">
               <Button
                 type="button"
                 variant="ghost"
@@ -167,7 +168,7 @@ function ExportForm({
             </div>
           </ScrollArea>
           {selectedColumns.length === 0 && (
-            <p className={isDesktop ? "text-sm text-destructive" : "text-sm text-destructive"}>
+            <p className="text-sm text-destructive">
               Please select at least one column
             </p>
           )}

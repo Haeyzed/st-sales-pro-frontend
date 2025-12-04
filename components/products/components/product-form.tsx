@@ -55,12 +55,13 @@ import {
 import { apiGetClient, apiDeleteClient, apiPutClient } from "@/lib/api-client-client"
 import { ProductSearchCombobox } from "./product-search-combobox"
 import { MultipleProductSearchCombobox } from "./multiple-product-search-combobox"
-import { Plus, X, RefreshCw, GripVertical } from "lucide-react"
+import { Plus, X, RefreshCw, GripVertical, ArrowLeft, CloudUpload } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
 import { TagInput } from "@/components/ui/tag-input"
 import * as Sortable from "@/components/ui/sortable"
 import { DatePicker } from "@/components/ui/date-picker"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   FileUpload,
   FileUploadDropzone,
@@ -71,10 +72,8 @@ import {
   FileUploadList,
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
-import { CloudUpload, ArrowLeft } from "lucide-react"
 import { ProductDetailsEditor } from "./product-details-editor"
 import { type Product } from "../data/schema"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemHeader, ItemTitle } from "@/components/ui/item"
 import Image from "next/image"
 import {
@@ -388,6 +387,16 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
               }
             }
             loadWarehousePrices()
+          }
+
+          // Load warehouse stock if initial stock exists
+          const warehouseStock = (product as any).warehouse_stock
+          if (warehouseStock && warehouseStock.length > 0) {
+            form.setValue("is_initial_stock", true)
+            const warehouseIds = warehouseStock.map((ws: any) => ws.warehouse_id)
+            const stockQtys = warehouseStock.map((ws: any) => ws.qty)
+            form.setValue("stock_warehouse_id", warehouseIds)
+            form.setValue("stock", stockQtys)
           }
 
           // Load combo products if type is combo
@@ -1018,7 +1027,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   return (
     <div className="">
       <div className="mb-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
@@ -1027,6 +1036,17 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
+          {isEdit && existingImages.length > 0 && (
+            <Avatar className="h-12 w-12 rounded-md">
+              <AvatarImage
+                src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${existingImages[0]}`}
+                alt="Product"
+              />
+              <AvatarFallback className="rounded-md">
+                {form.watch("name")?.charAt(0) || "P"}
+              </AvatarFallback>
+            </Avatar>
+          )}
           <div>
             <h1 className="text-3xl font-bold">{isEdit ? "Edit Product" : "Add Product"}</h1>
             <p className="text-muted-foreground mt-1 text-sm italic">
