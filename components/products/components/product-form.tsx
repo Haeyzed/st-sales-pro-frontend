@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { CategoryCombobox } from "./category-combobox"
+import { CategoriesActionDialog } from "@/components/categories/components/categories-action-dialog"
 import { BrandCombobox } from "./brand-combobox"
 import { UnitCombobox } from "./unit-combobox"
 import { TaxCombobox } from "./tax-combobox"
@@ -167,11 +168,9 @@ const formSchema = z.object({
     unit_cost: z.number(),
     unit_price: z.number(),
   })).nullable().optional(),
-  // Initial stock
-  initial_stock: z.array(z.object({
-    warehouse_id: z.number(),
-    qty: z.number(),
-  })).nullable().optional(),
+  is_initial_stock: z.boolean().nullable().optional(),
+  stock_warehouse_id: z.array(z.number()).nullable().optional(),
+  stock: z.array(z.number()).nullable().optional(),
 })
 
 type ProductForm = z.infer<typeof formSchema>
@@ -193,6 +192,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const [warehouses, setWarehouses] = useState<Array<{id: number, name: string}>>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
   const [relatedProducts, setRelatedProducts] = useState<Array<ComboProductSearchResult>>([])
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false)
   const isEdit = !!productId
 
   const form = useForm<ProductForm>({
@@ -256,7 +256,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       wastage_percent: null,
       combo_unit_id: null,
       product_list: [],
-      initial_stock: [],
+      stock_warehouse_id: [],
+      stock: [],
       image: [],
       file: null,
     },
@@ -357,7 +358,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
             wastage_percent: product.wastage_percent ? (typeof product.wastage_percent === 'string' ? parseFloat(product.wastage_percent) : product.wastage_percent) : null,
             combo_unit_id: product.combo_unit_id ? (typeof product.combo_unit_id === 'string' ? parseInt(product.combo_unit_id, 10) : product.combo_unit_id) : null,
             product_list: [],
-            initial_stock: [],
+            stock_warehouse_id: [],
+            stock: [],
             image: [],
             file: null,
           })
@@ -545,8 +547,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const isVariant = form.watch("is_variant")
   const isBatch = form.watch("is_batch")
   const isDiffPrice = form.watch("is_diffPrice")
+  const isInitialStock = form.watch("is_initial_stock")
   const promotion = form.watch("promotion")
-  const isInitialStock = form.watch("initial_stock")?.length ? true : false
   const unitId = form.watch("unit_id")
   const productList = form.watch("product_list") || []
   const productCode = form.watch("code") || ""
@@ -683,7 +685,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       form.setValue("is_diffPrice", false)
       form.setValue("is_batch", false)
       form.setValue("is_imei", false)
-      form.setValue("initial_stock", [])
+      form.setValue("stock_warehouse_id", [])
+      form.setValue("stock", [])
     } else if (productType === "digital") {
       // Digital products: hide variant, diffPrice, batch options
       // Show initial stock option
@@ -704,7 +707,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   useEffect(() => {
     if (isBatch) {
       form.setValue("is_variant", false)
-      form.setValue("initial_stock", [])
+      form.setValue("is_initial_stock", false)
+      form.setValue("stock_warehouse_id", [])
+      form.setValue("stock", [])
       form.setValue("featured", false)
     }
   }, [isBatch])
@@ -712,7 +717,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   // Handle is_imei changes - hide initial stock
   useEffect(() => {
     if (form.watch("is_imei")) {
-      form.setValue("initial_stock", [])
+      form.setValue("is_initial_stock", false)
+      form.setValue("stock_warehouse_id", [])
+      form.setValue("stock", [])
       form.setValue("featured", false)
     }
   }, [form.watch("is_imei")])
@@ -721,7 +728,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   useEffect(() => {
     if (isVariant) {
       form.setValue("is_batch", false)
-      form.setValue("initial_stock", [])
+      form.setValue("is_initial_stock", false)
+      form.setValue("stock_warehouse_id", [])
+      form.setValue("stock", [])
     }
   }, [isVariant])
 
@@ -934,10 +943,10 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       }
       
       // Initial stock
-      if (values.initial_stock && values.initial_stock.length > 0) {
-        values.initial_stock.forEach((item, index) => {
-          formData.append(`stock_warehouse_id[${index}]`, String(item.warehouse_id))
-          formData.append(`stock[${index}]`, String(item.qty))
+      if (values.is_initial_stock && values.stock_warehouse_id && values.stock_warehouse_id.length > 0 && values.stock && values.stock.length > 0) {
+        values.stock_warehouse_id.forEach((warehouseId, index) => {
+          formData.append(`stock_warehouse_id[${index}]`, String(warehouseId))
+          formData.append(`stock[${index}]`, String(values.stock?.[index] || 0))
         })
       }
       
@@ -1134,10 +1143,22 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Brand</FormLabel>
                       <FormControl>
-                        <BrandCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
+                        <div className="flex rounded-md shadow-xs">
+                          <BrandCombobox
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="rounded-l-none shadow-none"
+                            onClick={() => toast.info("Brand creation coming soon")}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1151,10 +1172,22 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <CategoryCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
+                        <div className="flex rounded-md shadow-xs">
+                          <CategoryCombobox
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="rounded-l-none shadow-none"
+                            onClick={() => setShowCategoryDialog(true)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1451,10 +1484,22 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       <FormItem>
                         <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <UnitCombobox
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          />
+                          <div className="flex rounded-md shadow-xs">
+                            <UnitCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="rounded-l-none shadow-none"
+                              onClick={() => toast.info("Unit creation coming soon")}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1667,10 +1712,22 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Product Tax</FormLabel>
                       <FormControl>
-                        <TaxCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
+                        <div className="flex rounded-md shadow-xs">
+                          <TaxCombobox
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="rounded-l-none shadow-none"
+                            onClick={() => toast.info("Tax creation coming soon")}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -2311,7 +2368,91 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     </FormItem>
                   )}
                 />
+
+                {productType === "standard" && !isVariant && !isBatch && (
+                  <FormField
+                    control={form.control}
+                    name="is_initial_stock"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={(checked) => {
+                              if (checked && warehouses.length === 0) {
+                                toast.error("Please create warehouse first before adding stock!")
+                                return
+                              }
+                              field.onChange(checked)
+                              // Initialize stock arrays with all warehouses
+                              if (checked) {
+                                form.setValue("stock_warehouse_id", warehouses.map(w => w.id))
+                                form.setValue("stock", warehouses.map(() => 0))
+                              } else {
+                                form.setValue("stock_warehouse_id", [])
+                                form.setValue("stock", [])
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Initial Stock</FormLabel>
+                          <FormDescription className="text-xs">
+                            This feature will not work for product with variants and batches
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
+
+              {/* Initial Stock Table */}
+              {isInitialStock && productType === "standard" && !isVariant && !isBatch && (
+                <div className="space-y-4 border-t pt-4">
+                  <FormLabel className="text-base font-semibold">Initial Stock by Warehouse</FormLabel>
+                  <div className="border rounded-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Warehouse</TableHead>
+                          <TableHead>Quantity</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {warehouses.map((warehouse, index) => (
+                          <TableRow key={warehouse.id}>
+                            <TableCell className="font-medium">{warehouse.name}</TableCell>
+                            <TableCell>
+                              <FormField
+                                control={form.control}
+                                name={`stock.${index}`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0"
+                                        className="w-32"
+                                        {...field}
+                                        value={field.value || 0}
+                                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
 
               {/* Initial Stock Section */}
               {isInitialStock && productType === "standard" && !isVariant && !isBatch && (
@@ -2644,6 +2785,12 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
               </div>
         </form>
       </Form>
+
+      {/* Category Action Dialog */}
+      <CategoriesActionDialog
+        open={showCategoryDialog}
+        onOpenChange={setShowCategoryDialog}
+      />
     </div>
   )
 }
