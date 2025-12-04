@@ -43,13 +43,15 @@ import { format } from "date-fns"
 import { DatePickerWithRange } from "@/components/ui/date-picker-range"
 import { type DateRange } from "react-day-picker"
 import { WarehouseCombobox } from "@/components/products/components/warehouse-combobox"
-import { HistoryBulkActions } from "./history-bulk-actions"
+import { HistoryPrimaryButtons } from "./history-primary-buttons"
+import { type Product } from "@/components/products/data/schema"
 
 interface HistoryTableProps {
   productId: number
+  product?: Product
 }
 
-export function HistoryTable({ productId }: HistoryTableProps) {
+export function HistoryTable({ productId, product }: HistoryTableProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -264,7 +266,7 @@ export function HistoryTable({ productId }: HistoryTableProps) {
 
   return (
     <div className={cn("flex flex-1 flex-col gap-4")}>
-      {/* Search and Filter Toggle */}
+      {/* Search, Filter, and Export */}
       <div className="flex items-center gap-2">
         <div className="flex-1">
           <DataTableToolbar
@@ -290,9 +292,14 @@ export function HistoryTable({ productId }: HistoryTableProps) {
           onClick={() => setShowFilters(!showFilters)}
           className="h-8"
         >
-          <Filter className="mr-2 h-4 w-4" />
-          Filters
+          <Filter className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Filters</span>
         </Button>
+        <HistoryPrimaryButtons
+          productId={productId}
+          historyType={activeTab as any}
+          filters={filters}
+        />
       </div>
       
       {/* Filters */}
@@ -327,14 +334,6 @@ export function HistoryTable({ productId }: HistoryTableProps) {
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4">
-          {/* Bulk Actions */}
-          <HistoryBulkActions
-            table={table}
-            productId={productId}
-            historyType={activeTab as any}
-            filters={filters}
-          />
-
           <div className="overflow-hidden rounded-md border">
             <Table>
               <TableHeader>

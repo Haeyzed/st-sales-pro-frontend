@@ -25,10 +25,10 @@ export function DataTableViewOptions<TData>({
         <Button
           variant="outline"
           size="sm"
-          className="ms-auto hidden h-8 lg:flex"
+          className="ms-auto h-8"
         >
-          <MixerHorizontalIcon className="size-4" />
-          View
+          <MixerHorizontalIcon className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">View</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
