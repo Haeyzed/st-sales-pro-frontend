@@ -1143,24 +1143,23 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="brand_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Brand</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Brand</FormLabel>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2"
+                          onClick={() => toast.info("Brand creation coming soon")}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
                       <FormControl>
-                        <div className="flex rounded-md shadow-xs">
-                          <BrandCombobox
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="rounded-l-none shadow-none"
-                            onClick={() => toast.info("Brand creation coming soon")}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <BrandCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1172,24 +1171,23 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="category_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2"
+                          onClick={() => setShowCategoryDialog(true)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
                       <FormControl>
-                        <div className="flex rounded-md shadow-xs">
-                          <CategoryCombobox
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="rounded-l-none shadow-none"
-                            onClick={() => setShowCategoryDialog(true)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <CategoryCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1484,24 +1482,23 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="unit_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2"
+                            onClick={() => toast.info("Unit creation coming soon")}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
                         <FormControl>
-                          <div className="flex rounded-md shadow-xs">
-                            <UnitCombobox
-                              value={field.value}
-                              onValueChange={field.onChange}
-                              className="-me-px rounded-r-none shadow-none focus-visible:z-10"
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="rounded-l-none shadow-none"
-                              onClick={() => toast.info("Unit creation coming soon")}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <UnitCombobox
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1712,24 +1709,23 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="tax_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Tax</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Product Tax</FormLabel>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2"
+                          onClick={() => toast.info("Tax creation coming soon")}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
                       <FormControl>
-                        <div className="flex rounded-md shadow-xs">
-                          <TaxCombobox
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="rounded-l-none shadow-none"
-                            onClick={() => toast.info("Tax creation coming soon")}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <TaxCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -2450,31 +2446,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             </TableCell>
                           </TableRow>
                         ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
-              )}
-
-              {/* Initial Stock Section */}
-              {isInitialStock && productType === "standard" && !isVariant && !isBatch && (
-                <div className="space-y-4 border-t pt-4">
-                  <FormLabel className="text-base font-semibold">Initial Stock</FormLabel>
-                  <div className="border rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Warehouse</TableHead>
-                          <TableHead>Qty</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {/* Initial stock rows will be populated here */}
-                        <TableRow>
-                          <TableCell colSpan={2} className="text-center text-muted-foreground">
-                            Warehouse list will be loaded here
-                          </TableCell>
-                        </TableRow>
                       </TableBody>
                     </Table>
                   </div>
