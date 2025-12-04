@@ -93,6 +93,7 @@ export const purchaseHistoryColumns: ColumnDef<HistoryItem>[] = [
   },
   {
     id: "unit_cost",
+    accessorFn: (row) => row.total / row.qty,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Unit Cost" className="justify-end" />
     ),
@@ -105,6 +106,7 @@ export const purchaseHistoryColumns: ColumnDef<HistoryItem>[] = [
     meta: {
       className: "text-right",
     },
+    enableSorting: true,
   },
   {
     accessorKey: "total",
