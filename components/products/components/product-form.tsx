@@ -946,6 +946,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       
       // Initial stock
       if (values.is_initial_stock && values.stock_warehouse_id && values.stock_warehouse_id.length > 0 && values.stock && values.stock.length > 0) {
+        formData.append("is_initial_stock", "1")
         values.stock_warehouse_id.forEach((warehouseId, index) => {
           formData.append(`stock_warehouse_id[${index}]`, String(warehouseId))
           formData.append(`stock[${index}]`, String(values.stock?.[index] || 0))
@@ -1143,23 +1144,25 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="brand_id"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Brand</FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2"
-                          onClick={() => toast.info("Brand creation coming soon")}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <FormLabel>Brand</FormLabel>
                       <FormControl>
-                        <BrandCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
+                        <div className="flex rounded-md shadow-xs">
+                          <BrandCombobox
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="rounded-l-none shadow-none"
+                            onClick={() => toast.info("Brand creation coming soon")}
+                            title="Add Brand"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1171,23 +1174,25 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="category_id"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2"
-                          onClick={() => setShowCategoryDialog(true)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <CategoryCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
+                        <div className="flex rounded-md shadow-xs">
+                          <CategoryCombobox
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="rounded-l-none shadow-none"
+                            onClick={() => setShowCategoryDialog(true)}
+                            title="Add Category"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1482,23 +1487,25 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     name="unit_id"
                     render={({ field }) => (
                       <FormItem>
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2"
-                            onClick={() => toast.info("Unit creation coming soon")}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
+                        <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <UnitCombobox
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          />
+                          <div className="flex rounded-md shadow-xs">
+                            <UnitCombobox
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="rounded-l-none shadow-none"
+                              onClick={() => toast.info("Unit creation coming soon")}
+                              title="Add Unit"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1660,9 +1667,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Daily Sale Objective</FormLabel>
-                      <FormDescription className="text-xs">
-                        Minimum qty which must be sold in a day
-                      </FormDescription>
                       <FormControl>
                         <Input
                           type="number"
@@ -1673,6 +1677,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
                         />
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        Minimum qty which must be sold in a day
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1709,23 +1716,25 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   name="tax_id"
                   render={({ field }) => (
                     <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Product Tax</FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2"
-                          onClick={() => toast.info("Tax creation coming soon")}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
+                      <FormLabel>Product Tax</FormLabel>
                       <FormControl>
-                        <TaxCombobox
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        />
+                        <div className="flex rounded-md shadow-xs">
+                          <TaxCombobox
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="rounded-l-none shadow-none"
+                            onClick={() => toast.info("Tax creation coming soon")}
+                            title="Add Tax"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1738,11 +1747,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Tax Method</FormLabel>
-                      <FormDescription className="text-xs">
-                        Exclusive: Product price = Actual product price + Tax
-                        <br />
-                        Inclusive: Actual product price = Product price - Tax
-                      </FormDescription>
                       <FormControl>
                         <TaxMethodCombobox
                           value={field.value || "exclusive"}
@@ -1750,6 +1754,11 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           placeholder="Select tax method..."
                         />
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        Exclusive: Product price = Actual product price + Tax
+                        <br />
+                        Inclusive: Actual product price = Product price - Tax
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1851,7 +1860,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>Featured</FormLabel>
-                        <FormDescription>
+                        <FormDescription className="text-xs">
                           Featured product will be displayed in POS
                         </FormDescription>
                       </div>
@@ -1872,7 +1881,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>Embedded Barcode</FormLabel>
-                        <FormDescription>
+                        <FormDescription className="text-xs">
                           Check this if this product will be used in weight scale machine
                         </FormDescription>
                       </div>
@@ -2518,9 +2527,18 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                               >
                                 <Sortable.Content className="grid grid-cols-2 gap-2">
                                   {existingImages.map((imageName, index) => (
-                                    <Sortable.Item key={imageName} value={imageName}>
-                                      <div className="relative flex items-center gap-2 rounded-md border p-2 bg-background cursor-move hover:bg-accent/50 transition-colors">
-                                        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <Sortable.Item key={imageName} value={imageName} asChild>
+                                      <div className="relative flex items-center gap-2 rounded-md border p-2 bg-background hover:bg-accent/50 transition-colors">
+                                        <Sortable.ItemHandle asChild>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-7 w-7 cursor-grab active:cursor-grabbing"
+                                          >
+                                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                          </Button>
+                                        </Sortable.ItemHandle>
                                         <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
                                           <img
                                             src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${imageName}`}
