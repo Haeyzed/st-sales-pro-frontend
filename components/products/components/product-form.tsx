@@ -52,13 +52,14 @@ import {
   getSaleUnits,
   type ComboProductSearchResult
 } from "../data/products"
-import { apiGetClient, apiDeleteClient } from "@/lib/api-client-client"
+import { apiGetClient, apiDeleteClient, apiPutClient } from "@/lib/api-client-client"
 import { ProductSearchCombobox } from "./product-search-combobox"
 import { MultipleProductSearchCombobox } from "./multiple-product-search-combobox"
-import { Plus, X, RefreshCw } from "lucide-react"
+import { Plus, X, RefreshCw, GripVertical } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
 import { TagInput } from "@/components/ui/tag-input"
+import * as Sortable from "@/components/ui/sortable"
 import { DatePicker } from "@/components/ui/date-picker"
 import {
   FileUpload,
@@ -191,6 +192,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const [productUnits, setProductUnits] = useState<Record<number, Array<{id: number, name: string, operation_value: number, operator: string}>>>({})
   const [warehouses, setWarehouses] = useState<Array<{id: number, name: string}>>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
+  const [isSortingImages, setIsSortingImages] = useState(false)
   const [relatedProducts, setRelatedProducts] = useState<Array<ComboProductSearchResult>>([])
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
   const isEdit = !!productId
@@ -2512,58 +2514,93 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             </FileUploadTrigger>
                           </FileUploadDropzone>
 
-                          {/* Show existing images */}
+                          {/* Show existing images with drag-and-drop sorting */}
                           {existingImages.length > 0 && (
                             <div className="space-y-2">
-                              <p className="text-sm font-medium">Existing Images:</p>
-                              <div className="grid grid-cols-2 gap-2">
-                                {existingImages.map((imageName, index) => (
-                                  <div key={imageName} className="relative flex items-center gap-2 rounded-md border p-2">
-                                    <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
-                                      <img
-                                        src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${imageName}`}
-                                        alt={`Product ${index + 1}`}
-                                        className="size-full object-cover"
-                                      />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">{imageName}</p>
-                                      {index === 0 && (
-                                        <Badge variant="secondary" className="text-xs">Base Image</Badge>
-                                      )}
-                                    </div>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-7 w-7"
-                                      onClick={async () => {
-                                        if (!productId) {
-                                          // If not editing, just remove from state
-                                          setExistingImages(prev => prev.filter(img => img !== imageName))
-                                          return
-                                        }
+                              <p className="text-sm font-medium">
+                                Existing Images {isSortingImages && <Spinner className="inline-block ml-2 h-3 w-3" />}
+                              </p>
+                              <Sortable.Root
+                                value={existingImages}
+                                onValueChange={async (newOrder) => {
+                                  setExistingImages(newOrder)
+                                  
+                                  // Only call API if product is being edited
+                                  if (productId && !isSortingImages) {
+                                    try {
+                                      setIsSortingImages(true)
+                                      await apiPutClient(`products/${productId}/sort-images`, {
+                                        images: newOrder
+                                      })
+                                      toast.success("Images reordered successfully")
+                                    } catch (error: any) {
+                                      toast.error(error?.message || "Failed to sort images")
+                                      // Revert on error
+                                      if (existingImages) {
+                                        setExistingImages(existingImages)
+                                      }
+                                    } finally {
+                                      setIsSortingImages(false)
+                                    }
+                                  }
+                                }}
+                              >
+                                <Sortable.Content className="grid grid-cols-2 gap-2">
+                                  {existingImages.map((imageName, index) => (
+                                    <Sortable.Item key={imageName} value={imageName}>
+                                      <div className="relative flex items-center gap-2 rounded-md border p-2 bg-background cursor-move hover:bg-accent/50 transition-colors">
+                                        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                                        <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
+                                          <img
+                                            src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${imageName}`}
+                                            alt={`Product ${index + 1}`}
+                                            className="size-full object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium truncate">{imageName}</p>
+                                          {index === 0 && (
+                                            <Badge variant="secondary" className="text-xs">Base Image</Badge>
+                                          )}
+                                        </div>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-7 w-7"
+                                          onClick={async (e) => {
+                                            e.stopPropagation() // Prevent sortable drag when clicking delete
+                                            if (!productId) {
+                                              // If not editing, just remove from state
+                                              setExistingImages(prev => prev.filter(img => img !== imageName))
+                                              return
+                                            }
 
-                                        try {
-                                          // Call API to delete the image from server
-                                          const response = await apiDeleteClient(
-                                            `products/${productId}/image`,
-                                            { image: imageName }
-                                          )
+                                            try {
+                                              // Call API to delete the image from server
+                                              const response = await apiDeleteClient(
+                                                `products/${productId}/image`,
+                                                { image: imageName }
+                                              )
 
-                                          // Remove from state only after successful deletion
-                                          setExistingImages(prev => prev.filter(img => img !== imageName))
-                                          toast.success(response.message || "Image deleted successfully")
-                                        } catch (error: any) {
-                                          toast.error(error?.message || "Failed to delete image")
-                                        }
-                                      }}
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                ))}
-                              </div>
+                                              // Remove from state only after successful deletion
+                                              setExistingImages(prev => prev.filter(img => img !== imageName))
+                                              toast.success(response.message || "Image deleted successfully")
+                                            } catch (error: any) {
+                                              toast.error(error?.message || "Failed to delete image")
+                                            }
+                                          }}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </Sortable.Item>
+                                  ))}
+                                </Sortable.Content>
+                                <Sortable.Overlay>
+                                  <div className="size-full rounded-md bg-primary/10 border-2 border-primary border-dashed" />
+                                </Sortable.Overlay>
+                              </Sortable.Root>
                             </div>
                           )}
 
