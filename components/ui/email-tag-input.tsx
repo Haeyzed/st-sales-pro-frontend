@@ -172,7 +172,7 @@ export function EmailTagInput({
           <ChevronsUpDownIcon className="text-muted-foreground/80 h-4 w-4 shrink-0" aria-hidden="true" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popper-anchor-width] p-0" align="start">
+      <PopoverContent className="w-full p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder={searchPlaceholder}

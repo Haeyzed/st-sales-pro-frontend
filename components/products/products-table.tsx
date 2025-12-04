@@ -414,8 +414,8 @@ export function ProductsTable() {
           onClick={() => setShowFilters(!showFilters)}
           className="h-8"
         >
-          <Filter className="mr-2 h-4 w-4" />
-          Filters
+          <Filter className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Filters</span>
         </Button>
       </div>
       

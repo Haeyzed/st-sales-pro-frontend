@@ -522,20 +522,24 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 const relatedProductsData = await Promise.all(
                   relatedIds.map(id => getProduct(id))
                 )
-                const relatedProductsList = relatedProductsData.map(p => ({
-                  id: p.id,
-                  name: p.name,
-                  code: p.code,
-                  price: p.price,
-                  cost: p.cost,
-                  qty: p.qty || 0,
-                  brand: p.brand?.title || '',
-                  unit_id: p.unit_id,
-                  variant_id: null,
-                  additional_price: 0,
-                  image: p.image || undefined,
-                  units: []
-                })) as ComboProductSearchResult[]
+                const relatedProductsList = relatedProductsData.map(p => {
+                  // Get first image if exists
+                  const firstImage = p.image ? p.image.split(',')[0]?.trim() : null
+                  return {
+                    id: p.id,
+                    name: p.name,
+                    code: p.code,
+                    price: p.price,
+                    cost: p.cost,
+                    qty: p.qty || 0,
+                    brand: p.brand?.title || '',
+                    unit_id: p.unit_id,
+                    variant_id: null,
+                    additional_price: 0,
+                    image: firstImage && firstImage !== 'zummXD2dvAtI.png' ? firstImage : undefined,
+                    units: []
+                  }
+                }) as ComboProductSearchResult[]
                 setRelatedProducts(relatedProductsList)
               } catch (error) {
                 console.error("Failed to load related products:", error)

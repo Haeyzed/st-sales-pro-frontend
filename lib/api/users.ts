@@ -3,7 +3,7 @@ import type { EmailUser } from "@/components/ui/email-tag-input"
 
 export async function getUsers(): Promise<EmailUser[]> {
   try {
-    const response = await apiGetClient("users")
+    const response = await apiGetClient("users/dropdown")
     
     // Transform API response to EmailUser format
     return response.data.map((user: any) => ({
