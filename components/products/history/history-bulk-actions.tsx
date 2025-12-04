@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { type Table } from "@tanstack/react-table"
 import { FileDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,8 @@ import { PermissionGate } from "@/components/permission-gate"
 import { ExportDialog, type ExportColumn } from "@/components/ui/export-dialog"
 import { exportProductHistory, type ProductHistoryFilters } from "@/components/products/data/products"
 import { toast } from "sonner"
+import { getUsers } from "@/lib/api/users"
+import type { EmailUser } from "@/components/ui/email-tag-input"
 
 const saleExportColumns: ExportColumn[] = [
   { id: "reference_no", label: "Reference" },
@@ -50,11 +52,23 @@ export function HistoryBulkActions<TData>({
 }: HistoryBulkActionsProps<TData>) {
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [users, setUsers] = useState<EmailUser[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
 
   const exportColumns =
     historyType === "sales" || historyType === "sale-returns"
       ? saleExportColumns
       : purchaseExportColumns
+
+  // Fetch users when export dialog opens
+  useEffect(() => {
+    if (showExportDialog && users.length === 0) {
+      setLoadingUsers(true)
+      getUsers()
+        .then(setUsers)
+        .finally(() => setLoadingUsers(false))
+    }
+  }, [showExportDialog, users.length])
 
   const handleExport = async (exportData: any) => {
     setIsExporting(true)
@@ -118,8 +132,10 @@ export function HistoryBulkActions<TData>({
         title={`Export ${historyType === "sales" ? "Sales" : historyType === "purchases" ? "Purchases" : historyType === "sale-returns" ? "Sale Returns" : "Purchase Returns"} History`}
         description="Select columns and export options for the selected records"
         columns={exportColumns}
+        users={users}
         onExport={handleExport}
         isExporting={isExporting}
+        loadingUsers={loadingUsers}
       />
     </>
   )

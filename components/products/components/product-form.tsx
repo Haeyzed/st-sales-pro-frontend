@@ -800,7 +800,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       }
       
       // Boolean fields - convert to "1" or "0"
-      if (values.is_variant !== null && values.is_variant !== undefined) {
+      // Don't send is_variant/is_batch if is_initial_stock is true (backend validation prohibits)
+      if (values.is_variant !== null && values.is_variant !== undefined && !values.is_initial_stock) {
         formData.append("is_variant", values.is_variant ? "1" : "0")
         if (values.is_variant) {
           // Submit variant options and values for frontend display
@@ -831,7 +832,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
           }
         }
       }
-      if (values.is_batch !== null && values.is_batch !== undefined) {
+      if (values.is_batch !== null && values.is_batch !== undefined && !values.is_initial_stock) {
         formData.append("is_batch", values.is_batch ? "1" : "0")
       }
       if (values.is_imei !== null && values.is_imei !== undefined) {
@@ -1113,6 +1114,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           </Button>
                         </div>
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        Unique identifier for inventory tracking. Click refresh to auto-generate.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -1134,6 +1138,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           placeholder="Select barcode symbology..."
                         />
                       </FormControl>
+                      <FormDescription className="text-xs">
+                        Format for barcode generation (CODE128 recommended for retail)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -2509,10 +2516,10 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                   if (productId && !isSortingImages) {
                                     try {
                                       setIsSortingImages(true)
-                                      await apiPutClient(`products/${productId}/sort-images`, {
+                                      const response = await apiPutClient(`products/${productId}/sort-images`, {
                                         images: newOrder
                                       })
-                                      toast.success("Images reordered successfully")
+                                      toast.success(response.message || "Images reordered successfully")
                                     } catch (error: any) {
                                       toast.error(error?.message || "Failed to sort images")
                                       // Revert on error
