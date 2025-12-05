@@ -33,8 +33,8 @@ type UnitListResponse = {
 
 type UnitDropdownItem = {
   id: number
-  unit_code: string
-  unit_name: string
+  name: string
+  code: string
 }
 
 /**
