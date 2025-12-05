@@ -65,7 +65,7 @@ export function ProductHistory({ productId }: ProductHistoryProps) {
         {productImage && (
           <Avatar className="h-12 w-12 rounded-md">
             <AvatarImage
-              src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${productImage}`}
+              src={productImage}
               alt={product.name}
             />
             <AvatarFallback className="rounded-md">

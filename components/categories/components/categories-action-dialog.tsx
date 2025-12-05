@@ -35,6 +35,17 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  FileUpload,
+  FileUploadDropzone,
+  FileUploadList,
+  FileUploadItem,
+  FileUploadItemPreview,
+  FileUploadItemMetadata,
+  FileUploadItemDelete,
+  FileUploadTrigger,
+} from "@/components/ui/file-upload"
+import { CloudUpload } from "lucide-react"
 import { CategoryCombobox } from "./category-combobox"
 import { type Category } from "../data/schema"
 import { createCategory, updateCategory } from "../data/categories"
@@ -47,8 +58,8 @@ const formSchema = z.object({
   page_title: z.string().nullable().optional(),
   short_description: z.string().nullable().optional(),
   is_sync_disable: z.boolean().nullable().optional(),
-  image: z.instanceof(File).nullable().optional(),
-  icon: z.instanceof(File).nullable().optional(),
+  image: z.array(z.instanceof(File)).optional(),
+  icon: z.array(z.instanceof(File)).optional(),
 })
 
 type CategoryForm = z.infer<typeof formSchema>
@@ -279,25 +290,46 @@ function CategoryActionForm({
         <FormField
           control={form.control}
           name="image"
-          render={({ field: { value, onChange, ...field } }) => (
+          render={({ field }) => (
             <FormItem
               className={
                 isDesktop
-                  ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1"
+                  ? "grid grid-cols-6 items-start space-y-0 gap-x-4 gap-y-1"
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel className={isDesktop ? "col-span-2 text-end pt-3" : undefined}>
                 Image
               </FormLabel>
               <FormControl>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className={isDesktop ? "col-span-4" : undefined}
-                  onChange={(e) => onChange(e.target.files?.[0] || null)}
-                  {...field}
-                />
+                <div className={isDesktop ? "col-span-4" : undefined}>
+                  <FileUpload
+                    value={field.value || []}
+                    onValueChange={field.onChange}
+                    accept="image/jpeg,image/jpg,image/png,image/gif"
+                    maxFiles={1}
+                    maxSize={10 * 1024 * 1024} // 10MB
+                  >
+                    <FileUploadDropzone>
+                      <CloudUpload className="h-4 w-4" />
+                      <span className="text-sm">Drop image here or</span>
+                      <FileUploadTrigger asChild>
+                        <Button variant="link" size="sm" className="p-0 h-auto">
+                          choose file
+                        </Button>
+                      </FileUploadTrigger>
+                    </FileUploadDropzone>
+                    <FileUploadList>
+                      {field.value?.map((file, index) => (
+                        <FileUploadItem key={index} value={file}>
+                          <FileUploadItemPreview />
+                          <FileUploadItemMetadata />
+                          <FileUploadItemDelete />
+                        </FileUploadItem>
+                      ))}
+                    </FileUploadList>
+                  </FileUpload>
+                </div>
               </FormControl>
               <FormMessage
                 className={isDesktop ? "col-span-4 col-start-3" : undefined}
@@ -308,25 +340,46 @@ function CategoryActionForm({
         <FormField
           control={form.control}
           name="icon"
-          render={({ field: { value, onChange, ...field } }) => (
+          render={({ field }) => (
             <FormItem
               className={
                 isDesktop
-                  ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1"
+                  ? "grid grid-cols-6 items-start space-y-0 gap-x-4 gap-y-1"
                   : undefined
               }
             >
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>
+              <FormLabel className={isDesktop ? "col-span-2 text-end pt-3" : undefined}>
                 Icon
               </FormLabel>
               <FormControl>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  className={isDesktop ? "col-span-4" : undefined}
-                  onChange={(e) => onChange(e.target.files?.[0] || null)}
-                  {...field}
-                />
+                <div className={isDesktop ? "col-span-4" : undefined}>
+                  <FileUpload
+                    value={field.value || []}
+                    onValueChange={field.onChange}
+                    accept="image/jpeg,image/jpg,image/png,image/gif"
+                    maxFiles={1}
+                    maxSize={10 * 1024 * 1024} // 10MB
+                  >
+                    <FileUploadDropzone>
+                      <CloudUpload className="h-4 w-4" />
+                      <span className="text-sm">Drop icon here or</span>
+                      <FileUploadTrigger asChild>
+                        <Button variant="link" size="sm" className="p-0 h-auto">
+                          choose file
+                        </Button>
+                      </FileUploadTrigger>
+                    </FileUploadDropzone>
+                    <FileUploadList>
+                      {field.value?.map((file, index) => (
+                        <FileUploadItem key={index} value={file}>
+                          <FileUploadItemPreview />
+                          <FileUploadItemMetadata />
+                          <FileUploadItemDelete />
+                        </FileUploadItem>
+                      ))}
+                    </FileUploadList>
+                  </FileUpload>
+                </div>
               </FormControl>
               <FormMessage
                 className={isDesktop ? "col-span-4 col-start-3" : undefined}
@@ -359,8 +412,8 @@ export function CategoriesActionDialog({
           page_title: currentRow.page_title,
           short_description: currentRow.short_description,
           is_sync_disable: currentRow.is_sync_disable,
-          image: null,
-          icon: null,
+          image: [],
+          icon: [],
         }
       : {
           name: "",
@@ -370,8 +423,8 @@ export function CategoriesActionDialog({
           page_title: null,
           short_description: null,
           is_sync_disable: false,
-          image: null,
-          icon: null,
+          image: [],
+          icon: [],
         },
   })
 

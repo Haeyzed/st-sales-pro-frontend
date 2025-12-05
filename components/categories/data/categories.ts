@@ -129,8 +129,8 @@ export async function createCategory(
   data: FormData | {
     name: string
     parent_id?: number | null
-    image?: File | null
-    icon?: File | null
+    image?: File[]
+    icon?: File[]
     slug?: string | null
     featured?: boolean | null
     page_title?: string | null
@@ -150,12 +150,12 @@ export async function createCategory(
       body.append("parent_id", String(data.parent_id))
     }
 
-    if (data.image) {
-      body.append("image", data.image)
+    if (data.image && data.image.length > 0) {
+      body.append("image", data.image[0])
     }
 
-    if (data.icon) {
-      body.append("icon", data.icon)
+    if (data.icon && data.icon.length > 0) {
+      body.append("icon", data.icon[0])
     }
 
     if (data.slug) {
@@ -194,8 +194,8 @@ export async function updateCategory(
   data: FormData | {
     name: string
     parent_id?: number | null
-    image?: File | null
-    icon?: File | null
+    image?: File[]
+    icon?: File[]
     slug?: string | null
     featured?: boolean | null
     page_title?: string | null
@@ -216,12 +216,12 @@ export async function updateCategory(
       body.append("parent_id", String(data.parent_id))
     }
 
-    if (data.image) {
-      body.append("image", data.image)
+    if (data.image && data.image.length > 0) {
+      body.append("image", data.image[0])
     }
 
-    if (data.icon) {
-      body.append("icon", data.icon)
+    if (data.icon && data.icon.length > 0) {
+      body.append("icon", data.icon[0])
     }
 
     if (data.slug) {
