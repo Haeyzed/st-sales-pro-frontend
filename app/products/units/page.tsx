@@ -7,10 +7,10 @@ import { ProfileDropdown } from "@/components/profile-dropdown"
 import { Search } from "@/components/search"
 import { ThemeSwitch } from "@/components/theme-switch"
 import { ConfigDrawer } from "@/components/config-drawer"
-import { Categories } from "@/components/categories/categories"
+import { Units } from "@/components/units/units"
 import { protectRoute } from "@/lib/route-protection"
 
-export default async function ProductCategoryPage() {
+export default async function UnitsPage() {
   const session = await auth()
 
   if (!session) {
@@ -18,7 +18,7 @@ export default async function ProductCategoryPage() {
   }
 
   // Protect route based on permissions
-  protectRoute(session, "/products/category")
+  protectRoute(session, "/products/units")
 
   return (
     <AuthenticatedLayout>
@@ -32,7 +32,7 @@ export default async function ProductCategoryPage() {
       </Header>
 
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
-        <Categories />
+        <Units />
       </Main>
     </AuthenticatedLayout>
   )

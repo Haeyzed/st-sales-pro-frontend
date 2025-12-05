@@ -10,7 +10,7 @@ import { ConfigDrawer } from "@/components/config-drawer"
 import { Categories } from "@/components/categories/categories"
 import { protectRoute } from "@/lib/route-protection"
 
-export default async function ProductCategoryPage() {
+export default async function CategoriesPage() {
   const session = await auth()
 
   if (!session) {
@@ -18,7 +18,7 @@ export default async function ProductCategoryPage() {
   }
 
   // Protect route based on permissions
-  protectRoute(session, "/products/category")
+  protectRoute(session, "/products/categories")
 
   return (
     <AuthenticatedLayout>
