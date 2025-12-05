@@ -62,6 +62,8 @@ function UnitActionForm({
   isEdit: boolean
   currentUnitId?: number
 }) {
+  const baseUnit = form.watch("base_unit")
+
   return (
     <Form {...form}>
       <form
@@ -124,47 +126,51 @@ function UnitActionForm({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="operator"
-          render={({ field }) => (
-            <FormItem className={isDesktop ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1" : undefined}>
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>Operator</FormLabel>
-              <FormControl>
-                <Select value={field.value || ""} onValueChange={(val) => field.onChange(val || null)}>
-                  <SelectTrigger className={isDesktop ? "col-span-4" : undefined}>
-                    <SelectValue placeholder="Select operator (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="*">Multiply (*)</SelectItem>
-                    <SelectItem value="/">Divide (/)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage className={isDesktop ? "col-span-4 col-start-3" : undefined} />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="operation_value"
-          render={({ field }) => (
-            <FormItem className={isDesktop ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1" : undefined}>
-              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>Operation Value</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="e.g., 1000, 0.001"
-                  className={isDesktop ? "col-span-4" : undefined}
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormMessage className={isDesktop ? "col-span-4 col-start-3" : undefined} />
-            </FormItem>
-          )}
-        />
+        {baseUnit && (
+          <FormField
+            control={form.control}
+            name="operator"
+            render={({ field }) => (
+              <FormItem className={isDesktop ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1" : undefined}>
+                <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>Operator</FormLabel>
+                <FormControl>
+                  <Select value={field.value || ""} onValueChange={(val) => field.onChange(val || null)}>
+                    <SelectTrigger className={isDesktop ? "col-span-4" : undefined}>
+                      <SelectValue placeholder="Select operator (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="*">Multiply (*)</SelectItem>
+                      <SelectItem value="/">Divide (/)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage className={isDesktop ? "col-span-4 col-start-3" : undefined} />
+              </FormItem>
+            )}
+          />
+        )}
+        {baseUnit && (
+          <FormField
+            control={form.control}
+            name="operation_value"
+            render={({ field }) => (
+              <FormItem className={isDesktop ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1" : undefined}>
+                <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>Operation Value</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g., 1000, 0.001"
+                    className={isDesktop ? "col-span-4" : undefined}
+                    {...field}
+                    value={field.value || ""}
+                  />
+                </FormControl>
+                <FormMessage className={isDesktop ? "col-span-4 col-start-3" : undefined} />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name="is_active"
