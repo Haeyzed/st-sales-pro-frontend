@@ -99,6 +99,7 @@ export async function createBrand(
   data: FormData | {
     title: string
     image?: File[]
+    is_active?: boolean
   }
 ): Promise<{ data: Brand; message: string }> {
   let body: FormData | Record<string, unknown>
@@ -111,6 +112,10 @@ export async function createBrand(
 
     if (data.image && data.image.length > 0) {
       body.append("image", data.image[0])
+    }
+    
+    if (data.is_active !== undefined) {
+      body.append("is_active", data.is_active ? "1" : "0")
     }
   }
 
@@ -129,6 +134,7 @@ export async function updateBrand(
   data: FormData | {
     title: string
     image?: File[]
+    is_active?: boolean
   }
 ): Promise<{ data: Brand; message: string }> {
   let body: FormData | Record<string, unknown>
@@ -142,6 +148,10 @@ export async function updateBrand(
 
     if (data.image && data.image.length > 0) {
       body.append("image", data.image[0])
+    }
+
+    if (data.is_active !== undefined) {
+      body.append("is_active", data.is_active ? "1" : "0")
     }
   }
 

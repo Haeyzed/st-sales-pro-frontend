@@ -136,6 +136,7 @@ export async function createCategory(
     page_title?: string | null
     short_description?: string | null
     is_sync_disable?: boolean | null
+    is_active?: boolean
   }
 ): Promise<{ data: Category; message: string }> {
   let body: FormData | Record<string, unknown>
@@ -177,6 +178,10 @@ export async function createCategory(
     if (data.is_sync_disable !== undefined && data.is_sync_disable !== null) {
       body.append("is_sync_disable", data.is_sync_disable ? "1" : "0")
     }
+
+    if (data.is_active !== undefined) {
+      body.append("is_active", data.is_active ? "1" : "0")
+    }
   }
 
   const response = await apiPostClient<Category>("categories", body)
@@ -201,6 +206,7 @@ export async function updateCategory(
     page_title?: string | null
     short_description?: string | null
     is_sync_disable?: boolean | null
+    is_active?: boolean
   }
 ): Promise<{ data: Category; message: string }> {
   let body: FormData | Record<string, unknown>
@@ -242,6 +248,10 @@ export async function updateCategory(
 
     if (data.is_sync_disable !== undefined && data.is_sync_disable !== null) {
       body.append("is_sync_disable", data.is_sync_disable ? "1" : "0")
+    }
+
+    if (data.is_active !== undefined) {
+      body.append("is_active", data.is_active ? "1" : "0")
     }
   }
 
