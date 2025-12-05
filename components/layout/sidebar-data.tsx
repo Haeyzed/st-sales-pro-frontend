@@ -119,11 +119,15 @@ export const sidebarData: SidebarData = {
           items: [
             {
               title: "Categories",
-              url: "/products/category",
+              url: "/products/categories",
             },
             {
               title: "Brands",
               url: "/products/brands",
+            },
+            {
+              title: "Units",
+              url: "/products/units",
             },
             {
               title: "Products",
