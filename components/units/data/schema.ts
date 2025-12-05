@@ -4,12 +4,12 @@ const unitSchemaBase = z.object({
   id: z.number(),
   unit_code: z.string(),
   unit_name: z.string(),
-  base_unit: z.number().nullable(),
+  base_unit: z.number().nullable().optional(),
   operator: z.enum(["*", "/"]).nullable(),
-  operation_value: z.number().nullable(),
-  is_active: z.boolean(),
-  created_at: z.string(),
-  updated_at: z.string(),
+  operation_value: z.number().nullable().optional(),
+  is_active: z.boolean().optional(),
+  created_at: z.string().nullable(),
+  updated_at: z.string().nullable(),
 })
 
 export const unitSchema: z.ZodType<
