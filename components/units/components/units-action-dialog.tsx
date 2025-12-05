@@ -162,8 +162,11 @@ function UnitActionForm({
                     step="0.01"
                     placeholder="e.g., 1000, 0.001"
                     className={isDesktop ? "col-span-4" : undefined}
-                    {...field}
                     value={field.value || ""}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value) || null
+                      field.onChange(value)
+                    }}
                   />
                 </FormControl>
                 <FormMessage className={isDesktop ? "col-span-4 col-start-3" : undefined} />

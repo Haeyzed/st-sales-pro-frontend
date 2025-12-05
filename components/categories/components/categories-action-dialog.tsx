@@ -60,6 +60,7 @@ const formSchema = z.object({
   is_sync_disable: z.boolean().nullable().optional(),
   image: z.array(z.instanceof(File)).optional(),
   icon: z.array(z.instanceof(File)).optional(),
+  is_active: z.boolean().nullable().optional(),
 })
 
 type CategoryForm = z.infer<typeof formSchema>
@@ -387,6 +388,21 @@ function CategoryActionForm({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem className={isDesktop ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1" : undefined}>
+              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>Active</FormLabel>
+              <FormControl>
+                <div className={isDesktop ? "col-span-4" : undefined}>
+                  <Checkbox checked={field.value || false} onCheckedChange={field.onChange} />
+                </div>
+              </FormControl>
+              <FormMessage className={isDesktop ? "col-span-4 col-start-3" : undefined} />
+            </FormItem>
+          )}
+        />
       </form>
     </Form>
   )
@@ -414,6 +430,7 @@ export function CategoriesActionDialog({
           is_sync_disable: currentRow.is_sync_disable,
           image: [],
           icon: [],
+          is_active: currentRow.is_active ?? false,
         }
       : {
           name: "",
@@ -425,6 +442,7 @@ export function CategoriesActionDialog({
           is_sync_disable: false,
           image: [],
           icon: [],
+          is_active: true,
         },
   })
 
