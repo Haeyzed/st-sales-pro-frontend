@@ -18,7 +18,7 @@ export const unitSchema: z.ZodType<
     derived_units?: z.infer<typeof unitSchemaBase>[]
   }
 > = unitSchemaBase.extend({
-  base_unit_relation: z.lazy(() => unitSchema.nullable().optional()),
+  base_unit_relation: z.lazy(() => unitSchema.nullable()).optional(),
   derived_units: z.array(z.lazy(() => unitSchema)).optional(),
 })
 
