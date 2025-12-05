@@ -16,6 +16,8 @@ import { PermissionGate } from "@/components/permission-gate"
 import { ExportDialog, type ExportColumn } from "@/components/ui/export-dialog"
 import { exportCategories } from "../data/categories"
 import { toast } from "sonner"
+import { users } from "@/components/users/data/users"
+import { EmailUser } from "@/components/ui/email-tag-input"
 
 type DataTableBulkActionsProps<TData> = {
   table: Table<TData>
@@ -122,6 +124,11 @@ export function DataTableBulkActions<TData>({
         columns={exportColumns}
         onExport={handleExport}
         isExporting={isExporting}
+        // users={users.map((user: any) => ({
+        //     name: `${user.firstName} ${user.lastName}`,
+        //     email: user.email,
+        //   })) as EmailUser[],
+        // }
       />
 
       <CategoriesMultiDeleteDialog
