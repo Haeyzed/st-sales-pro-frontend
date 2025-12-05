@@ -39,7 +39,7 @@ export function UnitCombobox({
       })
       .map((unit) => ({
         value: unit.id.toString(),
-        label: `${unit.unit_code} - ${unit.unit_name}`,
+        label: `${unit.name}`,
       }))
   }, [units, excludeId])
 
