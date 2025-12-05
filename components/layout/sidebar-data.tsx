@@ -122,6 +122,10 @@ export const sidebarData: SidebarData = {
               url: "/products/category",
             },
             {
+              title: "Brands",
+              url: "/products/brands",
+            },
+            {
               title: "Products",
               url: "/products",
             },

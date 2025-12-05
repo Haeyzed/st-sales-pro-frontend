@@ -1204,7 +1204,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
           {isEdit && existingImages.length > 0 && (
             <Avatar className="h-12 w-12 rounded-md">
               <AvatarImage
-                src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${existingImages[0]}`}
+                src={existingImages[0]}
                 alt="Product"
               />
               <AvatarFallback className="rounded-md">
@@ -1501,9 +1501,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                               const unitPrice = item.unit_price || 0
                               const subtotal = qty * unitPrice
 
+                              // Image is already a full URL from API or a filename
                               const firstImage = item.product_image?.split(',')[0]?.trim()
-                              const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
-                              const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                              const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? firstImage : null
                               const initials = (item.product_name || 'P')
                                 .split(" ")
                                 .map((n) => n[0])
@@ -2733,7 +2733,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                         </Sortable.ItemHandle>
                                         <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
                                           <img
-                                            src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/products/small/${imageName}`}
+                                            src={imageName}
                                             alt={`Product ${index + 1}`}
                                             className="size-full object-cover"
                                           />
@@ -2951,8 +2951,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <h4 className="text-sm font-medium mb-3">Selected Products</h4>
                     <ItemGroup className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                       {relatedProducts.map((product) => {
+                        // Image is already a full URL from API or a filename
                         const firstImage = product.image?.split(',')[0]?.trim()
-                        const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                        const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? firstImage : null
                         const initials = product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
 
                         return (
