@@ -5,7 +5,7 @@ import { UnitsPrimaryButtons } from "./components/units-primary-buttons"
 import { UnitsProvider } from "./units-provider"
 import { UnitsTable } from "./units-table"
 
-export default function Units() {
+export function Units() {
   return (
     <UnitsProvider>
       <div className="flex flex-wrap items-end justify-between gap-2">
