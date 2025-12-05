@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/data-table"
 import { unitStatuses } from "../data/data"
 import type { Unit } from "../data/schema"
-import { UnitsRowActions } from "./units-row-actions"
+import { DataTableRowActions } from "./data-table-row-actions"
 
 export const unitsColumns: ColumnDef<Unit>[] = [
   {
@@ -162,6 +162,6 @@ export const unitsColumns: ColumnDef<Unit>[] = [
   },
   {
     id: "actions",
-    cell: UnitsRowActions,
+    cell: DataTableRowActions,
   },
 ]
