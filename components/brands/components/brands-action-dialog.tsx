@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,7 @@ import { createBrand, updateBrand } from "../data/brands"
 const formSchema = z.object({
   title: z.string().min(1, "Title is required."),
   image: z.array(z.instanceof(File)).optional(),
+  is_active: z.boolean().nullable().optional(),
 })
 
 type BrandForm = z.infer<typeof formSchema>
@@ -154,6 +156,21 @@ function BrandActionForm({
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="is_active"
+          render={({ field }) => (
+            <FormItem className={isDesktop ? "grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1" : undefined}>
+              <FormLabel className={isDesktop ? "col-span-2 text-end" : undefined}>Active</FormLabel>
+              <FormControl>
+                <div className={isDesktop ? "col-span-4" : undefined}>
+                  <Checkbox checked={field.value || false} onCheckedChange={field.onChange} />
+                </div>
+              </FormControl>
+              <FormMessage className={isDesktop ? "col-span-4 col-start-3" : undefined} />
+            </FormItem>
+          )}
+        />
       </form>
     </Form>
   )
@@ -174,10 +191,12 @@ export function BrandsActionDialog({
       ? {
           title: currentRow.title,
           image: [],
+          is_active: currentRow.is_active ?? false,
         }
       : {
           title: "",
           image: [],
+          is_active: true,
         },
   })
 
