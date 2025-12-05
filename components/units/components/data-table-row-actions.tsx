@@ -1,7 +1,7 @@
 "use client"
 
 import { DotsHorizontalIcon } from "@radix-ui/react-icons"
-import type { Row } from "@tanstack/react-table"
+import { type Row } from "@tanstack/react-table"
 import { Trash2, FolderPen } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
@@ -13,15 +13,15 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { Unit } from "../data/schema"
+import { type Unit } from "../data/schema"
 import { useUnits } from "../units-provider"
 import { canPerformAction } from "@/lib/permissions"
 
-type UnitsRowActionsProps = {
+type DataTableRowActionsProps = {
   row: Row<Unit>
 }
 
-export function UnitsRowActions({ row }: UnitsRowActionsProps) {
+export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useUnits()
   const { data: session } = useSession()
 
@@ -36,7 +36,10 @@ export function UnitsRowActions({ row }: UnitsRowActionsProps) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="data-[state=open]:bg-muted flex h-8 w-8 p-0">
+        <Button
+          variant="ghost"
+          className="data-[state=open]:bg-muted flex h-8 w-8 p-0"
+        >
           <DotsHorizontalIcon className="h-4 w-4" />
           <span className="sr-only">Open menu</span>
         </Button>
@@ -74,3 +77,6 @@ export function UnitsRowActions({ row }: UnitsRowActionsProps) {
     </DropdownMenu>
   )
 }
+
+
+
