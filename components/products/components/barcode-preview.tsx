@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Printer } from "lucide-react"
 import Image from "next/image"
 import Barcode from "react-barcode"
+import { getBarcodeSetting } from "../data/products"
+import { BarcodeSetting } from "../data/schema"
 
 type Product = {
   product_id: number
@@ -22,22 +24,6 @@ type Product = {
   currency: string
   currency_position: string
   brand_name?: string
-}
-
-type BarcodeSetting = {
-  id: number
-  name: string
-  width: number
-  height: number
-  paper_width: number
-  paper_height: number
-  top_margin: number
-  left_margin: number
-  row_distance: number
-  col_distance: number
-  stickers_in_one_row: number
-  is_continuous: boolean
-  stickers_in_one_sheet: number
 }
 
 export function BarcodePreview() {
@@ -89,9 +75,9 @@ export function BarcodePreview() {
     queryKey: ["barcode-setting", barcodeSettingId],
     queryFn: async () => {
       if (!barcodeSettingId) throw new Error("No barcode setting ID")
-      const response = await apiGetClient<BarcodeSetting>(`barcodes/${barcodeSettingId}`)
-      console.log("barcodeSetting", response.data)
-      return response.data
+      const setting = await getBarcodeSetting(barcodeSettingId)
+      console.log("barcodeSetting", setting)
+      return setting
     },
     enabled: !!barcodeSettingId,
   })
@@ -125,7 +111,7 @@ export function BarcodePreview() {
 
   const marginTop = barcodeSetting.is_continuous ? 0 : barcodeSetting.top_margin
   const marginLeft = barcodeSetting.is_continuous ? 0 : barcodeSetting.left_margin
-  const paperWidth = barcodeSetting.paper_width
+  const paperWidth = Number(barcodeSetting.paper_width)
   const paperHeight = barcodeSetting.is_continuous
     ? barcodeSetting.height
     : barcodeSetting.paper_height
@@ -284,7 +270,7 @@ export function BarcodePreview() {
                               <Barcode
                                 value={product.code}
                                 width={1}
-                                height={Math.floor(barcodeSetting.height * 0.24 * 96)}
+                                height={Math.floor(Number(barcodeSetting.height) * 0.24 * 96)}
                                 fontSize={10}
                                 displayValue={true}
                                 margin={0}

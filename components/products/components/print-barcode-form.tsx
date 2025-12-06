@@ -30,6 +30,7 @@ import { BarcodeSettingsCombobox } from "./barcode-settings-combobox"
 import { X, Printer, ArrowLeft } from "lucide-react"
 import type { ComboProductSearchResult } from "../data/products"
 import Image from "next/image"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 
 const printSchema = z.object({
   barcode_setting_id: z.number({
@@ -60,7 +61,6 @@ interface PrintBarcodeFormProps {
 
 export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
   const router = useRouter()
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
   const [selectedProducts, setSelectedProducts] = useState<ComboProductSearchResult[]>([])
   const [products, setProducts] = useState<BarcodeProduct[]>([])
 
@@ -199,20 +199,22 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
                       <TableBody>
                         {products.map((item) => {
                           const firstImage = item.product.image?.split(',')[0]?.trim()
-                          const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? `${apiUrl}/storage/products/small/${firstImage}` : null
+                          const imageUrl = firstImage ? firstImage : null
                           const initials = item.product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
 
                           return (
                             <TableRow key={`${item.product.id}-${item.product.variant_id || 0}`}>
                               <TableCell>
                                 {imageUrl ? (
-                                  <Image
-                                    src={imageUrl}
-                                    alt={item.product.name}
-                                    width={40}
-                                    height={40}
-                                    className="aspect-square object-cover rounded"
-                                  />
+                                  <ImageZoom>
+                                    <Image
+                                      src={imageUrl}
+                                      alt={item.product.name}
+                                      width={40}
+                                      height={40}
+                                        className="aspect-square object-cover rounded"
+                                      />
+                                  </ImageZoom>
                                 ) : (
                                   <div className="w-10 h-10 bg-muted flex items-center justify-center rounded">
                                     <span className="text-xs font-semibold text-muted-foreground">

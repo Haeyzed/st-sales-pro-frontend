@@ -12,7 +12,7 @@ import {
   apiPutClient,
   apiDeleteClient,
 } from "@/lib/api-client-client"
-import { productSchema, productListSchema, type Product } from "./schema"
+import { productSchema, productListSchema, type Product, BarcodeSetting, barcodeSettingSchema, barcodeSettingsListSchema, BarcodeSettingsList } from "./schema"
 import { downloadExcel, downloadPDF } from "@/lib/export-utils"
 
 export type ProductFilters = {
@@ -726,3 +726,19 @@ export async function exportProductHistory(
   return await apiPostClient(`products/${productId}/history/export`, requestData)
 }
 
+/**
+ * Get all barcode settings for dropdown/combobox
+ * This is the function likely required by BarcodeSettingsCombobox
+ */
+export async function getBarcodeSettingsList(): Promise<BarcodeSettingsList> {
+  const response = await apiGetClient<BarcodeSettingsList>("barcodes")
+  return barcodeSettingsListSchema.parse(response.data)
+}
+
+/**
+ * Get a single barcode setting by ID
+ */
+export async function getBarcodeSetting(id: number): Promise<BarcodeSetting> {
+  const response = await apiGetClient<BarcodeSetting>(`barcodes/${id}`)
+  return barcodeSettingSchema.parse(response.data)
+}

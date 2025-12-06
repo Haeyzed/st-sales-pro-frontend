@@ -165,3 +165,28 @@ export type Product = z.infer<typeof productSchema>
 
 export const productListSchema = z.array(productSchema)
 
+export const barcodeSettingSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  description: z.string(),
+  width: z.string(),
+  height: z.string(),
+  paper_width: z.string(),
+  paper_height: z.string(),
+  top_margin: z.string(),
+  left_margin: z.string(),
+  row_distance: z.string(),
+  col_distance: z.string(),
+  stickers_in_one_row: z.number(),
+  is_default: z.number().transform(val => val === 1),
+  is_continuous: z.number().transform(val => val === 1),
+  stickers_in_one_sheet: z.number(),
+  is_custom: z.number().transform(val => val === 1),
+  created_at: z.string().nullable(),
+  updated_at: z.string().nullable(),
+})
+
+export type BarcodeSetting = z.infer<typeof barcodeSettingSchema>
+
+export const barcodeSettingsListSchema = z.array(barcodeSettingSchema)
+export type BarcodeSettingsList = z.infer<typeof barcodeSettingsListSchema>

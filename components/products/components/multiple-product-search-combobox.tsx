@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
 import { searchProductForCombo, type ComboProductSearchResult } from "../data/products"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,14 +22,7 @@ import {
 import { Spinner } from "@/components/ui/spinner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemHeader,
-  ItemTitle,
 } from "@/components/ui/item"
-import Image from "next/image"
 
 interface MultipleProductSearchComboboxProps {
   selectedProducts?: ComboProductSearchResult[]
@@ -78,8 +71,6 @@ export function MultipleProductSearchCombobox({
     onProductsChange?.(updated)
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
-
   return (
     <div className="space-y-4">
       <Popover modal={true} open={open} onOpenChange={setOpen}>
@@ -122,7 +113,7 @@ export function MultipleProductSearchCombobox({
                   {products.map((product) => {
                     // Image is already a full URL from API
                     const firstImage = product.image?.split(',')[0]?.trim()
-                    const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? firstImage : null
+                    const imageUrl = firstImage ? firstImage : null
                     const initials = product.name
                       .split(" ")
                       .map((n) => n[0])
