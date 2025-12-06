@@ -31,6 +31,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { UnitCombobox } from "./unit-combobox"
 import type { Unit } from "../data/schema"
 import { createUnit, updateUnit } from "../data/units"
+import { useState } from "react"
+import { Spinner } from "@/components/ui/spinner"
 
 const formSchema = z.object({
   unit_code: z.string().min(1, "Unit code is required."),
@@ -38,7 +40,7 @@ const formSchema = z.object({
   base_unit: z.number().nullable().optional(),
   operator: z.enum(["*", "/"]).nullable().optional(),
   operation_value: z.number().nullable().optional(),
-  is_active: z.boolean().nullable().optional(),
+  is_active: z.boolean().optional(),
 })
 
 type UnitForm = z.infer<typeof formSchema>
@@ -198,7 +200,7 @@ export function UnitsActionDialog({ currentRow, open, onOpenChange }: UnitAction
   const isEdit = !!currentRow
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const queryClient = useQueryClient()
-
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<UnitForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
@@ -208,7 +210,7 @@ export function UnitsActionDialog({ currentRow, open, onOpenChange }: UnitAction
           base_unit: currentRow.base_unit,
           operator: currentRow.operator,
           operation_value: currentRow.operation_value,
-          is_active: currentRow.is_active ?? false,
+          is_active: currentRow.is_active,
         }
       : {
           unit_code: "",
@@ -221,6 +223,7 @@ export function UnitsActionDialog({ currentRow, open, onOpenChange }: UnitAction
   })
 
   const onSubmit = async (values: UnitForm) => {
+    setIsSubmitting(true)
     try {
       let response
       if (isEdit && currentRow) {
@@ -252,6 +255,8 @@ export function UnitsActionDialog({ currentRow, open, onOpenChange }: UnitAction
       // Show error toast with API message
       const errorMessage = error?.message || (error instanceof Error ? error.message : "An error occurred")
       toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -281,8 +286,15 @@ export function UnitsActionDialog({ currentRow, open, onOpenChange }: UnitAction
             />
           </div>
           <DialogFooter>
-            <Button type="submit" form="unit-form">
-              Save changes
+            <Button type="submit" form="unit-form" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Spinner />
+                  {isEdit ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                isEdit ? "Update Unit" : "Add Unit"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -307,8 +319,15 @@ export function UnitsActionDialog({ currentRow, open, onOpenChange }: UnitAction
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>
           </DrawerClose>
-          <Button type="submit" form="unit-form">
-            Save changes
+          <Button type="submit" form="unit-form" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Spinner />
+                {isEdit ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              isEdit ? "Update Unit" : "Add Unit"
+            )}
           </Button>
         </DrawerFooter>
       </DrawerContent>

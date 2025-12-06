@@ -49,6 +49,8 @@ import { CloudUpload } from "lucide-react"
 import { CategoryCombobox } from "./category-combobox"
 import { type Category } from "../data/schema"
 import { createCategory, updateCategory } from "../data/categories"
+import { useState } from "react"
+import { Spinner } from "@/components/ui/spinner"
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -60,7 +62,7 @@ const formSchema = z.object({
   is_sync_disable: z.boolean().nullable().optional(),
   image: z.array(z.instanceof(File)).optional(),
   icon: z.array(z.instanceof(File)).optional(),
-  is_active: z.boolean().nullable().optional(),
+  is_active: z.boolean().optional(),
 })
 
 type CategoryForm = z.infer<typeof formSchema>
@@ -416,7 +418,7 @@ export function CategoriesActionDialog({
   const isEdit = !!currentRow
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const queryClient = useQueryClient()
-
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<CategoryForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
@@ -430,7 +432,7 @@ export function CategoriesActionDialog({
           is_sync_disable: currentRow.is_sync_disable,
           image: [],
           icon: [],
-          is_active: currentRow.is_active ?? false,
+          is_active: currentRow.is_active,
         }
       : {
           name: "",
@@ -447,6 +449,7 @@ export function CategoriesActionDialog({
   })
 
   const onSubmit = async (values: CategoryForm) => {
+    setIsSubmitting(true)
     try {
       let response
       if (isEdit && currentRow) {
@@ -479,6 +482,8 @@ export function CategoriesActionDialog({
       const errorMessage =
         error?.message || (error instanceof Error ? error.message : "An error occurred")
       toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -510,8 +515,15 @@ export function CategoriesActionDialog({
             />
           </div>
           <DialogFooter>
-            <Button type="submit" form="category-form">
-              Save changes
+            <Button type="submit" form="category-form" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Spinner className="mr-2" />
+                    {isEdit ? "Updating..." : "Creating..."}
+                  </>
+                ) : (
+                  isEdit ? "Update Category" : "Add Category"
+                )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -543,8 +555,15 @@ export function CategoriesActionDialog({
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>
           </DrawerClose>
-          <Button type="submit" form="category-form">
-            Save changes
+          <Button type="submit" form="category-form" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Spinner className="mr-2" />
+                {isEdit ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              isEdit ? "Update Category" : "Add Category"
+            )}
           </Button>
         </DrawerFooter>
       </DrawerContent>

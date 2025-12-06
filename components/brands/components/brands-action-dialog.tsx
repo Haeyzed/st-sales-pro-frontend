@@ -47,11 +47,13 @@ import {
 import { CloudUpload } from "lucide-react"
 import { type Brand } from "../data/schema"
 import { createBrand, updateBrand } from "../data/brands"
+import { useState } from "react"
+import { Spinner } from "@/components/ui/spinner"
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required."),
   image: z.array(z.instanceof(File)).optional(),
-  is_active: z.boolean().nullable().optional(),
+  is_active: z.boolean().optional(),
 })
 
 type BrandForm = z.infer<typeof formSchema>
@@ -184,14 +186,14 @@ export function BrandsActionDialog({
   const isEdit = !!currentRow
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const queryClient = useQueryClient()
-
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<BrandForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
           title: currentRow.title,
           image: [],
-          is_active: currentRow.is_active ?? false,
+          is_active: currentRow.is_active,
         }
       : {
           title: "",
@@ -201,6 +203,7 @@ export function BrandsActionDialog({
   })
 
   const onSubmit = async (values: BrandForm) => {
+    setIsSubmitting(true)
     try {
       let response
       if (isEdit && currentRow) {
@@ -233,6 +236,8 @@ export function BrandsActionDialog({
       const errorMessage =
         error?.message || (error instanceof Error ? error.message : "An error occurred")
       toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -262,8 +267,15 @@ export function BrandsActionDialog({
             />
           </div>
           <DialogFooter>
-            <Button type="submit" form="brand-form">
-              Save changes
+            <Button type="submit" form="brand-form" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Spinner className="mr-2" />
+                  {isEdit ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                isEdit ? "Update Brand" : "Add Brand"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -294,8 +306,15 @@ export function BrandsActionDialog({
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>
           </DrawerClose>
-          <Button type="submit" form="brand-form">
-            Save changes
+          <Button type="submit" form="brand-form" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Spinner className="mr-2" />
+                {isEdit ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              isEdit ? "Update Brand" : "Add Brand"
+            )}
           </Button>
         </DrawerFooter>
       </DrawerContent>
