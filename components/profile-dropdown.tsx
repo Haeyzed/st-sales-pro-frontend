@@ -109,8 +109,8 @@ export function ProfileDropdown() {
           <DropdownMenuItem asChild>
               <Link href="/lock-screen"
               className="flex items-center gap-2">
-                Lock Screen
                 <Lock className="size-4" />
+                <span>Lock Screen</span>
                 <DropdownMenuShortcut>⇧⌘L</DropdownMenuShortcut>
               </Link>
           </DropdownMenuItem>
