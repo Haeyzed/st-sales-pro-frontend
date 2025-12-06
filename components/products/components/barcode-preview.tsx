@@ -347,7 +347,7 @@ export function BarcodePreview() {
                 {pages[currentPage]?.map((product, index) => (
                   <div
                     key={index}
-                    className="barcode-label overflow-hidden rounded border border-border bg-card flex flex-col"
+                    className="barcode-label overflow-hidden border border-gray-300 flex flex-col"
                     style={{
                       width: `${barcodeSetting.width * SCALE}px`,
                       height: `${barcodeSetting.height * SCALE}px`,
@@ -366,63 +366,29 @@ export function BarcodePreview() {
                     )}
 
                     {/* Content */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-2 gap-1 min-h-0">
+                    <div className="flex-1 flex flex-col items-center justify-center p-1.5 gap-0.5">
                       {/* Product Name */}
                       {printSettings.print_name && (
                         <p
-                          className="font-semibold text-foreground text-center leading-tight line-clamp-2"
-                          style={{ fontSize: `${printSettings.print_name_size || 10}px` }}
+                          className="font-medium text-center leading-tight line-clamp-1"
+                          style={{ fontSize: `${printSettings.print_name_size || 9}px` }}
                         >
                           {product.name}
                         </p>
                       )}
 
-                      {/* Brand Name */}
-                      {printSettings.print_brand_name && product.brand_name && (
-                        <p
-                          className="text-muted-foreground truncate"
-                          style={{ fontSize: `${printSettings.print_brand_name_size || 9}px` }}
-                        >
-                          {product.brand_name}
+                      {/* Price - simple and clean */}
+                      {printSettings.print_price && (
+                        <p className="font-bold" style={{ fontSize: `${printSettings.print_price_size || 11}px` }}>
+                          {formatPrice(product)}
                         </p>
                       )}
 
-                      {/* Price Section */}
-                      {printSettings.print_price && (
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          {printSettings.print_promo_price && product.promo_price ? (
-                            <>
-                              <span
-                                className="text-muted-foreground line-through decoration-destructive"
-                                style={{ fontSize: `${Math.max((printSettings.print_price_size || 12) - 3, 9)}px` }}
-                              >
-                                {product.currency_position === "prefix" ? product.currency : ""}
-                                {product.price.toFixed(2)}
-                                {product.currency_position === "suffix" ? product.currency : ""}
-                              </span>
-                              <span
-                                className="font-bold text-foreground"
-                                style={{ fontSize: `${printSettings.print_price_size || 12}px` }}
-                              >
-                                {formatPrice(product)}
-                              </span>
-                            </>
-                          ) : (
-                            <span
-                              className="font-bold text-foreground"
-                              style={{ fontSize: `${printSettings.print_price_size || 12}px` }}
-                            >
-                              {formatPrice(product)}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Barcode */}
-                      <div className="mt-auto pt-1 w-full flex justify-center bg-muted/50 rounded px-1 py-1">
+                      {/* Barcode - clean, no background */}
+                      <div className="mt-auto">
                         <Barcode
                           value={product.code}
-                          height={Math.max(18, Math.floor(barcodeSetting.height * 0.25 * SCALE))}
+                          height={Math.max(20, Math.floor(barcodeSetting.height * 0.35 * SCALE))}
                           showValue={true}
                         />
                       </div>
@@ -457,7 +423,7 @@ export function BarcodePreview() {
               {pageProducts.map((product, index) => (
                 <div
                   key={index}
-                  className="barcode-label overflow-hidden flex flex-col border border-gray-200"
+                  className="barcode-label overflow-hidden flex flex-col border border-gray-300"
                   style={{
                     width: `${barcodeSetting.width}in`,
                     height: `${barcodeSetting.height}in`,
@@ -499,12 +465,13 @@ export function BarcodePreview() {
                       gap: "2px",
                     }}
                   >
+                    {/* Product Name */}
                     {printSettings.print_name && (
                       <p
                         style={{
-                          fontWeight: 600,
+                          fontWeight: 500,
                           textAlign: "center",
-                          fontSize: `${printSettings.print_name_size || 10}px`,
+                          fontSize: `${printSettings.print_name_size || 9}px`,
                           margin: 0,
                           lineHeight: 1.2,
                         }}
@@ -513,41 +480,24 @@ export function BarcodePreview() {
                       </p>
                     )}
 
-                    {printSettings.print_brand_name && product.brand_name && (
-                      <p
-                        style={{
-                          color: "#666",
-                          fontSize: `${printSettings.print_brand_name_size || 9}px`,
-                          margin: 0,
-                        }}
-                      >
-                        {product.brand_name}
-                      </p>
-                    )}
-
+                    {/* Price */}
                     {printSettings.print_price && (
                       <p
                         style={{
-                          fontWeight: 700,
-                          fontSize: `${printSettings.print_price_size || 12}px`,
-                          margin: "2px 0",
+                          fontWeight: "bold",
+                          fontSize: `${printSettings.print_price_size || 11}px`,
+                          margin: 0,
                         }}
                       >
                         {formatPrice(product)}
                       </p>
                     )}
 
-                    <div
-                      style={{
-                        marginTop: "auto",
-                        backgroundColor: "#f5f5f5",
-                        padding: "2px 4px",
-                        borderRadius: "2px",
-                      }}
-                    >
+                    {/* Barcode */}
+                    <div style={{ marginTop: "auto" }}>
                       <Barcode
                         value={product.code}
-                        height={Math.floor(barcodeSetting.height * 0.22 * 96)}
+                        height={Math.max(20, Math.floor(barcodeSetting.height * 0.35 * 96))}
                         showValue={true}
                       />
                     </div>
