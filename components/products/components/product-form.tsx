@@ -1262,7 +1262,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Product Code <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <div className="flex rounded-md shadow-xs"><InputGroup>
+                        <div className="flex">
+                          <InputGroup>
                           <InputGroupInput 
                             placeholder="Auto-generated or enter manually" 
                             {...field} 
@@ -1362,7 +1363,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <div className="flex rounded-md shadow-xs">
+                        <div className="flex">
                           <CategoryCombobox
                             value={field.value}
                             onValueChange={field.onChange}
@@ -1549,7 +1550,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                     />
                                   </TableCell>
                                   <TableCell className="p-2">
-                                    <div className="flex rounded-md shadow-xs">
+                                    <div className="flex">
                                       <FormField
                                         control={form.control}
                                         name={`product_list.${index}.qty`}
@@ -1675,7 +1676,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       <FormItem>
                         <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <div className="flex rounded-md shadow-xs">
+                          <div className="flex">
                             <UnitCombobox
                               value={field.value}
                               onValueChange={field.onChange}
@@ -1904,7 +1905,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Product Tax</FormLabel>
                       <FormControl>
-                        <div className="flex rounded-md shadow-xs">
+                        <div className="flex">
                           <TaxCombobox
                             value={field.value}
                             onValueChange={field.onChange}
@@ -1956,7 +1957,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Warranty</FormLabel>
-                      <div className="flex rounded-md shadow-xs">
+                      <div className="flex">
                         <FormControl>
                           <Input
                             type="number"
@@ -1999,7 +2000,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Guarantee</FormLabel>
-                      <div className="flex rounded-md shadow-xs">
+                      <div className="flex">
                         <FormControl>
                           <Input
                             type="number"
