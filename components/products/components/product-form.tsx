@@ -84,6 +84,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
+import { UnitsActionDialog } from "@/components/units/components/units-action-dialog"
 
 // Extended schema for full-page form
 const formSchema = z.object({
@@ -188,6 +189,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const [isSortingImages, setIsSortingImages] = useState(false)
   const [relatedProducts, setRelatedProducts] = useState<Array<ComboProductSearchResult>>([])
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
+  const [showUnitDialog, setShowUnitDialog] = useState(false)
+  const [showBrandDialog, setShowBrandDialog] = useState(false)
+  const [showTaxDialog, setShowTaxDialog] = useState(false)
   const isEdit = !!productId
 
   const form = useForm<ProductForm>({
@@ -1682,7 +1686,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                               variant="outline"
                               size="icon"
                               className="rounded-l-none shadow-none"
-                              onClick={() => toast.info("Unit creation coming soon")}
+                              onClick={() => setShowUnitDialog(true)}
                               title="Add Unit"
                             >
                               <Plus className="h-4 w-4" />
@@ -3040,6 +3044,12 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       <CategoriesActionDialog
         open={showCategoryDialog}
         onOpenChange={setShowCategoryDialog}
+      />
+
+      {/* Unit Action Dialog */}
+      <UnitsActionDialog
+        open={showUnitDialog}
+        onOpenChange={setShowUnitDialog}
       />
     </div>
   )
