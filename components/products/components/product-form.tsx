@@ -1336,7 +1336,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           <BrandCombobox
                             value={field.value}
                             onValueChange={field.onChange}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                            // className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                           <Button
                             type="button"
