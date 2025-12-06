@@ -75,7 +75,7 @@ export function BarcodePreview() {
     queryKey: ["barcode-setting", barcodeSettingId],
     queryFn: async () => {
       if (!barcodeSettingId) throw new Error("No barcode setting ID")
-      const setting = await getBarcodeSetting(barcodeSettingId)
+      const setting = await getBarcodeSetting(1)
       console.log("barcodeSetting", setting)
       return setting
     },
@@ -102,19 +102,19 @@ export function BarcodePreview() {
 
   // Calculate pages
   const stickersPerSheet = barcodeSetting.is_continuous
-    ? barcodeSetting.stickers_in_one_row
-    : barcodeSetting.stickers_in_one_sheet
+    ? Number(barcodeSetting.stickers_in_one_row)
+    : Number(barcodeSetting.stickers_in_one_sheet)
   const pages: Product[][] = []
   for (let i = 0; i < labels.length; i += stickersPerSheet) {
     pages.push(labels.slice(i, i + stickersPerSheet))
   }
 
-  const marginTop = barcodeSetting.is_continuous ? 0 : barcodeSetting.top_margin
-  const marginLeft = barcodeSetting.is_continuous ? 0 : barcodeSetting.left_margin
+  const marginTop = barcodeSetting.is_continuous ? 0 : Number(barcodeSetting.top_margin)
+  const marginLeft = barcodeSetting.is_continuous ? 0 : Number(barcodeSetting.left_margin)
   const paperWidth = Number(barcodeSetting.paper_width)
-  const paperHeight = barcodeSetting.is_continuous
-    ? barcodeSetting.height
-    : barcodeSetting.paper_height
+  const paperHeight = Number(barcodeSetting.is_continuous)
+    ? Number(barcodeSetting.height)
+    : Number(barcodeSetting.paper_height)
 
   return (
     <>
