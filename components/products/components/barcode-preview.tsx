@@ -3,11 +3,9 @@
 import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { apiGetClient } from "@/lib/api-client-client"
 import { Spinner } from "@/components/ui/spinner"
 import { Button } from "@/components/ui/button"
 import { Printer } from "lucide-react"
-import Image from "next/image"
 import Barcode from "react-barcode"
 import { getBarcodeSetting } from "../data/products"
 import { BarcodeSetting } from "../data/schema"
@@ -36,22 +34,29 @@ export function BarcodePreview() {
     // Parse products from URL
     const productsData: Product[] = []
     let index = 0
+
     while (searchParams.has(`products[${index}][product_id]`)) {
       productsData.push({
         product_id: parseInt(searchParams.get(`products[${index}][product_id]`) || "0"),
-        variant_id: searchParams.get(`products[${index}][variant_id]`) ? parseInt(searchParams.get(`products[${index}][variant_id]`)!) : undefined,
+        variant_id: searchParams.get(`products[${index}][variant_id]`)
+          ? parseInt(searchParams.get(`products[${index}][variant_id]`)!)
+          : undefined,
         name: searchParams.get(`products[${index}][name]`) || "",
         code: searchParams.get(`products[${index}][code]`) || "",
         qty: parseInt(searchParams.get(`products[${index}][qty]`) || "1"),
         image: searchParams.get(`products[${index}][image]`) || undefined,
         price: parseFloat(searchParams.get(`products[${index}][price]`) || "0"),
-        promo_price: searchParams.get(`products[${index}][promo_price]`) ? parseFloat(searchParams.get(`products[${index}][promo_price]`)!) : undefined,
+        promo_price: searchParams.get(`products[${index}][promo_price]`)
+          ? parseFloat(searchParams.get(`products[${index}][promo_price]`)!)
+          : undefined,
         currency: searchParams.get(`products[${index}][currency]`) || "$",
         currency_position: searchParams.get(`products[${index}][currency_position]`) || "prefix",
         brand_name: searchParams.get(`products[${index}][brand_name]`) || undefined,
       })
+
       index++
     }
+
     setProducts(productsData)
 
     // Parse print settings
@@ -70,17 +75,43 @@ export function BarcodePreview() {
     }
   }, [searchParams])
 
-  // Fetch barcode setting details
-  const { data: barcodeSetting, isLoading: isLoadingSetting } = useQuery<BarcodeSetting>({
+  // Fetch barcode setting details with FULL ERROR HANDLING
+  const {
+    data: barcodeSetting,
+    isLoading: isLoadingSetting,
+    isError,
+    error,
+  } = useQuery<BarcodeSetting>({
     queryKey: ["barcode-setting", barcodeSettingId],
     queryFn: async () => {
-      if (!barcodeSettingId) throw new Error("No barcode setting ID")
-      const setting = await getBarcodeSetting(1)
-      console.log("barcodeSetting", setting)
+      if (!barcodeSettingId) throw new Error("No barcode setting ID provided in URL")
+      const setting = await getBarcodeSetting(barcodeSettingId)
       return setting
     },
     enabled: !!barcodeSettingId,
   })
+
+  // ERROR SCREEN
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-red-600">
+        <span className="font-semibold text-lg mb-2">Failed to load barcode settings</span>
+        <span className="text-sm">
+          {error instanceof Error ? error.message : "Unknown error"}
+        </span>
+      </div>
+    )
+  }
+
+  // LOADING SCREEN
+  if (isLoadingSetting || !barcodeSetting) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner />
+        <span className="ml-2">Loading barcode settings...</span>
+      </div>
+    )
+  }
 
   // Generate barcode labels (repeat products by quantity)
   const labels = products.flatMap((product) =>
@@ -91,19 +122,11 @@ export function BarcodePreview() {
     window.print()
   }
 
-  if (isLoadingSetting || !barcodeSetting) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner />
-        <span className="ml-2">Loading barcode settings...</span>
-      </div>
-    )
-  }
-
-  // Calculate pages
+  // PAGE CALCULATIONS
   const stickersPerSheet = barcodeSetting.is_continuous
     ? Number(barcodeSetting.stickers_in_one_row)
     : Number(barcodeSetting.stickers_in_one_sheet)
+
   const pages: Product[][] = []
   for (let i = 0; i < labels.length; i += stickersPerSheet) {
     pages.push(labels.slice(i, i + stickersPerSheet))
@@ -112,7 +135,7 @@ export function BarcodePreview() {
   const marginTop = barcodeSetting.is_continuous ? 0 : Number(barcodeSetting.top_margin)
   const marginLeft = barcodeSetting.is_continuous ? 0 : Number(barcodeSetting.left_margin)
   const paperWidth = Number(barcodeSetting.paper_width)
-  const paperHeight = Number(barcodeSetting.is_continuous)
+  const paperHeight = barcodeSetting.is_continuous
     ? Number(barcodeSetting.height)
     : Number(barcodeSetting.paper_height)
 
@@ -290,4 +313,3 @@ export function BarcodePreview() {
     </>
   )
 }
-
