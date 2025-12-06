@@ -178,18 +178,18 @@ export function BarcodePreview() {
             key={pageIndex}
             align="center"
             style={{
-              borderSpacing: `${barcodeSetting.col_distance}in ${barcodeSetting.row_distance}in`,
+              borderSpacing: `${Number(barcodeSetting.col_distance)}in ${Number(barcodeSetting.row_distance)}in`,
               overflow: "hidden",
               width: "100%",
             }}
           >
             <tbody>
               {Array.from({
-                length: Math.ceil(pageProducts.length / barcodeSetting.stickers_in_one_row),
+                length: Math.ceil(pageProducts.length / Number(barcodeSetting.stickers_in_one_row)),
               }).map((_, rowIndex) => {
                 const rowProducts = pageProducts.slice(
-                  rowIndex * barcodeSetting.stickers_in_one_row,
-                  (rowIndex + 1) * barcodeSetting.stickers_in_one_row
+                  rowIndex * Number(barcodeSetting.stickers_in_one_row),
+                  (rowIndex + 1) * Number(barcodeSetting.stickers_in_one_row)
                 )
 
                 return (
@@ -200,8 +200,8 @@ export function BarcodePreview() {
                         align="center"
                         valign="middle"
                         style={{
-                          width: `${barcodeSetting.width}in`,
-                          height: `${barcodeSetting.height}in`,
+                          width: `${Number(barcodeSetting.width)}in`,
+                          height: `${Number(barcodeSetting.height)}in`,
                         }}
                       >
                         <div
@@ -210,8 +210,8 @@ export function BarcodePreview() {
                             display: "flex",
                             flexWrap: "wrap",
                             alignContent: "center",
-                            width: `${barcodeSetting.width}in`,
-                            height: `${barcodeSetting.height}in`,
+                            width: `${Number(barcodeSetting.width)}in`,
+                            height: `${Number(barcodeSetting.height)}in`,
                             justifyContent: "center",
                           }}
                         >
@@ -222,7 +222,7 @@ export function BarcodePreview() {
                                 style={{
                                   display: "block",
                                   fontWeight: "bold",
-                                  fontSize: `${printSettings.print_business_name_size || 15}px`,
+                                  fontSize: `${Number(printSettings.print_business_name_size) || 15}px`,
                                 }}
                               >
                                 Your Business Name
@@ -234,7 +234,7 @@ export function BarcodePreview() {
                               <span
                                 style={{
                                   display: "block",
-                                  fontSize: `${printSettings.print_name_size || 15}px`,
+                                  fontSize: `${Number(printSettings.print_name_size) || 15}px`,
                                 }}
                               >
                                 {product.name}
@@ -246,7 +246,7 @@ export function BarcodePreview() {
                               <span
                                 style={{
                                   display: "block",
-                                  fontSize: `${printSettings.print_brand_name_size || 15}px`,
+                                  fontSize: `${Number(printSettings.print_brand_name_size) || 15}px`,
                                 }}
                               >
                                 {product.brand_name}
@@ -258,7 +258,7 @@ export function BarcodePreview() {
                               <span
                                 style={{
                                   display: "block",
-                                  fontSize: `${printSettings.print_price_size || 15}px`,
+                                  fontSize: `${Number(printSettings.print_price_size) || 15}px`,
                                 }}
                               >
                                 {printSettings.print_promo_price && product.promo_price ? (
