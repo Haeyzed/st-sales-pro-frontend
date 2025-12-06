@@ -10,6 +10,7 @@ import { LongText } from "@/components/long-text"
 import { brandStatuses } from "../data/data"
 import { type Brand } from "../data/schema"
 import { DataTableRowActions } from "./data-table-row-actions"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 
 export const brandsColumns: ColumnDef<Brand>[] = [
   {
@@ -55,14 +56,16 @@ export const brandsColumns: ColumnDef<Brand>[] = [
         .slice(0, 2)
 
       return (
-        <Avatar className="h-10 w-10 rounded-md">
-          {image ? (
-            <AvatarImage src={image} alt={title} className="object-cover" />
-          ) : null}
-          <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <ImageZoom  zoomMargin={100}>
+          <Avatar className="h-10 w-10 rounded-md">
+            {image ? (
+              <AvatarImage src={image} alt={title} className="object-cover" />
+            ) : null}
+            <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </ImageZoom>
       )
     },
     meta: { className: "w-20" },

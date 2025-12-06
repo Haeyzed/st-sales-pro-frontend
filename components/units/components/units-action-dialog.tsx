@@ -191,6 +191,11 @@ function UnitActionForm({
             </FormItem>
           )}
         />
+        <p className="text-sm text-muted-foreground">Example conversions:</p>
+        <ul className="list-disc list-inside text-sm text-muted-foreground">
+          <li>1 Dozen = 1*12 Piece</li>
+          <li>1 Gram = 1/1000 KG</li>
+        </ul>
       </form>
     </Form>
   )
