@@ -83,6 +83,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 
 // Type for existing images (URLs from backend)
 type ExistingImage = {
@@ -1264,39 +1265,35 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Product Code <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <div className="flex rounded-md shadow-xs">
-                          <Input
-                            placeholder="Auto-generated or enter manually"
-                            {...field}
-                            value={field.value || ""}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                        <div className="flex rounded-md shadow-xs"><InputGroup>
+                          <InputGroupInput 
+                            placeholder="Auto-generated or enter manually" 
+                            {...field} 
+                            value={field.value || ""} 
                           />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            disabled={isGeneratingCode}
-                            className="rounded-l-none shadow-none"
-                            onClick={async () => {
-                              try {
-                                setIsGeneratingCode(true)
-                                const code = await generateProductCode()
-                                form.setValue("code", code)
-                                toast.success("Product code generated successfully")
-                              } catch (error: any) {
-                                toast.error(error?.message || "Failed to generate product code")
-                              } finally {
-                                setIsGeneratingCode(false)
-                              }
-                            }}
-                            title="Generate code"
-                          >
-                            {isGeneratingCode ? (
-                              <Spinner className="h-4 w-4" />
-                            ) : (
-                              <RefreshCw className="h-4 w-4" />
-                            )}
-                          </Button>
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupButton
+                                aria-label="Generate code"
+                                title="Generate code"
+                                size="icon-xs"
+                                disabled={isGeneratingCode}
+                                onClick={async () => {
+                                  try {
+                                      setIsGeneratingCode(true)
+                                      const code = await generateProductCode()
+                                      form.setValue("code", code)
+                                      toast.success("Product code generated successfully")
+                                    } catch (error: any) {
+                                      toast.error(error?.message || "Failed to generate product code")
+                                    } finally {
+                                      setIsGeneratingCode(false)
+                                    }
+                                  }}
+                                >
+                                {isGeneratingCode ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
+                              </InputGroupButton>
+                            </InputGroupAddon>
+                          </InputGroup>
                         </div>
                       </FormControl>
                       <FormDescription className="text-xs">
