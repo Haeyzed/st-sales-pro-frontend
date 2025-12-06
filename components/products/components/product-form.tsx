@@ -1332,7 +1332,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Brand</FormLabel>
                       <FormControl>
-                        {/* <div className="flex rounded-md shadow-xs"> */}
+                        <div className="flex">
                           <BrandCombobox
                             value={field.value}
                             onValueChange={field.onChange}
@@ -1348,7 +1348,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           >
                             <Plus className="h-4 w-4" />
                           </Button>
-                        {/* </div> */}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
