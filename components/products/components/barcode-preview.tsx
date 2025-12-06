@@ -90,7 +90,8 @@ export function BarcodePreview() {
     queryFn: async () => {
       if (!barcodeSettingId) throw new Error("No barcode setting ID")
       const response = await apiGetClient<BarcodeSetting>(`barcodes/${barcodeSettingId}`)
-      return response.data
+      console.log("barcodeSetting", response.data)
+      return response.data.data
     },
     enabled: !!barcodeSettingId,
   })
