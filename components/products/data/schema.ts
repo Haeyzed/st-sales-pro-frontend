@@ -27,6 +27,7 @@ const productSchemaBase = z.object({
   tax_id: z.number().nullable(),
   tax_method: z.enum(["exclusive", "inclusive"]).nullable(),
   image: z.string().nullable(),
+  image_url: z.string().nullable(),
   file: z.string().nullable(),
   is_embeded: z.boolean().nullable(),
   is_variant: z.boolean().nullable(),

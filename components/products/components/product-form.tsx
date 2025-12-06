@@ -85,12 +85,6 @@ import {
 } from "@/components/ui/select"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 
-// Type for existing images (URLs from backend)
-type ExistingImage = {
-  url: string
-  filename: string
-}
-
 // Extended schema for full-page form
 const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
@@ -183,7 +177,6 @@ type ProductFormProps = {
 export function ProductForm({ productId }: ProductFormProps = {}) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(!!productId)
   const [isGeneratingCode, setIsGeneratingCode] = useState(false)
@@ -1289,7 +1282,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                                       setIsGeneratingCode(false)
                                     }
                                   }}
-                                >
+                                  >
                                 {isGeneratingCode ? <Spinner /> : <RefreshCw className="h-4 w-4" />}
                               </InputGroupButton>
                             </InputGroupAddon>
