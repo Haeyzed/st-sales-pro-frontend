@@ -2004,7 +2004,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       <FormLabel>Guarantee</FormLabel>
                       <div className="flex rounded-md shadow-xs">
                         <FormControl>
-                          <Input
+                        <InputGroup>
+                          <InputGroupInput 
                             type="number"
                             min="1"
                             placeholder="eg: 1"
@@ -2015,21 +2016,24 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             }
                             className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
+                          <InputGroupAddon align="inline-end">
+                              <FormField
+                              control={form.control}
+                              name="guarantee_type"
+                              render={({ field: typeField }) => (
+                                <FormControl>
+                                  <GuaranteeTypeCombobox
+                                    value={typeField.value || "months"}
+                                    onValueChange={typeField.onChange}
+                                    placeholder="Type..."
+                                    className="w-32 rounded-l-none shadow-none"
+                                  />
+                                </FormControl>
+                              )}
+                            />
+                          </InputGroupAddon>
+                        </InputGroup>
                         </FormControl>
-                        <FormField
-                          control={form.control}
-                          name="guarantee_type"
-                          render={({ field: typeField }) => (
-                            <FormControl>
-                              <GuaranteeTypeCombobox
-                                value={typeField.value || "months"}
-                                onValueChange={typeField.onChange}
-                                placeholder="Type..."
-                                className="w-32 rounded-l-none shadow-none"
-                              />
-                            </FormControl>
-                          )}
-                        />
                       </div>
                       <FormMessage />
                     </FormItem>
