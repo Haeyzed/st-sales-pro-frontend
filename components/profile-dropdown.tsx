@@ -23,6 +23,7 @@ import {
   Calendar,
   Database,
   LogOut,
+  Lock,
 } from "lucide-react"
 
 export function ProfileDropdown() {
@@ -109,6 +110,7 @@ export function ProfileDropdown() {
               <Link href="/lock-screen"
               className="flex items-center gap-2">
                 Lock Screen
+                <Lock className="size-4" />
                 <DropdownMenuShortcut>⇧⌘L</DropdownMenuShortcut>
               </Link>
           </DropdownMenuItem>
