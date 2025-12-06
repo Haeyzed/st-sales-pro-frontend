@@ -6,8 +6,11 @@ import { useQuery } from "@tanstack/react-query"
 import { getBarcodeSetting } from "../data/products"
 import { Spinner } from "@/components/ui/spinner"
 import { Button } from "@/components/ui/button"
-import { Printer } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Printer, ChevronLeft, ChevronRight, FileText, Tag, ArrowLeft } from "lucide-react"
 import Barcode from "react-barcode"
+import Link from "next/link"
 
 type Product = {
   product_id: number
@@ -47,6 +50,7 @@ export function BarcodePreview() {
   const [products, setProducts] = useState<Product[]>([])
   const [printSettings, setPrintSettings] = useState<Record<string, any>>({})
   const [barcodeSettingId, setBarcodeSettingId] = useState<number | null>(null)
+  const [currentPage, setCurrentPage] = useState(0)
 
   useEffect(() => {
     // Parse products from URL
@@ -74,7 +78,7 @@ export function BarcodePreview() {
     }
     setProducts(productsData)
 
-    // Parse print settings - read the flat parameter names
+    // Parse print settings
     const settings: Record<string, any> = {}
     searchParams.forEach((value, key) => {
       if (key.startsWith("print_")) {
@@ -99,7 +103,6 @@ export function BarcodePreview() {
     queryFn: async () => {
       if (!barcodeSettingId) throw new Error("No barcode setting ID")
       const data = await getBarcodeSetting(barcodeSettingId)
-      // Convert string values to numbers for dimensions
       return {
         ...data,
         width: typeof data.width === "string" ? Number.parseFloat(data.width) : data.width,
@@ -116,7 +119,6 @@ export function BarcodePreview() {
     enabled: !!barcodeSettingId,
   })
 
-  // Generate barcode labels (repeat products by quantity)
   const labels = products.flatMap((product) => Array.from({ length: product.qty }, () => product))
 
   const handlePrint = () => {
@@ -125,23 +127,41 @@ export function BarcodePreview() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p className="text-red-500">Failed to load barcode settings</p>
-        <p className="text-muted-foreground text-sm">{(error as Error).message}</p>
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <FileText className="h-6 w-6 text-destructive" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Failed to Load Settings</h3>
+                <p className="text-muted-foreground text-sm mt-1">{(error as Error).message}</p>
+              </div>
+              <Button variant="outline" asChild>
+                <Link href="/products">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Products
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   if (isLoadingSetting || !barcodeSetting) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner />
-        <span className="ml-2">Loading barcode settings...</span>
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner className="h-8 w-8" />
+          <p className="text-muted-foreground">Loading barcode settings...</p>
+        </div>
       </div>
     )
   }
 
-  // Calculate pages
   const stickersPerSheet = barcodeSetting.is_continuous
     ? barcodeSetting.stickers_in_one_row
     : barcodeSetting.stickers_in_one_sheet
@@ -155,12 +175,36 @@ export function BarcodePreview() {
   const paperWidth = barcodeSetting.paper_width
   const paperHeight = barcodeSetting.is_continuous ? barcodeSetting.height : barcodeSetting.paper_height
 
+  // Scale factor for preview (pixels per inch)
+  const SCALE = 96
+
+  const formatPrice = (product: Product) => {
+    const price = printSettings.print_promo_price && product.promo_price ? product.promo_price : product.price
+    const currencySymbol = product.currency
+    const formattedPrice = price.toFixed(2)
+
+    if (product.currency_position === "prefix") {
+      return `${currencySymbol}${formattedPrice}`
+    }
+    return `${formattedPrice}${currencySymbol}`
+  }
+
   return (
     <>
+      {/* Print Styles */}
       <style jsx global>{`
         @media print {
           .no-print {
             display: none !important;
+          }
+          body {
+            background: white !important;
+          }
+          .print-area {
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            background: white !important;
           }
           @page {
             size: ${paperWidth}in ${paperHeight}in;
@@ -169,159 +213,271 @@ export function BarcodePreview() {
             margin-left: ${marginLeft}in;
             margin-right: ${marginLeft}in;
           }
-          table {
+          .barcode-sheet {
             page-break-after: always;
+            box-shadow: none !important;
+            border: none !important;
           }
-          td {
+          .barcode-label {
             border: none !important;
           }
         }
-        td {
-          border: 1px dotted lightgray;
-        }
       `}</style>
 
-      <div className="no-print fixed top-4 right-4 z-50">
-        <Button onClick={handlePrint} size="lg">
-          <Printer className="mr-2 h-5 w-5" />
-          Print Barcodes
-        </Button>
+      {/* Header - Hidden when printing */}
+      <div className="no-print sticky top-0 z-50 bg-background border-b">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/products">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Link>
+              </Button>
+              <div className="h-6 w-px bg-border" />
+              <div className="flex items-center gap-2">
+                <Tag className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <h1 className="font-semibold text-sm">Barcode Preview</h1>
+                  <p className="text-xs text-muted-foreground">{barcodeSetting.name}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Badge variant="secondary">{labels.length} Labels</Badge>
+                <Badge variant="outline">
+                  {pages.length} {pages.length === 1 ? "Sheet" : "Sheets"}
+                </Badge>
+              </div>
+              <Button onClick={handlePrint} className="gap-2">
+                <Printer className="h-4 w-4" />
+                Print All
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="p-4">
+      {/* Page Navigation - Hidden when printing */}
+      {pages.length > 1 && (
+        <div className="no-print sticky top-[57px] z-40 bg-muted/80 backdrop-blur-sm border-b">
+          <div className="container mx-auto px-4 py-2">
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                disabled={currentPage === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm font-medium min-w-[100px] text-center">
+                Sheet {currentPage + 1} of {pages.length}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(Math.min(pages.length - 1, currentPage + 1))}
+                disabled={currentPage === pages.length - 1}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Area */}
+      <div className="no-print min-h-screen bg-muted/30 py-8">
+        <div className="container mx-auto px-4">
+          {/* Settings Info Card */}
+          <Card className="mb-6 max-w-2xl mx-auto">
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Sheet Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-3 pt-0">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs">Paper Size</p>
+                  <p className="font-medium">
+                    {paperWidth}" x {paperHeight}"
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Label Size</p>
+                  <p className="font-medium">
+                    {barcodeSetting.width}" x {barcodeSetting.height}"
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Labels/Sheet</p>
+                  <p className="font-medium">{stickersPerSheet}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Columns</p>
+                  <p className="font-medium">{barcodeSetting.stickers_in_one_row}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Sheet Preview */}
+          <div className="flex justify-center">
+            <div
+              className="barcode-sheet bg-white rounded-lg shadow-xl border"
+              style={{
+                width: `${paperWidth * SCALE}px`,
+                minHeight: `${paperHeight * SCALE}px`,
+                padding: `${marginTop * SCALE}px ${marginLeft * SCALE}px`,
+              }}
+            >
+              <div
+                className="grid"
+                style={{
+                  gridTemplateColumns: `repeat(${barcodeSetting.stickers_in_one_row}, ${barcodeSetting.width * SCALE}px)`,
+                  gap: `${barcodeSetting.row_distance * SCALE}px ${barcodeSetting.col_distance * SCALE}px`,
+                }}
+              >
+                {pages[currentPage]?.map((product, index) => (
+                  <div
+                    key={index}
+                    className="barcode-label border border-dashed border-gray-200 rounded flex items-center justify-center overflow-hidden"
+                    style={{
+                      width: `${barcodeSetting.width * SCALE}px`,
+                      height: `${barcodeSetting.height * SCALE}px`,
+                    }}
+                  >
+                    <div className="text-center px-1">
+                      {/* Business Name */}
+                      {printSettings.print_business_name && (
+                        <p
+                          className="font-bold truncate"
+                          style={{ fontSize: `${printSettings.print_business_name_size || 12}px` }}
+                        >
+                          Your Business Name
+                        </p>
+                      )}
+
+                      {/* Product Name */}
+                      {printSettings.print_name && (
+                        <p className="truncate" style={{ fontSize: `${printSettings.print_name_size || 11}px` }}>
+                          {product.name}
+                        </p>
+                      )}
+
+                      {/* Brand Name */}
+                      {printSettings.print_brand_name && product.brand_name && (
+                        <p
+                          className="text-gray-600 truncate"
+                          style={{ fontSize: `${printSettings.print_brand_name_size || 10}px` }}
+                        >
+                          {product.brand_name}
+                        </p>
+                      )}
+
+                      {/* Price */}
+                      {printSettings.print_price && (
+                        <p className="font-semibold" style={{ fontSize: `${printSettings.print_price_size || 12}px` }}>
+                          {printSettings.print_promo_price && product.promo_price ? (
+                            <span className="flex items-center justify-center gap-1">
+                              <span className="line-through text-gray-400 text-[10px]">
+                                {product.currency_position === "prefix" ? product.currency : ""}
+                                {product.price.toFixed(2)}
+                                {product.currency_position === "suffix" ? product.currency : ""}
+                              </span>
+                              <span>{formatPrice(product)}</span>
+                            </span>
+                          ) : (
+                            formatPrice(product)
+                          )}
+                        </p>
+                      )}
+
+                      {/* Barcode */}
+                      <div className="mt-1">
+                        <Barcode
+                          value={product.code}
+                          width={1.2}
+                          height={Math.max(20, Math.floor(barcodeSetting.height * 0.3 * SCALE))}
+                          fontSize={9}
+                          displayValue={true}
+                          margin={0}
+                          background="transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Print-only Content - All pages */}
+      <div className="hidden print:block print-area">
         {pages.map((pageProducts, pageIndex) => (
-          <table
+          <div
             key={pageIndex}
-            align="center"
+            className="barcode-sheet"
             style={{
-              borderSpacing: `${barcodeSetting.col_distance}in ${barcodeSetting.row_distance}in`,
-              overflow: "hidden",
-              width: "100%",
+              width: `${paperWidth}in`,
+              minHeight: `${paperHeight}in`,
+              padding: `${marginTop}in ${marginLeft}in`,
             }}
           >
-            <tbody>
-              {Array.from({
-                length: Math.ceil(pageProducts.length / barcodeSetting.stickers_in_one_row),
-              }).map((_, rowIndex) => {
-                const rowProducts = pageProducts.slice(
-                  rowIndex * barcodeSetting.stickers_in_one_row,
-                  (rowIndex + 1) * barcodeSetting.stickers_in_one_row,
-                )
-
-                return (
-                  <tr key={rowIndex}>
-                    {rowProducts.map((product, colIndex) => (
-                      <td
-                        key={colIndex}
-                        align="center"
-                        valign="middle"
-                        style={{
-                          width: `${barcodeSetting.width}in`,
-                          height: `${barcodeSetting.height}in`,
-                        }}
-                      >
-                        <div
-                          style={{
-                            overflow: "hidden",
-                            display: "flex",
-                            flexWrap: "wrap",
-                            alignContent: "center",
-                            width: `${barcodeSetting.width}in`,
-                            height: `${barcodeSetting.height}in`,
-                            justifyContent: "center",
-                          }}
-                        >
-                          <div style={{ textAlign: "center" }}>
-                            {/* Business Name */}
-                            {printSettings.print_business_name && (
-                              <span
-                                style={{
-                                  display: "block",
-                                  fontWeight: "bold",
-                                  fontSize: `${printSettings.print_business_name_size || 15}px`,
-                                }}
-                              >
-                                Your Business Name
-                              </span>
-                            )}
-
-                            {/* Product Name */}
-                            {printSettings.print_name && (
-                              <span
-                                style={{
-                                  display: "block",
-                                  fontSize: `${printSettings.print_name_size || 15}px`,
-                                }}
-                              >
-                                {product.name}
-                              </span>
-                            )}
-
-                            {/* Brand Name */}
-                            {printSettings.print_brand_name && product.brand_name && (
-                              <span
-                                style={{
-                                  display: "block",
-                                  fontSize: `${printSettings.print_brand_name_size || 15}px`,
-                                }}
-                              >
-                                {product.brand_name}
-                              </span>
-                            )}
-
-                            {/* Price */}
-                            {printSettings.print_price && (
-                              <span
-                                style={{
-                                  display: "block",
-                                  fontSize: `${printSettings.print_price_size || 15}px`,
-                                }}
-                              >
-                                {printSettings.print_promo_price && product.promo_price ? (
-                                  <>
-                                    {product.currency_position === "prefix" && (
-                                      <span style={{ fontSize: "11px" }}>{product.currency}</span>
-                                    )}{" "}
-                                    <span style={{ textDecoration: "line-through" }}>{product.price.toFixed(2)}</span>{" "}
-                                    {product.promo_price.toFixed(2)}
-                                    {product.currency_position === "suffix" && (
-                                      <span style={{ fontSize: "11px" }}> {product.currency}</span>
-                                    )}
-                                  </>
-                                ) : (
-                                  <>
-                                    {product.currency_position === "prefix" && (
-                                      <span style={{ fontSize: "11px" }}>{product.currency}</span>
-                                    )}{" "}
-                                    {product.price.toFixed(2)}
-                                    {product.currency_position === "suffix" && (
-                                      <span style={{ fontSize: "11px" }}> {product.currency}</span>
-                                    )}
-                                  </>
-                                )}
-                              </span>
-                            )}
-
-                            {/* Barcode */}
-                            <div style={{ margin: "5px 0" }}>
-                              <Barcode
-                                value={product.code}
-                                width={1}
-                                height={Math.floor(barcodeSetting.height * 0.24 * 96)}
-                                fontSize={10}
-                                displayValue={true}
-                                margin={0}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+            <div
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${barcodeSetting.stickers_in_one_row}, ${barcodeSetting.width}in)`,
+                gap: `${barcodeSetting.row_distance}in ${barcodeSetting.col_distance}in`,
+              }}
+            >
+              {pageProducts.map((product, index) => (
+                <div
+                  key={index}
+                  className="barcode-label flex items-center justify-center overflow-hidden"
+                  style={{
+                    width: `${barcodeSetting.width}in`,
+                    height: `${barcodeSetting.height}in`,
+                  }}
+                >
+                  <div className="text-center">
+                    {printSettings.print_business_name && (
+                      <p style={{ fontWeight: "bold", fontSize: `${printSettings.print_business_name_size || 12}px` }}>
+                        Your Business Name
+                      </p>
+                    )}
+                    {printSettings.print_name && (
+                      <p style={{ fontSize: `${printSettings.print_name_size || 11}px` }}>{product.name}</p>
+                    )}
+                    {printSettings.print_brand_name && product.brand_name && (
+                      <p style={{ fontSize: `${printSettings.print_brand_name_size || 10}px` }}>{product.brand_name}</p>
+                    )}
+                    {printSettings.print_price && (
+                      <p style={{ fontWeight: 600, fontSize: `${printSettings.print_price_size || 12}px` }}>
+                        {formatPrice(product)}
+                      </p>
+                    )}
+                    <Barcode
+                      value={product.code}
+                      width={1}
+                      height={Math.floor(barcodeSetting.height * 0.24 * 96)}
+                      fontSize={9}
+                      displayValue={true}
+                      margin={0}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </>

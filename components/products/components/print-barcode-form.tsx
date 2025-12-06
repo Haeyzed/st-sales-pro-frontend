@@ -132,7 +132,9 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
     })
 
     // Open in new window for printing
-    router.push(`/products/print-barcode/preview?${params.toString()}`)
+    // router.push(`/products/print-barcode/preview?${params.toString()}`)
+    // Instead of router.push
+window.open(`/products/barcode-preview?${params.toString()}`, '_blank')
   }
 
   return (
