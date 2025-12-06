@@ -6,13 +6,16 @@
  * Uses client-side API for browser components.
  */
 
+import { apiGetClient, apiPostClient, apiPutClient, apiDeleteClient } from "@/lib/api-client-client"
 import {
-  apiGetClient,
-  apiPostClient,
-  apiPutClient,
-  apiDeleteClient,
-} from "@/lib/api-client-client"
-import { productSchema, productListSchema, type Product, BarcodeSetting, barcodeSettingSchema, barcodeSettingsListSchema, BarcodeSettingsList } from "./schema"
+  productSchema,
+  productListSchema,
+  type Product,
+  type BarcodeSetting,
+  barcodeSettingSchema,
+  barcodeSettingsListSchema,
+  type BarcodeSettingsList,
+} from "./schema"
 import { downloadExcel, downloadPDF } from "@/lib/export-utils"
 
 export type ProductFilters = {
@@ -55,9 +58,7 @@ type ProductDropdownItem = {
 /**
  * Get all products with server-side pagination, search, and sorting
  */
-export async function getProducts(
-  filters: ProductFilters = {}
-): Promise<ProductListResponse> {
+export async function getProducts(filters: ProductFilters = {}): Promise<ProductListResponse> {
   const params: Record<string, string | number | boolean> = {}
 
   if (filters.search) {
@@ -127,18 +128,13 @@ export async function getProducts(
 /**
  * Get product dropdown list
  */
-export async function getProductDropdown(
-  warehouseId?: number
-): Promise<ProductDropdownItem[]> {
+export async function getProductDropdown(warehouseId?: number): Promise<ProductDropdownItem[]> {
   const params: Record<string, number> = {}
   if (warehouseId) {
     params.warehouse_id = warehouseId
   }
 
-  const response = await apiGetClient<ProductDropdownItem[]>(
-    "products/dropdown",
-    params
-  )
+  const response = await apiGetClient<ProductDropdownItem[]>("products/dropdown", params)
   return response.data
 }
 
@@ -154,29 +150,31 @@ export async function getProduct(id: number): Promise<Product> {
  * Create a new product
  */
 export async function createProduct(
-  data: FormData | {
-    name: string
-    code?: string | null
-    type: "standard" | "combo" | "digital" | "service"
-    category_id: number
-    unit_id: number
-    purchase_unit_id?: number | null
-    sale_unit_id?: number | null
-    cost: number
-    price: number
-    wholesale_price?: number | null
-    brand_id?: number | null
-    tax_id?: number | null
-    tax_method?: number | null
-    alert_quantity?: number | null
-    image?: File | null
-    file?: File | null
-    is_variant?: boolean | null
-    is_batch?: boolean | null
-    is_imei?: boolean | null
-    product_details?: string | null
-    slug?: string | null
-  }
+  data:
+    | FormData
+    | {
+        name: string
+        code?: string | null
+        type: "standard" | "combo" | "digital" | "service"
+        category_id: number
+        unit_id: number
+        purchase_unit_id?: number | null
+        sale_unit_id?: number | null
+        cost: number
+        price: number
+        wholesale_price?: number | null
+        brand_id?: number | null
+        tax_id?: number | null
+        tax_method?: number | null
+        alert_quantity?: number | null
+        image?: File | null
+        file?: File | null
+        is_variant?: boolean | null
+        is_batch?: boolean | null
+        is_imei?: boolean | null
+        product_details?: string | null
+        slug?: string | null
+      },
 ): Promise<{ data: Product; message: string }> {
   let body: FormData | Record<string, unknown>
 
@@ -266,29 +264,31 @@ export async function createProduct(
  */
 export async function updateProduct(
   id: number,
-  data: FormData | {
-    name: string
-    code?: string | null
-    type: "standard" | "combo" | "digital" | "service"
-    category_id: number
-    unit_id: number
-    purchase_unit_id?: number | null
-    sale_unit_id?: number | null
-    cost: number
-    price: number
-    wholesale_price?: number | null
-    brand_id?: number | null
-    tax_id?: number | null
-    tax_method?: number | null
-    alert_quantity?: number | null
-    image?: File | null
-    file?: File | null
-    is_variant?: boolean | null
-    is_batch?: boolean | null
-    is_imei?: boolean | null
-    product_details?: string | null
-    slug?: string | null
-  }
+  data:
+    | FormData
+    | {
+        name: string
+        code?: string | null
+        type: "standard" | "combo" | "digital" | "service"
+        category_id: number
+        unit_id: number
+        purchase_unit_id?: number | null
+        sale_unit_id?: number | null
+        cost: number
+        price: number
+        wholesale_price?: number | null
+        brand_id?: number | null
+        tax_id?: number | null
+        tax_method?: number | null
+        alert_quantity?: number | null
+        image?: File | null
+        file?: File | null
+        is_variant?: boolean | null
+        is_batch?: boolean | null
+        is_imei?: boolean | null
+        product_details?: string | null
+        slug?: string | null
+      },
 ): Promise<{ data: Product; message: string }> {
   let body: FormData | Record<string, unknown>
 
@@ -478,10 +478,7 @@ export async function getProductsWithVariant(): Promise<ProductWithVariant[]> {
 /**
  * Search product by code for combo products
  */
-export async function searchProductForCombo(
-  data: string,
-  warehouseId?: number
-): Promise<ComboProductSearchResult[]> {
+export async function searchProductForCombo(data: string, warehouseId?: number): Promise<ComboProductSearchResult[]> {
   const params: Record<string, string | number> = { data }
   if (warehouseId) {
     params.warehouse_id = warehouseId
@@ -542,12 +539,9 @@ export type HistoryResponse = {
  */
 export async function getProductSaleHistory(
   productId: number,
-  filters: ProductHistoryFilters
+  filters: ProductHistoryFilters,
 ): Promise<HistoryResponse> {
-  const response = await apiGetClient<HistoryResponse>(
-    `products/${productId}/history/sales`,
-    filters
-  )
+  const response = await apiGetClient<HistoryResponse>(`products/${productId}/history/sales`, filters)
   return response.data
 }
 
@@ -556,12 +550,9 @@ export async function getProductSaleHistory(
  */
 export async function getProductPurchaseHistory(
   productId: number,
-  filters: ProductHistoryFilters
+  filters: ProductHistoryFilters,
 ): Promise<HistoryResponse> {
-  const response = await apiGetClient<HistoryResponse>(
-    `products/${productId}/history/purchases`,
-    filters
-  )
+  const response = await apiGetClient<HistoryResponse>(`products/${productId}/history/purchases`, filters)
   return response.data
 }
 
@@ -570,12 +561,9 @@ export async function getProductPurchaseHistory(
  */
 export async function getProductSaleReturnHistory(
   productId: number,
-  filters: ProductHistoryFilters
+  filters: ProductHistoryFilters,
 ): Promise<HistoryResponse> {
-  const response = await apiGetClient<HistoryResponse>(
-    `products/${productId}/history/sale-returns`,
-    filters
-  )
+  const response = await apiGetClient<HistoryResponse>(`products/${productId}/history/sale-returns`, filters)
   return response.data
 }
 
@@ -584,12 +572,9 @@ export async function getProductSaleReturnHistory(
  */
 export async function getProductPurchaseReturnHistory(
   productId: number,
-  filters: ProductHistoryFilters
+  filters: ProductHistoryFilters,
 ): Promise<HistoryResponse> {
-  const response = await apiGetClient<HistoryResponse>(
-    `products/${productId}/history/purchase-returns`,
-    filters
-  )
+  const response = await apiGetClient<HistoryResponse>(`products/${productId}/history/purchase-returns`, filters)
   return response.data
 }
 
@@ -607,37 +592,37 @@ export async function exportProducts(data: {
   if (data.export_method === "download") {
     // Generate file in browser
     const products = await getProducts(data.filters || {})
-    
+
     // Map column IDs to labels
     const columnMap: Record<string, string> = {
-      name: 'Name',
-      code: 'Code',
-      barcode: 'Barcode',
-      category: 'Category',
-      brand: 'Brand',
-      unit: 'Unit',
-      cost: 'Cost',
-      price: 'Price',
-      quantity: 'Quantity',
-      alert_quantity: 'Alert Quantity',
-      tax: 'Tax',
-      tax_method: 'Tax Method',
-      status: 'Status',
-      created_at: 'Created At',
+      name: "Name",
+      code: "Code",
+      barcode: "Barcode",
+      category: "Category",
+      brand: "Brand",
+      unit: "Unit",
+      cost: "Cost",
+      price: "Price",
+      quantity: "Quantity",
+      alert_quantity: "Alert Quantity",
+      tax: "Tax",
+      tax_method: "Tax Method",
+      status: "Status",
+      created_at: "Created At",
     }
-    
-    const columns = data.columns.map(id => ({ id, label: columnMap[id] || id }))
+
+    const columns = data.columns.map((id) => ({ id, label: columnMap[id] || id }))
     const filename = `products_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
-    
+
     if (data.export_type === "excel") {
       downloadExcel(products.data, columns, filename)
     } else {
-      downloadPDF(products.data, columns, filename, 'Products Export')
+      downloadPDF(products.data, columns, filename, "Products Export")
     }
-    
+
     return { success: true }
   }
-  
+
   // For email, use backend
   const requestData = {
     columns: data.columns,
@@ -647,7 +632,7 @@ export async function exportProducts(data: {
     schedule_at: data.schedule_at,
     ...data.filters,
   }
-  
+
   return await apiPostClient("products/export", requestData)
 }
 
@@ -664,51 +649,51 @@ export async function exportProductHistory(
     schedule_at?: string | null
     history_type: string
     filters: ProductHistoryFilters
-  }
+  },
 ): Promise<any> {
   if (data.export_method === "download") {
     // Generate file in browser
     let historyData: HistoryResponse
-    
+
     switch (data.history_type) {
-      case 'purchases':
+      case "purchases":
         historyData = await getProductPurchaseHistory(productId, data.filters)
         break
-      case 'sale-returns':
+      case "sale-returns":
         historyData = await getProductSaleReturnHistory(productId, data.filters)
         break
-      case 'purchase-returns':
+      case "purchase-returns":
         historyData = await getProductPurchaseReturnHistory(productId, data.filters)
         break
       default:
         historyData = await getProductSaleHistory(productId, data.filters)
     }
-    
+
     // Map column IDs to labels
     const columnMap: Record<string, string> = {
-      reference_no: 'Reference No',
-      created_at: 'Date',
-      customer_name: 'Customer',
-      customer_phone: 'Phone',
-      supplier_name: 'Supplier',
-      supplier_phone: 'Phone',
-      warehouse_name: 'Warehouse',
-      qty: 'Quantity',
-      total: 'Total',
+      reference_no: "Reference No",
+      created_at: "Date",
+      customer_name: "Customer",
+      customer_phone: "Phone",
+      supplier_name: "Supplier",
+      supplier_phone: "Phone",
+      warehouse_name: "Warehouse",
+      qty: "Quantity",
+      total: "Total",
     }
-    
-    const columns = data.columns.map(id => ({ id, label: columnMap[id] || id }))
+
+    const columns = data.columns.map((id) => ({ id, label: columnMap[id] || id }))
     const filename = `product_history_${data.history_type}_${new Date().getTime()}.${data.export_type === "excel" ? "xlsx" : "pdf"}`
-    
+
     if (data.export_type === "excel") {
       downloadExcel(historyData.data, columns, filename)
     } else {
       downloadPDF(historyData.data, columns, filename, `Product History - ${data.history_type}`)
     }
-    
+
     return { success: true }
   }
-  
+
   // For email, use backend
   const requestData = {
     columns: data.columns,
@@ -722,7 +707,7 @@ export async function exportProductHistory(
     warehouse_id: data.filters.warehouse_id,
     search: data.filters.search,
   }
-  
+
   return await apiPostClient(`products/${productId}/history/export`, requestData)
 }
 

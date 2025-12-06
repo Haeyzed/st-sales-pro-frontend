@@ -77,8 +77,25 @@ export const productSchema: z.ZodType<
     tax?: { id: number; name: string; rate: number } | null
     warehouse_prices?: Array<{ warehouse_id: number; price: number | null; warehouse_name: string | null }> | null
     warehouse_stock?: Array<{ warehouse_id: number; qty: number; warehouse_name: string | null }> | null
-    variants?: Array<{ id: number | null; variant_id: number; item_code: string | null; additional_cost: number; additional_price: number; qty: number; position: number | null; name: string | null }> | null
-    product_variants?: Array<{ id: number; variant_id: number; item_code: string | null; additional_cost: number; additional_price: number; qty: number; position: number | null }> | null
+    variants?: Array<{
+      id: number | null
+      variant_id: number
+      item_code: string | null
+      additional_cost: number
+      additional_price: number
+      qty: number
+      position: number | null
+      name: string | null
+    }> | null
+    product_variants?: Array<{
+      id: number
+      variant_id: number
+      item_code: string | null
+      additional_cost: number
+      additional_price: number
+      qty: number
+      position: number | null
+    }> | null
   }
 > = productSchemaBase.extend({
   category: z
@@ -116,7 +133,7 @@ export const productSchema: z.ZodType<
         warehouse_id: z.number(),
         price: z.number().nullable(),
         warehouse_name: z.string().nullable(),
-      })
+      }),
     )
     .nullable()
     .optional(),
@@ -126,7 +143,7 @@ export const productSchema: z.ZodType<
         warehouse_id: z.number(),
         qty: z.number(),
         warehouse_name: z.string().nullable(),
-      })
+      }),
     )
     .nullable()
     .optional(),
@@ -141,7 +158,7 @@ export const productSchema: z.ZodType<
         qty: z.number(),
         position: z.number().nullable(),
         name: z.string().nullable(),
-      })
+      }),
     )
     .nullable()
     .optional(),
@@ -155,7 +172,7 @@ export const productSchema: z.ZodType<
         additional_price: z.number(),
         qty: z.number(),
         position: z.number().nullable(),
-      })
+      }),
     )
     .nullable()
     .optional(),
@@ -168,20 +185,20 @@ export const productListSchema = z.array(productSchema)
 export const barcodeSettingSchema = z.object({
   id: z.number(),
   name: z.string(),
-  description: z.string().optional(),
-  width: z.string(),
-  height: z.string().optional(),
-  paper_width: z.string().optional(),
-  paper_height: z.string().optional(),
-  top_margin: z.string().optional(),
-  left_margin: z.string().optional(),
-  row_distance: z.string().optional(),
-  col_distance: z.string().optional(),
-  stickers_in_one_row: z.number().optional(),
-  is_default: z.number().transform(val => val === 1).optional(),
-  is_continuous: z.number().transform(val => val === 1).optional(),
-  stickers_in_one_sheet: z.number().optional(),
-  is_custom: z.number().transform(val => val === 1).optional(),
+  description: z.string().nullable().optional(),
+  width: z.union([z.number(), z.string()]),
+  height: z.union([z.number(), z.string()]),
+  paper_width: z.union([z.number(), z.string()]),
+  paper_height: z.union([z.number(), z.string()]),
+  top_margin: z.union([z.number(), z.string()]),
+  left_margin: z.union([z.number(), z.string()]),
+  row_distance: z.union([z.number(), z.string()]),
+  col_distance: z.union([z.number(), z.string()]),
+  stickers_in_one_row: z.number(),
+  is_default: z.union([z.number(), z.boolean()]).nullable().optional(),
+  is_continuous: z.union([z.number(), z.boolean()]),
+  stickers_in_one_sheet: z.number(),
+  is_custom: z.union([z.number(), z.boolean()]).nullable().optional(),
   created_at: z.string().nullable().optional(),
   updated_at: z.string().nullable().optional(),
 })
@@ -189,4 +206,5 @@ export const barcodeSettingSchema = z.object({
 export type BarcodeSetting = z.infer<typeof barcodeSettingSchema>
 
 export const barcodeSettingsListSchema = z.array(barcodeSettingSchema)
+
 export type BarcodeSettingsList = z.infer<typeof barcodeSettingsListSchema>

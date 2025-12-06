@@ -2,7 +2,8 @@
 
 import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { apiGetClient } from "@/lib/api-client-client"
+import { useQuery } from "@tanstack/react-query"
+import { getBarcodeSetting } from "./data/products"
 import { Spinner } from "@/components/ui/spinner"
 import { Button } from "@/components/ui/button"
 import { Printer } from "lucide-react"
@@ -25,6 +26,7 @@ type Product = {
 type BarcodeSetting = {
   id: number
   name: string
+  description?: string
   width: number
   height: number
   paper_width: number
@@ -34,41 +36,35 @@ type BarcodeSetting = {
   row_distance: number
   col_distance: number
   stickers_in_one_row: number
-  is_continuous: boolean
+  is_default?: number
+  is_continuous: number
   stickers_in_one_sheet: number
+  is_custom?: number
 }
 
 export function BarcodePreview() {
   const searchParams = useSearchParams()
-
   const [products, setProducts] = useState<Product[]>([])
   const [printSettings, setPrintSettings] = useState<Record<string, any>>({})
   const [barcodeSettingId, setBarcodeSettingId] = useState<number | null>(null)
 
-  const [barcodeSetting, setBarcodeSetting] = useState<BarcodeSetting | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // -----------------------------------------------------
-  // PARSE URL PARAMETERS
-  // -----------------------------------------------------
   useEffect(() => {
+    // Parse products from URL
     const productsData: Product[] = []
     let index = 0
-
     while (searchParams.has(`products[${index}][product_id]`)) {
       productsData.push({
-        product_id: parseInt(searchParams.get(`products[${index}][product_id]`) || "0"),
+        product_id: Number.parseInt(searchParams.get(`products[${index}][product_id]`) || "0"),
         variant_id: searchParams.get(`products[${index}][variant_id]`)
-          ? parseInt(searchParams.get(`products[${index}][variant_id]`) || "0")
+          ? Number.parseInt(searchParams.get(`products[${index}][variant_id]`)!)
           : undefined,
         name: searchParams.get(`products[${index}][name]`) || "",
         code: searchParams.get(`products[${index}][code]`) || "",
-        qty: parseInt(searchParams.get(`products[${index}][qty]`) || "1"),
+        qty: Number.parseInt(searchParams.get(`products[${index}][qty]`) || "1"),
         image: searchParams.get(`products[${index}][image]`) || undefined,
-        price: parseFloat(searchParams.get(`products[${index}][price]`) || "0"),
+        price: Number.parseFloat(searchParams.get(`products[${index}][price]`) || "0"),
         promo_price: searchParams.get(`products[${index}][promo_price]`)
-          ? parseFloat(searchParams.get(`products[${index}][promo_price]`) || "0")
+          ? Number.parseFloat(searchParams.get(`products[${index}][promo_price]`)!)
           : undefined,
         currency: searchParams.get(`products[${index}][currency]`) || "$",
         currency_position: searchParams.get(`products[${index}][currency_position]`) || "prefix",
@@ -76,70 +72,67 @@ export function BarcodePreview() {
       })
       index++
     }
-
     setProducts(productsData)
 
-    // print_ settings
+    // Parse print settings - read the flat parameter names
     const settings: Record<string, any> = {}
     searchParams.forEach((value, key) => {
       if (key.startsWith("print_")) {
-        settings[key] = value === "1" ? true : value
+        settings[key] = value === "1" ? true : Number.parseInt(value) || value
       }
     })
     setPrintSettings(settings)
 
-    // barcode setting ID
+    // Get barcode setting ID
     const settingId = searchParams.get("barcode_setting_id")
     if (settingId) {
-      setBarcodeSettingId(parseInt(settingId))
+      setBarcodeSettingId(Number.parseInt(settingId))
     }
   }, [searchParams])
 
-  // -----------------------------------------------------
-  // LOAD BARCODE SETTING WITHOUT React Query
-  // -----------------------------------------------------
-  useEffect(() => {
-    if (!barcodeSettingId) {
-      setIsLoading(false)
-      return
-    }
+  const {
+    data: barcodeSetting,
+    isLoading: isLoadingSetting,
+    error,
+  } = useQuery({
+    queryKey: ["barcode-setting", barcodeSettingId],
+    queryFn: async () => {
+      if (!barcodeSettingId) throw new Error("No barcode setting ID")
+      const data = await getBarcodeSetting(barcodeSettingId)
+      // Convert string values to numbers for dimensions
+      return {
+        ...data,
+        width: typeof data.width === "string" ? Number.parseFloat(data.width) : data.width,
+        height: typeof data.height === "string" ? Number.parseFloat(data.height) : data.height,
+        paper_width: typeof data.paper_width === "string" ? Number.parseFloat(data.paper_width) : data.paper_width,
+        paper_height: typeof data.paper_height === "string" ? Number.parseFloat(data.paper_height) : data.paper_height,
+        top_margin: typeof data.top_margin === "string" ? Number.parseFloat(data.top_margin) : data.top_margin,
+        left_margin: typeof data.left_margin === "string" ? Number.parseFloat(data.left_margin) : data.left_margin,
+        row_distance: typeof data.row_distance === "string" ? Number.parseFloat(data.row_distance) : data.row_distance,
+        col_distance: typeof data.col_distance === "string" ? Number.parseFloat(data.col_distance) : data.col_distance,
+        is_continuous: typeof data.is_continuous === "number" ? data.is_continuous : data.is_continuous ? 1 : 0,
+      } as BarcodeSetting
+    },
+    enabled: !!barcodeSettingId,
+  })
 
-    const loadSetting = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
+  // Generate barcode labels (repeat products by quantity)
+  const labels = products.flatMap((product) => Array.from({ length: product.qty }, () => product))
 
-        const response = await apiGetClient<{
-          success: boolean
-          data: BarcodeSetting
-        }>(`barcodes/${barcodeSettingId}`)
+  const handlePrint = () => {
+    window.print()
+  }
 
-        setBarcodeSetting({
-          ...response.data,
-          // convert numeric strings to numbers (api returns "4.0000")
-          width: Number(response.data.width),
-          height: Number(response.data.height),
-          paper_width: Number(response.data.paper_width),
-          paper_height: Number(response.data.paper_height),
-          top_margin: Number(response.data.top_margin),
-          left_margin: Number(response.data.left_margin),
-          row_distance: Number(response.data.row_distance),
-          col_distance: Number(response.data.col_distance),
-        })
-      } catch (err: any) {
-        setError(err.message || "Failed to load barcode setting")
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-red-500">Failed to load barcode settings</p>
+        <p className="text-muted-foreground text-sm">{(error as Error).message}</p>
+      </div>
+    )
+  }
 
-    loadSetting()
-  }, [barcodeSettingId])
-
-  // -----------------------------------------------------
-  // LOADING STATE
-  // -----------------------------------------------------
-  if (isLoading) {
+  if (isLoadingSetting || !barcodeSetting) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner />
@@ -148,40 +141,19 @@ export function BarcodePreview() {
     )
   }
 
-  // -----------------------------------------------------
-  // ERROR STATE
-  // -----------------------------------------------------
-  if (error || !barcodeSetting) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-red-600">
-        Failed to load barcode setting: {error}
-      </div>
-    )
-  }
-
-  // -----------------------------------------------------
-  // NORMAL RENDERING
-  // -----------------------------------------------------
-
-  const labels = products.flatMap((p) => Array.from({ length: p.qty }, () => p))
-
+  // Calculate pages
   const stickersPerSheet = barcodeSetting.is_continuous
     ? barcodeSetting.stickers_in_one_row
     : barcodeSetting.stickers_in_one_sheet
-
   const pages: Product[][] = []
   for (let i = 0; i < labels.length; i += stickersPerSheet) {
     pages.push(labels.slice(i, i + stickersPerSheet))
   }
 
-  const handlePrint = () => window.print()
-
   const marginTop = barcodeSetting.is_continuous ? 0 : barcodeSetting.top_margin
   const marginLeft = barcodeSetting.is_continuous ? 0 : barcodeSetting.left_margin
   const paperWidth = barcodeSetting.paper_width
-  const paperHeight = barcodeSetting.is_continuous
-    ? barcodeSetting.height
-    : barcodeSetting.paper_height
+  const paperHeight = barcodeSetting.is_continuous ? barcodeSetting.height : barcodeSetting.paper_height
 
   return (
     <>
@@ -211,7 +183,8 @@ export function BarcodePreview() {
 
       <div className="no-print fixed top-4 right-4 z-50">
         <Button onClick={handlePrint} size="lg">
-          <Printer className="mr-2 h-5 w-5" /> Print Barcodes
+          <Printer className="mr-2 h-5 w-5" />
+          Print Barcodes
         </Button>
       </div>
 
@@ -228,13 +201,11 @@ export function BarcodePreview() {
           >
             <tbody>
               {Array.from({
-                length: Math.ceil(
-                  pageProducts.length / barcodeSetting.stickers_in_one_row
-                ),
+                length: Math.ceil(pageProducts.length / barcodeSetting.stickers_in_one_row),
               }).map((_, rowIndex) => {
                 const rowProducts = pageProducts.slice(
                   rowIndex * barcodeSetting.stickers_in_one_row,
-                  (rowIndex + 1) * barcodeSetting.stickers_in_one_row
+                  (rowIndex + 1) * barcodeSetting.stickers_in_one_row,
                 )
 
                 return (
@@ -261,96 +232,82 @@ export function BarcodePreview() {
                           }}
                         >
                           <div style={{ textAlign: "center" }}>
+                            {/* Business Name */}
                             {printSettings.print_business_name && (
                               <span
                                 style={{
                                   display: "block",
                                   fontWeight: "bold",
-                                  fontSize:
-                                    Number(printSettings.print_business_name_size || 15),
+                                  fontSize: `${printSettings.print_business_name_size || 15}px`,
                                 }}
                               >
                                 Your Business Name
                               </span>
                             )}
 
+                            {/* Product Name */}
                             {printSettings.print_name && (
                               <span
                                 style={{
                                   display: "block",
-                                  fontSize:
-                                    Number(printSettings.print_name_size || 15),
+                                  fontSize: `${printSettings.print_name_size || 15}px`,
                                 }}
                               >
                                 {product.name}
                               </span>
                             )}
 
+                            {/* Brand Name */}
                             {printSettings.print_brand_name && product.brand_name && (
                               <span
                                 style={{
                                   display: "block",
-                                  fontSize:
-                                    Number(printSettings.print_brand_name_size || 15),
+                                  fontSize: `${printSettings.print_brand_name_size || 15}px`,
                                 }}
                               >
                                 {product.brand_name}
                               </span>
                             )}
 
+                            {/* Price */}
                             {printSettings.print_price && (
                               <span
                                 style={{
                                   display: "block",
-                                  fontSize:
-                                    Number(printSettings.print_price_size || 15),
+                                  fontSize: `${printSettings.print_price_size || 15}px`,
                                 }}
                               >
-                                {printSettings.print_promo_price &&
-                                product.promo_price ? (
+                                {printSettings.print_promo_price && product.promo_price ? (
                                   <>
                                     {product.currency_position === "prefix" && (
-                                      <span style={{ fontSize: "11px" }}>
-                                        {product.currency}
-                                      </span>
+                                      <span style={{ fontSize: "11px" }}>{product.currency}</span>
                                     )}{" "}
-                                    <span style={{ textDecoration: "line-through" }}>
-                                      {product.price.toFixed(2)}
-                                    </span>{" "}
+                                    <span style={{ textDecoration: "line-through" }}>{product.price.toFixed(2)}</span>{" "}
                                     {product.promo_price.toFixed(2)}
                                     {product.currency_position === "suffix" && (
-                                      <span style={{ fontSize: "11px" }}>
-                                        {" "}
-                                        {product.currency}
-                                      </span>
+                                      <span style={{ fontSize: "11px" }}> {product.currency}</span>
                                     )}
                                   </>
                                 ) : (
                                   <>
                                     {product.currency_position === "prefix" && (
-                                      <span style={{ fontSize: "11px" }}>
-                                        {product.currency}
-                                      </span>
+                                      <span style={{ fontSize: "11px" }}>{product.currency}</span>
                                     )}{" "}
                                     {product.price.toFixed(2)}
                                     {product.currency_position === "suffix" && (
-                                      <span style={{ fontSize: "11px" }}>
-                                        {" "}
-                                        {product.currency}
-                                      </span>
+                                      <span style={{ fontSize: "11px" }}> {product.currency}</span>
                                     )}
                                   </>
                                 )}
                               </span>
                             )}
 
+                            {/* Barcode */}
                             <div style={{ margin: "5px 0" }}>
                               <Barcode
                                 value={product.code}
                                 width={1}
-                                height={Math.floor(
-                                  Number(barcodeSetting.height) * 0.24 * 96
-                                )}
+                                height={Math.floor(barcodeSetting.height * 0.24 * 96)}
                                 fontSize={10}
                                 displayValue={true}
                                 margin={0}
