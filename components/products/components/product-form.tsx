@@ -1996,13 +1996,15 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
 
               {/* Row 7: Guarantee, Image Upload */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="guarantee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Guarantee</FormLabel>
-                      <div className="flex rounded-md shadow-xs">
+              <FormField
+                control={form.control}
+                name="guarantee"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Guarantee</FormLabel>
+                    <InputGroup>
+                      {/* Guarantee Number */}
+                      <InputGroupInput>
                         <FormControl>
                           <Input
                             type="number"
@@ -2011,11 +2013,17 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             {...field}
                             value={field.value || ""}
                             onChange={(e) =>
-                              field.onChange(e.target.value ? parseFloat(e.target.value) : null)
+                              field.onChange(
+                                e.target.value ? parseFloat(e.target.value) : null
+                              )
                             }
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                            className="shadow-none focus-visible:z-10"
                           />
                         </FormControl>
+                      </InputGroupInput>
+
+                      {/* Guarantee Type */}
+                      <InputGroupAddon align="inline-end">
                         <FormField
                           control={form.control}
                           name="guarantee_type"
@@ -2030,11 +2038,14 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             </FormControl>
                           )}
                         />
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      </InputGroupAddon>
+                    </InputGroup>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
 
                 <FormField
                   control={form.control}
