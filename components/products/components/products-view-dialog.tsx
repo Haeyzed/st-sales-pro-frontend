@@ -32,6 +32,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import Image from "next/image"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 
 type ProductsViewDialogProps = {
   open: boolean
@@ -49,8 +51,6 @@ export function ProductsViewDialog({
   const images = imageString && imageString !== 'zummXD2dvAtI.png' 
     ? imageString.split(',').map(img => img.trim()) 
     : []
-  
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
   
   const plugin = React.useRef(
     Autoplay({ delay: 3000, stopOnInteraction: true })
@@ -73,11 +73,16 @@ export function ProductsViewDialog({
                     <CarouselItem key={index}>
                       <div className="p-1">
                         <div className="rounded-lg border overflow-hidden">
-                          <img
-                            src={`${apiUrl}/storage/products/large/${img}`}
+                          <ImageZoom zoomMargin={100}>
+                          <Image
+                            src={img}
                             alt={`${product.name} ${index + 1}`}
                             className="w-full h-auto object-cover aspect-square"
-                          />
+                            unoptimized
+                            width={500}
+                            height={500}
+                            />
+                          </ImageZoom>
                         </div>
                       </div>
                     </CarouselItem>

@@ -1339,7 +1339,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           <BrandCombobox
                             value={field.value}
                             onValueChange={field.onChange}
-                            
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                           <Button
                             type="button"
@@ -1369,7 +1369,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           <CategoryCombobox
                             value={field.value}
                             onValueChange={field.onChange}
-                            
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                           <Button
                             type="button"
@@ -1682,7 +1682,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             <UnitCombobox
                               value={field.value}
                               onValueChange={field.onChange}
-                              
+                              className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                             />
                             <Button
                               type="button"
@@ -1911,7 +1911,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                           <TaxCombobox
                             value={field.value}
                             onValueChange={field.onChange}
-                            
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                           <Button
                             type="button"
@@ -1970,7 +1970,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             onChange={(e) =>
                               field.onChange(e.target.value ? parseFloat(e.target.value) : null)
                             }
-                            
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
                         </FormControl>
                         <FormField
@@ -2004,8 +2004,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       <FormLabel>Guarantee</FormLabel>
                       <div className="flex rounded-md shadow-xs">
                         <FormControl>
-                        <InputGroup>
-                          <InputGroupInput 
+                          <Input
                             type="number"
                             min="1"
                             placeholder="eg: 1"
@@ -2014,26 +2013,23 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             onChange={(e) =>
                               field.onChange(e.target.value ? parseFloat(e.target.value) : null)
                             }
-                            
+                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                           />
-                          <InputGroupAddon align="inline-end">
-                              <FormField
-                              control={form.control}
-                              name="guarantee_type"
-                              render={({ field: typeField }) => (
-                                <FormControl>
-                                  <GuaranteeTypeCombobox
-                                    value={typeField.value || "months"}
-                                    onValueChange={typeField.onChange}
-                                    placeholder="Type..."
-                                    className="w-32 rounded-l-none shadow-none"
-                                  />
-                                </FormControl>
-                              )}
-                            />
-                          </InputGroupAddon>
-                        </InputGroup>
                         </FormControl>
+                        <FormField
+                          control={form.control}
+                          name="guarantee_type"
+                          render={({ field: typeField }) => (
+                            <FormControl>
+                              <GuaranteeTypeCombobox
+                                value={typeField.value || "months"}
+                                onValueChange={typeField.onChange}
+                                placeholder="Type..."
+                                className="w-32 rounded-l-none shadow-none"
+                              />
+                            </FormControl>
+                          )}
+                        />
                       </div>
                       <FormMessage />
                     </FormItem>

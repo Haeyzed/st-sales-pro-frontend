@@ -11,6 +11,7 @@ import { productStatuses } from "../data/data"
 import { type Product } from "../data/schema"
 import { DataTableRowActions } from "./data-table-row-actions"
 import { formatCurrency } from "@/lib/utils"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 
 export const productsColumns: ColumnDef<Product>[] = [
   {
@@ -60,16 +61,16 @@ export const productsColumns: ColumnDef<Product>[] = [
       if (imageString && imageString !== 'zummXD2dvAtI.png') {
         const firstImage = imageString.split(',')[0]?.trim()
         if (firstImage) {
-          // Construct URL to small image variant
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:8000'
-          imageUrl = `${apiUrl}/storage/products/small/${firstImage}`
+          imageUrl = firstImage
         }
       }
 
       return (
         <Avatar className="h-10 w-10 rounded-md">
           {imageUrl ? (
-            <AvatarImage src={imageUrl} alt={name} className="object-cover" />
+            <ImageZoom zoomMargin={100}>
+              <AvatarImage src={imageUrl} alt={name} className="object-cover"/>
+            </ImageZoom>
           ) : null}
           <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
             {initials}
