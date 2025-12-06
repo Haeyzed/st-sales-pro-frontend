@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getBarcodeSetting } from "./data/products"
+import { getBarcodeSetting } from "../data/products"
 import { Spinner } from "@/components/ui/spinner"
 import { Button } from "@/components/ui/button"
 import { Printer } from "lucide-react"
