@@ -76,9 +76,7 @@ export function ProductsViewDialog({
                           <ImageZoom 
                           zoomMargin={100}
                           backdropClassName={cn(
-                            '[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80',
-                            'dark:[&_[data-rmiz-modal-overlay="visible"]]:bg-white/80',
-                            'light:[&_[data-rmiz-modal-overlay="visible"]]:bg-white/80'
+                            '[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80 dark:[&_[data-rmiz-modal-overlay="visible"]]:bg-white/80 light:[&_[data-rmiz-modal-overlay="visible"]]:bg-white/80'
                           )}>
                           <Image
                             src={img}
