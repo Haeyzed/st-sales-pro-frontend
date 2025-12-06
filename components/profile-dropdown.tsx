@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SignOutDialog } from "@/components/sign-out-dialog"
@@ -103,7 +104,14 @@ export function ProfileDropdown() {
               <span>Empty Database</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator />            
+          <DropdownMenuItem asChild>
+              <Link href="/lock-screen"
+              className="flex items-center gap-2">
+                Lock Screen
+                <DropdownMenuShortcut>⇧⌘L</DropdownMenuShortcut>
+              </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onClick={handleSignOut}

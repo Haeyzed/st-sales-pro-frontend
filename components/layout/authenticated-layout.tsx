@@ -7,6 +7,7 @@ import { SearchProvider } from "@/context/search-provider"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { SkipToMain } from "@/components/skip-to-main"
+import { LockScreenProvider } from "@/context/lock-provider"
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode
@@ -21,6 +22,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   return (
     <SearchProvider>
       <LayoutProvider>
+        <LockScreenProvider>
         <SidebarProvider defaultOpen={defaultOpen}>
           <SkipToMain />
           <AppSidebar />
@@ -39,6 +41,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
             {children}
           </SidebarInset>
         </SidebarProvider>
+        </LockScreenProvider>
       </LayoutProvider>
     </SearchProvider>
   )
