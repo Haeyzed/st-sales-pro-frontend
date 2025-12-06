@@ -68,9 +68,7 @@ export const productsColumns: ColumnDef<Product>[] = [
       return (
         <Avatar className="h-10 w-10 rounded-md">
           {imageUrl ? (
-            <ImageZoom zoomMargin={100}>
               <AvatarImage src={imageUrl} alt={name} className="object-cover"/>
-            </ImageZoom>
           ) : null}
           <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
             {initials}

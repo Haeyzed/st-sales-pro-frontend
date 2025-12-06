@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { formatCurrency } from "@/lib/utils"
+import { cn, formatCurrency } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Carousel,
@@ -73,7 +73,13 @@ export function ProductsViewDialog({
                     <CarouselItem key={index}>
                       <div className="p-1">
                         <div className="rounded-lg border overflow-hidden">
-                          <ImageZoom zoomMargin={100}>
+                          <ImageZoom 
+                          zoomMargin={100}
+                          backdropClassName={cn(
+                            '[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80',
+                            'dark:[&_[data-rmiz-modal-overlay="visible"]]:bg-white/80',
+                            'light:[&_[data-rmiz-modal-overlay="visible"]]:bg-white/80'
+                          )}>
                           <Image
                             src={img}
                             alt={`${product.name} ${index + 1}`}

@@ -58,9 +58,7 @@ export const brandsColumns: ColumnDef<Brand>[] = [
       return (
           <Avatar className="h-10 w-10 rounded-md">
             {image ? (
-            <ImageZoom  zoomMargin={100}>
               <AvatarImage src={image} alt={title} className="object-cover" />
-            </ImageZoom>
             ) : null}
             <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
               {initials}
