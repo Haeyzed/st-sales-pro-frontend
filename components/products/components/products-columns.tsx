@@ -58,7 +58,7 @@ export const productsColumns: ColumnDef<Product>[] = [
 
       // Extract first image from comma-separated list
       let imageUrl = null
-      if (imageString && imageString !== 'zummXD2dvAtI.png') {
+      if (imageString) {
         const firstImage = imageString.split(',')[0]?.trim()
         if (firstImage) {
           imageUrl = firstImage

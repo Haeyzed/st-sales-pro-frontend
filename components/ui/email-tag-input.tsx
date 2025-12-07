@@ -207,7 +207,7 @@ export function EmailTagInput({
                 ? "Please enter a valid email address"
                 : "No users found"}
             </CommandEmpty>
-            <CommandGroup heading="Users">
+            <CommandGroup>
               {users
                 .filter((user) =>
                   inputValue
