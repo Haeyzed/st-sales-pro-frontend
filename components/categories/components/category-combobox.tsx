@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getCategoryDropdown } from "../data/categories"
+import { getCategoryDropdown, getParentCategories } from "../data/categories"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 
 interface CategoryComboboxProps {
@@ -23,8 +23,8 @@ export function CategoryCombobox({
   excludeId,
 }: CategoryComboboxProps) {
   const { data: categories, isLoading } = useQuery({
-    queryKey: ["category-dropdown"],
-    queryFn: getCategoryDropdown,
+    queryKey: ["parent-categories-dropdown"],
+    queryFn: getParentCategories,
   })
 
   // Transform categories to combobox options
@@ -32,14 +32,15 @@ export function CategoryCombobox({
     if (!categories) return []
     
     return categories
-      .filter((cat) => {
+      .filter((category) => {
         // Exclude the current category if editing
-        if (excludeId && cat.id === excludeId) return false
+        if (excludeId && category.id === excludeId) return false
         return true
       })
-      .map((cat) => ({
-        value: cat.id.toString(),
-        label: cat.name,
+      .map((category) => ({
+        value: category.id.toString(),
+        label: category.name,
+        image_url: category.image_url,
       }))
   }, [categories, excludeId])
 
@@ -59,8 +60,9 @@ export function CategoryCombobox({
       placeholder={placeholder}
       searchPlaceholder="Search categories..."
       emptyText="No categories found."
-      disabled={disabled}
+      disabled={disabled || isLoading}
       className={className}
+      loading={isLoading}
     />
   )
 }

@@ -32,7 +32,7 @@ export function CategoryCombobox({
     return categories.map((category) => ({
       value: category.id.toString(),
       label: category.name,
-      image: category.image_url ?? undefined,
+      image_url: category.image_url ?? undefined,
     }))
   }, [categories])
 

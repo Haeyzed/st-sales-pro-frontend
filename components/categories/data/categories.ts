@@ -40,7 +40,7 @@ type CategoryDropdownItem = {
   id: number
   name: string
   parent_id?: number | null
-  image_url: string | null
+  image_url?: string | null
 }
 
 /**
