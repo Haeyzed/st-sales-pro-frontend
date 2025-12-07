@@ -12,7 +12,7 @@ import {
   apiPutClient,
   apiDeleteClient,
 } from "@/lib/api-client-client"
-import { categorySchema, categoryListSchema, type Category } from "./schema"
+import { categorySchema, categoryListSchema, type Category, categoryDropdownSchema } from "./schema"
 import { downloadExcel, downloadPDF } from "@/lib/export-utils"
 
 export type CategoryFilters = {
@@ -40,6 +40,7 @@ type CategoryDropdownItem = {
   id: number
   name: string
   parent_id?: number | null
+  image_url: string | null
 }
 
 /**
@@ -95,7 +96,7 @@ export async function getCategoryTree(): Promise<Category[]> {
  */
 export async function getCategoryDropdown(): Promise<CategoryDropdownItem[]> {
   const response = await apiGetClient<CategoryDropdownItem[]>("categories/dropdown")
-  return response.data
+  return categoryDropdownSchema.parse(response.data)
 }
 
 /**
@@ -103,7 +104,7 @@ export async function getCategoryDropdown(): Promise<CategoryDropdownItem[]> {
  */
 export async function getParentCategories(): Promise<CategoryDropdownItem[]> {
   const response = await apiGetClient<CategoryDropdownItem[]>("categories/parents")
-  return response.data
+  return categoryDropdownSchema.parse(response.data)
 }
 
 /**

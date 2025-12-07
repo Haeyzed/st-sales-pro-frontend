@@ -30,3 +30,11 @@ export type Category = z.infer<typeof categorySchema>
 
 export const categoryListSchema = z.array(categorySchema)
 
+export const categoryDropdownSchema = z.array(categorySchemaBase.extend({
+  id: z.number(),
+  name: z.string(),
+  image_url: z.string().nullable(),
+  parent_id: z.number().nullable(),
+}))
+
+export type CategoryDropdownItem = z.infer<typeof categoryDropdownSchema>

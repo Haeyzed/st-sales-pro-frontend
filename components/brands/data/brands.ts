@@ -12,7 +12,7 @@ import {
   apiPutClient,
   apiDeleteClient,
 } from "@/lib/api-client-client"
-import { brandSchema, brandListSchema, type Brand } from "./schema"
+import { brandSchema, brandListSchema, type Brand, brandDropdownSchema } from "./schema"
 import { downloadExcel, downloadPDF } from "@/lib/export-utils"
 
 export type BrandFilters = {
@@ -38,6 +38,7 @@ type BrandListResponse = {
 type BrandDropdownItem = {
   id: number
   title: string
+  image_url: string | null
 }
 
 /**
@@ -81,7 +82,7 @@ export async function getBrands(
  */
 export async function getBrandDropdown(): Promise<BrandDropdownItem[]> {
   const response = await apiGetClient<BrandDropdownItem[]>("brands/dropdown")
-  return response.data
+  return brandDropdownSchema.parse(response.data)
 }
 
 /**

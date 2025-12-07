@@ -14,3 +14,11 @@ export type Brand = z.infer<typeof brandSchema>
 
 export const brandListSchema = z.array(brandSchema)
 
+export const brandDropdownSchema = z.array(brandSchema.extend({
+  id: z.number(),
+  title: z.string(),
+  image_url: z.string().nullable(),
+}))
+
+export type BrandDropdownItem = z.infer<typeof brandDropdownSchema>
+

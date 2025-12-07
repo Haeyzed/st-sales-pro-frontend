@@ -1333,23 +1333,11 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Brand</FormLabel>
                       <FormControl>
-                        <div className="flex">
                           <BrandCombobox
                             value={field.value}
                             onValueChange={field.onChange}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                            onAddClick={() => setShowBrandDialog(true)}
                           />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="rounded-l-none shadow-none"
-                            onClick={() => toast.info("Brand creation coming soon")}
-                            title="Add Brand"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1363,23 +1351,11 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Category <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <div className="flex">
-                          <CategoryCombobox
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="rounded-l-none shadow-none"
-                            onClick={() => setShowCategoryDialog(true)}
-                            title="Add Category"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <CategoryCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          onAddClick={() => setShowCategoryDialog(true)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

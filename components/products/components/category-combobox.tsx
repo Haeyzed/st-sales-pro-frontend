@@ -11,6 +11,7 @@ interface CategoryComboboxProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  onAddClick?: () => void
 }
 
 export function CategoryCombobox({
@@ -19,6 +20,7 @@ export function CategoryCombobox({
   placeholder = "Select category",
   disabled = false,
   className,
+  onAddClick,
 }: CategoryComboboxProps) {
   const { data: categories, isLoading } = useQuery({
     queryKey: ["category-dropdown"],
@@ -27,9 +29,10 @@ export function CategoryCombobox({
 
   const options: ComboboxOption[] = React.useMemo(() => {
     if (!categories) return []
-    return categories.map((cat) => ({
-      value: cat.id.toString(),
-      label: cat.name,
+    return categories.map((category) => ({
+      value: category.id.toString(),
+      label: category.name,
+      image: category.image_url ?? undefined,
     }))
   }, [categories])
 
@@ -52,6 +55,8 @@ export function CategoryCombobox({
       disabled={disabled || isLoading}
       className={className}
       loading={isLoading}
+      onAddClick={onAddClick}
+      addButtonText="Add category"
     />
   )
 }

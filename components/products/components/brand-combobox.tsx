@@ -2,13 +2,8 @@
 
 import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
-import { apiGetClient } from "@/lib/api-client-client"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
-
-type BrandDropdownItem = {
-  id: number
-  title: string
-}
+import { getBrandDropdown } from "@/components/brands/data/brands"
 
 interface BrandComboboxProps {
   value?: number | null
@@ -16,6 +11,7 @@ interface BrandComboboxProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  onAddClick?: () => void
 }
 
 export function BrandCombobox({
@@ -24,13 +20,11 @@ export function BrandCombobox({
   placeholder = "Select brand",
   disabled = false,
   className,
+  onAddClick,
 }: BrandComboboxProps) {
   const { data: brands, isLoading } = useQuery({
     queryKey: ["brand-dropdown"],
-    queryFn: async () => {
-      const response = await apiGetClient<BrandDropdownItem[]>("brands/dropdown")
-      return response.data
-    },
+    queryFn: getBrandDropdown,
   })
 
   const options: ComboboxOption[] = React.useMemo(() => {
@@ -38,6 +32,7 @@ export function BrandCombobox({
     return brands.map((brand) => ({
       value: brand.id.toString(),
       label: brand.title,
+      image: brand.image_url ?? undefined,
     }))
   }, [brands])
 
@@ -60,6 +55,8 @@ export function BrandCombobox({
       disabled={disabled || isLoading}
       className={className}
       loading={isLoading}
+      onAddClick={onAddClick}
+      addButtonText="Add brand"
     />
   )
 }
