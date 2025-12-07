@@ -2898,8 +2898,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <ItemGroup className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                       {relatedProducts.map((product) => {
                         // Image is already a full URL from API or a filename
-                        const firstImage = product.image?.split(',')[0]?.trim()
-                        const imageUrl = firstImage && firstImage !== 'zummXD2dvAtI.png' ? firstImage : null
+                        const firstImage = product.image_url?.split(',')[0]?.trim()
+                        const imageUrl = firstImage ? firstImage : null
                         const initials = product.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
 
                         return (
