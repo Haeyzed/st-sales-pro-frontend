@@ -40,12 +40,12 @@ export const categoriesColumns: ColumnDef<Category>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "image",
+    accessorKey: "image_url",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Image" />
     ),
     cell: ({ row }) => {
-      const image = row.original.image
+      const image_url = row.original.image_url
       const name = row.original.name
       const initials = name
         .split(" ")
@@ -56,8 +56,8 @@ export const categoriesColumns: ColumnDef<Category>[] = [
 
       return (
         <Avatar className="h-10 w-10 rounded-md">
-          {image ? (
-            <AvatarImage src={image} alt={name} className="object-cover" />
+          {image_url ? (
+            <AvatarImage src={image_url} alt={name} className="object-cover" />
           ) : null}
           <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
             {initials}

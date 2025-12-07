@@ -4,6 +4,7 @@ const categorySchemaBase = z.object({
   id: z.number(),
   name: z.string(),
   image: z.string().nullable(),
+  image_url: z.string().nullable(),
   parent_id: z.number().nullable(),
   is_active: z.boolean(),
   is_sync_disable: z.boolean(),
@@ -34,7 +35,6 @@ export const categoryDropdownSchema = z.array(categorySchemaBase.extend({
   id: z.number(),
   name: z.string(),
   image_url: z.string().nullable(),
-  parent_id: z.number().nullable(),
 }))
 
 export type CategoryDropdownItem = z.infer<typeof categoryDropdownSchema>
