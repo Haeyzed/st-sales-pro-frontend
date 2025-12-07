@@ -45,7 +45,7 @@ import {
   FileUploadItemDelete,
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
-import { CloudUpload } from "lucide-react"
+import { CloudUpload, X } from "lucide-react"
 import { CategoryCombobox } from "./category-combobox"
 import { type Category } from "../data/schema"
 import { createCategory, updateCategory } from "../data/categories"
@@ -61,7 +61,6 @@ const formSchema = z.object({
   short_description: z.string().nullable().optional(),
   is_sync_disable: z.boolean().nullable().optional(),
   image: z.array(z.instanceof(File)).optional(),
-  icon: z.array(z.instanceof(File)).optional(),
   is_active: z.boolean().optional(),
 })
 
@@ -79,12 +78,14 @@ function CategoryActionForm({
   isDesktop,
   isEdit,
   currentCategoryId,
+  existingImage,
 }: {
   form: ReturnType<typeof useForm<CategoryForm>>
   onSubmit: (values: CategoryForm) => void
   isDesktop: boolean
   isEdit: boolean
   currentCategoryId?: number
+  existingImage?: string | null
 }) {
   return (
     <Form {...form}>
@@ -322,62 +323,34 @@ function CategoryActionForm({
                         </Button>
                       </FileUploadTrigger>
                     </FileUploadDropzone>
+                    {existingImage && (
+                      <div className="mt-2 space-y-2">
+                        <p className="text-sm font-medium">Current Image</p>
+                        <div className="relative flex items-center gap-2 rounded-md border p-2 bg-background">
+                          <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
+                            <img
+                              src={existingImage || "/placeholder.svg"}
+                              alt="Current"
+                              className="size-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-muted-foreground truncate">{existingImage.split("/").pop()}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <FileUploadList>
                       {field.value?.map((file, index) => (
                         <FileUploadItem key={index} value={file}>
-                          <FileUploadItemPreview />
-                          <FileUploadItemMetadata />
-                          <FileUploadItemDelete />
-                        </FileUploadItem>
-                      ))}
-                    </FileUploadList>
-                  </FileUpload>
-                </div>
-              </FormControl>
-              <FormMessage
-                className={isDesktop ? "col-span-4 col-start-3" : undefined}
-              />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="icon"
-          render={({ field }) => (
-            <FormItem
-              className={
-                isDesktop
-                  ? "grid grid-cols-6 items-start space-y-0 gap-x-4 gap-y-1"
-                  : undefined
-              }
-            >
-              <FormLabel className={isDesktop ? "col-span-2 text-end pt-3" : undefined}>
-                Icon
-              </FormLabel>
-              <FormControl>
-                <div className={isDesktop ? "col-span-4" : undefined}>
-                  <FileUpload
-                    value={field.value || []}
-                    onValueChange={field.onChange}
-                    accept="image/jpeg,image/jpg,image/png,image/gif"
-                    maxFiles={1}
-                    maxSize={10 * 1024 * 1024} // 10MB
-                  >
-                    <FileUploadDropzone>
-                      <CloudUpload className="h-4 w-4" />
-                      <span className="text-sm">Drop icon here or</span>
-                      <FileUploadTrigger asChild>
-                        <Button variant="link" size="sm" className="p-0 h-auto">
-                          choose file
-                        </Button>
-                      </FileUploadTrigger>
-                    </FileUploadDropzone>
-                    <FileUploadList>
-                      {field.value?.map((file, index) => (
-                        <FileUploadItem key={index} value={file}>
-                          <FileUploadItemPreview />
-                          <FileUploadItemMetadata />
-                          <FileUploadItemDelete />
+                        <FileUploadItemPreview />
+                        <FileUploadItemMetadata />
+                        <FileUploadItemDelete asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </FileUploadItemDelete>
                         </FileUploadItem>
                       ))}
                     </FileUploadList>
@@ -419,6 +392,7 @@ export function CategoriesActionDialog({
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const queryClient = useQueryClient()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [existingImage, setExistingImage] = useState<string | null>(currentRow?.image_url || null)
   const form = useForm<CategoryForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
@@ -431,7 +405,6 @@ export function CategoriesActionDialog({
           short_description: currentRow.short_description,
           is_sync_disable: currentRow.is_sync_disable,
           image: [],
-          icon: [],
           is_active: currentRow.is_active,
         }
       : {
@@ -443,7 +416,6 @@ export function CategoriesActionDialog({
           short_description: null,
           is_sync_disable: false,
           image: [],
-          icon: [],
           is_active: true,
         },
   })
@@ -489,6 +461,7 @@ export function CategoriesActionDialog({
 
   const handleOpenChange = (state: boolean) => {
     form.reset()
+    setExistingImage(currentRow?.image_url || null)
     onOpenChange(state)
   }
 
@@ -512,6 +485,7 @@ export function CategoriesActionDialog({
               isDesktop={isDesktop}
               isEdit={isEdit}
               currentCategoryId={currentRow?.id}
+              existingImage={existingImage}
             />
           </div>
           <DialogFooter>
@@ -549,6 +523,7 @@ export function CategoriesActionDialog({
             onSubmit={onSubmit}
             isDesktop={isDesktop}
             isEdit={isEdit}
+            existingImage={existingImage}
           />
         </div>
         <DrawerFooter className="pt-2">

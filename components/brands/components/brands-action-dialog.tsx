@@ -44,7 +44,7 @@ import {
   FileUploadItemDelete,
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
-import { CloudUpload } from "lucide-react"
+import { CloudUpload, X } from "lucide-react"
 import { type Brand } from "../data/schema"
 import { createBrand, updateBrand } from "../data/brands"
 import { useState } from "react"
@@ -68,10 +68,12 @@ function BrandActionForm({
   form,
   onSubmit,
   isDesktop,
+  existingImage,
 }: {
   form: ReturnType<typeof useForm<BrandForm>>
   onSubmit: (values: BrandForm) => void
   isDesktop: boolean
+  existingImage?: string | null
 }) {
   return (
     <Form {...form}>
@@ -140,12 +142,34 @@ function BrandActionForm({
                         </Button>
                       </FileUploadTrigger>
                     </FileUploadDropzone>
+                    {existingImage && (
+                      <div className="mt-2 space-y-2">
+                        <p className="text-sm font-medium">Current Image</p>
+                        <div className="relative flex items-center gap-2 rounded-md border p-2 bg-background">
+                          <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded border bg-accent/50">
+                            <img
+                              src={existingImage || "/placeholder.svg"}
+                              alt="Current"
+                              className="size-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-muted-foreground truncate">{existingImage.split("/").pop()}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <FileUploadList>
                       {field.value?.map((file, index) => (
                         <FileUploadItem key={index} value={file}>
-                          <FileUploadItemPreview />
-                          <FileUploadItemMetadata />
-                          <FileUploadItemDelete />
+                        <FileUploadItemPreview />
+                        <FileUploadItemMetadata />
+                        <FileUploadItemDelete asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </FileUploadItemDelete>
                         </FileUploadItem>
                       ))}
                     </FileUploadList>
@@ -187,6 +211,7 @@ export function BrandsActionDialog({
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const queryClient = useQueryClient()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [existingImage, setExistingImage] = useState<string | null>(currentRow?.image_url || null)
   const form = useForm<BrandForm>({
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
@@ -243,6 +268,7 @@ export function BrandsActionDialog({
 
   const handleOpenChange = (state: boolean) => {
     form.reset()
+    setExistingImage(currentRow?.image_url || null)
     onOpenChange(state)
   }
 
@@ -264,6 +290,7 @@ export function BrandsActionDialog({
               form={form}
               onSubmit={onSubmit}
               isDesktop={isDesktop}
+              existingImage={existingImage}
             />
           </div>
           <DialogFooter>
@@ -300,6 +327,7 @@ export function BrandsActionDialog({
             form={form}
             onSubmit={onSubmit}
             isDesktop={isDesktop}
+            existingImage={existingImage}
           />
         </div>
         <DrawerFooter className="pt-2">
