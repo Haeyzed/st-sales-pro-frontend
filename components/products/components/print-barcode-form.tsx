@@ -177,7 +177,7 @@ export function PrintBarcodeForm({ preloadedProduct }: PrintBarcodeFormProps) {
                   </TableHeader>
                   <TableBody>
                     {products.map((item) => {
-                      const firstImage = item.product.image?.split(",")[0]?.trim()
+                      const firstImage = item.product.image_url?.split(",")[0]?.trim()
                       const imageUrl = firstImage ? firstImage : null
                       const initials = item.product.name
                         .split(" ")
