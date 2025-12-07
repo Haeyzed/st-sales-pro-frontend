@@ -142,6 +142,20 @@ function BrandActionForm({
                         </Button>
                       </FileUploadTrigger>
                     </FileUploadDropzone>
+                    <FileUploadList>
+                      {field.value?.map((file, index) => (
+                        <FileUploadItem key={index} value={file}>
+                        <FileUploadItemPreview />
+                        <FileUploadItemMetadata />
+                        <FileUploadItemDelete asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </FileUploadItemDelete>
+                        </FileUploadItem>
+                      ))}
+                    </FileUploadList>
                     {existingImage && (
                       <div className="mt-2 space-y-2">
                         <p className="text-sm font-medium">Current Image</p>
@@ -159,20 +173,6 @@ function BrandActionForm({
                         </div>
                       </div>
                     )}
-                    <FileUploadList>
-                      {field.value?.map((file, index) => (
-                        <FileUploadItem key={index} value={file}>
-                        <FileUploadItemPreview />
-                        <FileUploadItemMetadata />
-                        <FileUploadItemDelete asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7">
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </FileUploadItemDelete>
-                        </FileUploadItem>
-                      ))}
-                    </FileUploadList>
                   </FileUpload>
                 </div>
               </FormControl>

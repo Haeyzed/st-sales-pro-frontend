@@ -2656,7 +2656,21 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                               </Button>
                             </FileUploadTrigger>
                           </FileUploadDropzone>
-
+                          {/* Show new uploads */}
+                          <FileUploadList>
+                            {field.value?.map((file, index) => (
+                              <FileUploadItem key={index} value={file}>
+                                <FileUploadItemPreview />
+                                <FileUploadItemMetadata />
+                                <FileUploadItemDelete asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7">
+                                    <X className="h-4 w-4" />
+                                    <span className="sr-only">Delete</span>
+                                  </Button>
+                                </FileUploadItemDelete>
+                              </FileUploadItem>
+                            ))}
+                          </FileUploadList>
                           {/* Show existing images with drag-and-drop sorting */}
                           {existingImages.length > 0 && (
                             <div className="space-y-2">
@@ -2774,22 +2788,6 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                               </Sortable.Root>
                             </div>
                           )}
-
-                          {/* Show new uploads */}
-                          <FileUploadList>
-                            {field.value?.map((file, index) => (
-                              <FileUploadItem key={index} value={file}>
-                                <FileUploadItemPreview />
-                                <FileUploadItemMetadata />
-                                <FileUploadItemDelete asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                                    <X className="h-4 w-4" />
-                                    <span className="sr-only">Delete</span>
-                                  </Button>
-                                </FileUploadItemDelete>
-                              </FileUploadItem>
-                            ))}
-                          </FileUploadList>
                         </FileUpload>
                       </FormControl>
                       <FormMessage />
