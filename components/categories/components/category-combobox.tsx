@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getCategoryDropdown, getParentCategories } from "../data/categories"
+import { getCategoryDropdown } from "../data/categories"
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox"
 
 interface CategoryComboboxProps {
@@ -23,8 +23,8 @@ export function CategoryCombobox({
   excludeId,
 }: CategoryComboboxProps) {
   const { data: categories, isLoading } = useQuery({
-    queryKey: ["parent-categories-dropdown"],
-    queryFn: getParentCategories,
+    queryKey: ["category-dropdown"],
+    queryFn: getCategoryDropdown,
   })
 
   // Transform categories to combobox options
@@ -40,7 +40,7 @@ export function CategoryCombobox({
       .map((category) => ({
         value: category.id.toString(),
         label: category.name,
-        image_url: category.image_url,
+        image: category?.image_url || undefined,
       }))
   }, [categories, excludeId])
 
