@@ -17,6 +17,7 @@ interface TaxComboboxProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  onAddClick?: () => void
 }
 
 export function TaxCombobox({
@@ -25,6 +26,7 @@ export function TaxCombobox({
   placeholder = "Select tax",
   disabled = false,
   className,
+  onAddClick,
 }: TaxComboboxProps) {
   const { data: taxes, isLoading } = useQuery({
     queryKey: ["tax-dropdown"],
@@ -46,14 +48,14 @@ export function TaxCombobox({
     if (newValue === undefined) {
       onValueChange?.(null)
     } else {
-      onValueChange?.(parseInt(newValue, 10))
+      onValueChange?.(newValue ? Number.parseInt(newValue, 10) : null)
     }
   }
 
   return (
     <Combobox
       options={options}
-      value={value?.toString()}
+      value={value !== null && value !== undefined ? String(value) : undefined}
       onValueChange={handleValueChange}
       placeholder={placeholder}
       searchPlaceholder="Search taxes..."
@@ -61,6 +63,8 @@ export function TaxCombobox({
       disabled={disabled || isLoading}
       className={className}
       loading={isLoading}
+      onAddClick={onAddClick}
+      addButtonText="Add tax"
     />
   )
 }

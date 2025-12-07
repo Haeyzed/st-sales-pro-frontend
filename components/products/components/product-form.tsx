@@ -85,6 +85,7 @@ import {
 } from "@/components/ui/select"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { UnitsActionDialog } from "@/components/units/components/units-action-dialog"
+import { BrandsActionDialog } from "@/components/brands/components/brands-action-dialog"
 
 // Extended schema for full-page form
 const formSchema = z.object({
@@ -1652,23 +1653,11 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                       <FormItem>
                         <FormLabel>Product Unit <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <div className="flex">
                             <UnitCombobox
                               value={field.value}
                               onValueChange={field.onChange}
-                              className="-me-px rounded-r-none shadow-none focus-visible:z-10"
+                              onAddClick={() => setShowUnitDialog(true)}
                             />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="rounded-l-none shadow-none"
-                              onClick={() => setShowUnitDialog(true)}
-                              title="Add Unit"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1881,23 +1870,11 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     <FormItem>
                       <FormLabel>Product Tax</FormLabel>
                       <FormControl>
-                        <div className="flex">
-                          <TaxCombobox
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="-me-px rounded-r-none shadow-none focus-visible:z-10"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="rounded-l-none shadow-none"
-                            onClick={() => toast.info("Tax creation coming soon")}
-                            title="Add Tax"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <TaxCombobox
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          onAddClick={() => setShowTaxDialog(true)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -3025,6 +3002,18 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       <UnitsActionDialog
         open={showUnitDialog}
         onOpenChange={setShowUnitDialog}
+      />
+
+      {/* Tax Action Dialog */}
+      {/* <TaxesActionDialog
+        open={showTaxDialog}
+        onOpenChange={setShowTaxDialog}
+      /> */}
+
+      {/* Brand Action Dialog */}
+      <BrandsActionDialog
+        open={showBrandDialog}
+        onOpenChange={setShowBrandDialog}
       />
     </div>
   )

@@ -17,6 +17,7 @@ interface UnitComboboxProps {
   placeholder?: string
   disabled?: boolean
   className?: string
+  onAddClick?: () => void
 }
 
 export function UnitCombobox({
@@ -25,6 +26,7 @@ export function UnitCombobox({
   placeholder = "Select unit",
   disabled = false,
   className,
+  onAddClick,
 }: UnitComboboxProps) {
   const { data: units, isLoading } = useQuery({
     queryKey: ["unit-dropdown"],
@@ -46,14 +48,14 @@ export function UnitCombobox({
     if (newValue === undefined) {
       onValueChange?.(null)
     } else {
-      onValueChange?.(parseInt(newValue, 10))
+      onValueChange?.(newValue ? Number.parseInt(newValue, 10) : null)
     }
   }
 
   return (
     <Combobox
       options={options}
-      value={value?.toString()}
+      value={value !== null && value !== undefined ? String(value) : undefined}
       onValueChange={handleValueChange}
       placeholder={placeholder}
       searchPlaceholder="Search units..."
@@ -61,6 +63,8 @@ export function UnitCombobox({
       disabled={disabled || isLoading}
       className={className}
       loading={isLoading}
+      onAddClick={onAddClick}
+      addButtonText="Add unit"
     />
   )
 }

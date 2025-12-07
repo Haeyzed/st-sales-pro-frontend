@@ -34,7 +34,7 @@ export function TaxMethodCombobox({
   return (
     <Combobox
       options={taxMethodOptions}
-      value={value}
+      value={value !== null && value !== undefined ? String(value) : undefined}
       onValueChange={handleValueChange}
       placeholder={placeholder}
       searchPlaceholder="Search method..."
