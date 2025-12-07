@@ -440,6 +440,7 @@ export type ComboProductSearchResult = {
   brand: string
   unit_id: number
   image?: string
+  image_url?: string
   units: Array<{
     id: number
     name: string

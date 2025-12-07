@@ -112,7 +112,7 @@ export function MultipleProductSearchCombobox({
                 <CommandGroup>
                   {products.map((product) => {
                     // Image is already a full URL from API
-                    const firstImage = product.image?.split(',')[0]?.trim()
+                    const firstImage = product.image_url?.split(',')[0]?.trim()
                     const imageUrl = firstImage ? firstImage : null
                     const initials = product.name
                       .split(" ")
