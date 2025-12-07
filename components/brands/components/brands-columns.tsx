@@ -41,12 +41,12 @@ export const brandsColumns: ColumnDef<Brand>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "image",
+    accessorKey: "image_url",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Image" />
     ),
     cell: ({ row }) => {
-      const image = row.original.image
+      const image_url = row.original.image_url
       const title = row.original.title
       const initials = title
         .split(" ")
@@ -57,8 +57,8 @@ export const brandsColumns: ColumnDef<Brand>[] = [
 
       return (
           <Avatar className="h-10 w-10 rounded-md">
-            {image ? (
-              <AvatarImage src={image} alt={title} className="object-cover" />
+            {image_url ? (
+              <AvatarImage src={image_url} alt={title} className="object-cover" />
             ) : null}
             <AvatarFallback className="bg-muted text-muted-foreground rounded-md">
               {initials}
