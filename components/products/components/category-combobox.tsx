@@ -40,14 +40,14 @@ export function CategoryCombobox({
     if (newValue === undefined) {
       onValueChange?.(null)
     } else {
-      onValueChange?.(parseInt(newValue, 10))
+      onValueChange?.(newValue ? Number.parseInt(newValue, 10) : null)
     }
   }
 
   return (
     <Combobox
       options={options}
-      value={value?.toString()}
+      value={value !== null && value !== undefined ? String(value) : undefined}
       onValueChange={handleValueChange}
       placeholder={placeholder}
       searchPlaceholder="Search categories..."

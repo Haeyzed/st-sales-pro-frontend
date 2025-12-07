@@ -117,7 +117,7 @@ const formSchema = z.object({
   is_batch: z.boolean().nullable().optional(),
   is_imei: z.boolean().nullable().optional(),
   is_embeded: z.boolean().nullable().optional(),
-  is_diffPrice: z.boolean().nullable().optional(),
+  is_diff_price: z.boolean().nullable().optional(),
   diff_price: z.array(z.object({
     warehouse_id: z.number(),
     price: z.number().nullable(),
@@ -224,7 +224,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       is_batch: false,
       is_imei: false,
       is_embeded: false,
-      is_diffPrice: false,
+      is_diff_price: false,
       diff_price: [],
       featured: false,
       promotion: false,
@@ -326,7 +326,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
             is_batch: product.is_batch || false,
             is_imei: product.is_imei || false,
             is_embeded: product.is_embeded || false,
-            is_diffPrice: product.is_diffPrice || false,
+            is_diff_price: product.is_diff_price || false,
             diff_price: [],
             featured: product.featured || false,
             promotion: product.promotion || false,
@@ -363,8 +363,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
             file: null,
           })
 
-          // Load warehouse prices if is_diffPrice is true
-          if (product.is_diffPrice && product.warehouse_prices && product.warehouse_prices.length > 0) {
+          // Load warehouse prices if is_diff_price is true
+          if (product.is_diff_price && product.warehouse_prices && product.warehouse_prices.length > 0) {
             // Wait for warehouses to load, then set prices
             const loadWarehousePrices = async () => {
               try {
@@ -559,7 +559,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
   const productType = form.watch("type")
   const isVariant = form.watch("is_variant")
   const isBatch = form.watch("is_batch")
-  const isDiffPrice = form.watch("is_diffPrice")
+  const isDiffPrice = form.watch("is_diff_price")
   const isInitialStock = form.watch("is_initial_stock")
   const promotion = form.watch("promotion")
   const unitId = form.watch("unit_id")
@@ -695,7 +695,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
     if (productType === "combo") {
       // Combo products: hide variant, diffPrice, batch, imei, initial stock options
       form.setValue("is_variant", false)
-      form.setValue("is_diffPrice", false)
+      form.setValue("is_diff_price", false)
       form.setValue("is_batch", false)
       form.setValue("is_imei", false)
       form.setValue("stock_warehouse_id", [])
@@ -704,12 +704,12 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       // Digital products: hide variant, diffPrice, batch options
       // Show initial stock option
       form.setValue("is_variant", false)
-      form.setValue("is_diffPrice", false)
+      form.setValue("is_diff_price", false)
       form.setValue("is_batch", false)
     } else if (productType === "service") {
       // Service products: hide all special options
       form.setValue("is_variant", false)
-      form.setValue("is_diffPrice", false)
+      form.setValue("is_diff_price", false)
       form.setValue("is_batch", false)
       form.setValue("is_imei", false)
     }
@@ -852,9 +852,9 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
       if (values.is_embeded !== null && values.is_embeded !== undefined) {
         formData.append("is_embeded", values.is_embeded ? "1" : "0")
       }
-      if (values.is_diffPrice !== null && values.is_diffPrice !== undefined) {
-        formData.append("is_diffPrice", values.is_diffPrice ? "1" : "0")
-        if (values.is_diffPrice && values.diff_price) {
+      if (values.is_diff_price !== null && values.is_diff_price !== undefined) {
+        formData.append("is_diff_price", values.is_diff_price ? "1" : "0")
+        if (values.is_diff_price && values.diff_price) {
           values.diff_price.forEach((item, index) => {
             formData.append(`warehouse_id[${index}]`, String(item.warehouse_id))
             if (item.price !== null) {
@@ -1024,7 +1024,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
               is_batch: updatedProduct.is_batch || false,
               is_imei: updatedProduct.is_imei || false,
               is_embeded: updatedProduct.is_embeded || false,
-              is_diffPrice: updatedProduct.is_diffPrice || false,
+              is_diff_price: updatedProduct.is_diff_price || false,
               featured: updatedProduct.featured || false,
               promotion: updatedProduct.promotion || false,
               promotion_price: updatedProduct.promotion_price,
@@ -1118,7 +1118,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
             is_batch: false,
             is_imei: false,
             is_embeded: false,
-            is_diffPrice: false,
+            is_diff_price: false,
             featured: false,
             promotion: false,
             promotion_price: null,
@@ -2079,7 +2079,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 {productType === "standard" && (
                   <FormField
                     control={form.control}
-                    name="is_diffPrice"
+                    name="is_diff_price"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>

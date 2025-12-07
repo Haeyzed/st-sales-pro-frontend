@@ -47,18 +47,18 @@ export function BarcodeSettingsCombobox({
     }))
   }, [settings])
 
-  const handleValueChange = (newValue: string | null) => {
-    if (newValue === null) {
+  const handleValueChange = (newValue: string | undefined) => {
+    if (newValue === undefined) {
       onValueChange?.(null)
     } else {
-      onValueChange?.(parseInt(newValue, 10))
+      onValueChange?.(newValue ? Number.parseInt(newValue, 10) : null)
     }
   }
 
   return (
     <Combobox
       options={options}
-      value={value !== null && value !== undefined ? String(value) : null}
+      value={value !== null && value !== undefined ? String(value) : undefined}
       onValueChange={handleValueChange}
       placeholder={placeholder}
       emptyText="No barcode settings found"
