@@ -47,7 +47,7 @@ export const productsColumns: ColumnDef<Product>[] = [
       <DataTableColumnHeader column={column} title="Image" />
     ),
     cell: ({ row }) => {
-      const imageString = row.original.image
+      const imageString = row.original.image_url
       const name = row.original.name
       const initials = name
         .split(" ")

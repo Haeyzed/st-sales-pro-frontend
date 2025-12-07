@@ -508,8 +508,8 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
           }
 
           // Load existing images
-          if (product.image && product.image !== 'zummXD2dvAtI.png') {
-            const imageNames = product.image.split(',').map(img => img.trim()).filter(Boolean)
+          if (product.image_url) {
+            const imageNames = product.image_url.split(',').map(img => img.trim()).filter(Boolean)
             setExistingImages(imageNames)
           }
 
@@ -523,7 +523,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                 )
                 const relatedProductsList = relatedProductsData.map(p => {
                   // Get first image if exists
-                  const firstImage = p.image ? p.image.split(',')[0]?.trim() : null
+                  const firstImage = p.image_url ? p.image_url.split(',')[0]?.trim() : null
                   return {
                     id: p.id,
                     name: p.name,
@@ -535,7 +535,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                     unit_id: p.unit_id,
                     variant_id: null,
                     additional_price: 0,
-                    image: firstImage && firstImage !== 'zummXD2dvAtI.png' ? firstImage : undefined,
+                    image: firstImage ? firstImage : undefined,
                     units: []
                   }
                 }) as ComboProductSearchResult[]

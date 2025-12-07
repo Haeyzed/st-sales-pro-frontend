@@ -47,8 +47,8 @@ export function ProductsViewDialog({
   currentRow: product,
 }: ProductsViewDialogProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)")
-  const imageString = product.image
-  const images = imageString && imageString !== 'zummXD2dvAtI.png' 
+  const imageString = product.image_url
+  const images = imageString
     ? imageString.split(',').map(img => img.trim()) 
     : []
   
