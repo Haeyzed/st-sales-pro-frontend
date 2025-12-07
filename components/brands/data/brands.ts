@@ -38,7 +38,7 @@ type BrandListResponse = {
 type BrandDropdownItem = {
   id: number
   title: string
-  image_url: string | null
+  image_url?: string | null
 }
 
 /**
