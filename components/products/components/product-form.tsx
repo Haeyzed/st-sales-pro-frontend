@@ -1420,7 +1420,7 @@ export function ProductForm({ productId }: ProductFormProps = {}) {
                             product_id: product.id,
                             product_name: product.name,
                             product_code: product.code,
-                            product_image: product.image,
+                            product_image: product.image_url || undefined,
                             variant_id: product.variant_id,
                             qty: product.qty || 1,
                             wastage_percent: 0,
